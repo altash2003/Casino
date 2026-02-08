@@ -67,7 +67,7 @@ setInterval(() => {
                     rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
                     io.to('roulette').emit('roulette_new_round');
                 }, 5000);
-            }, 6000);
+            }, 8000); // 8s spin animation
         }
     }
 }, 1000);
