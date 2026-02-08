@@ -21,9 +21,14 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* CHAT PANEL */
-        .chat-panel { position: fixed; bottom: 100px; right: 20px; width: 280px; height: 350px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display:none; }
-        .chat-panel.active { display:flex; }
+        /* UNIFIED PANEL POSITION (Chat & Music share this) */
+        .panel-position { position: fixed; bottom: 100px; right: 20px; width: 280px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .panel-position.active { display: flex; animation: slideUp 0.2s ease-out; }
+        
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* CHAT SPECIFIC */
+        .chat-panel { height: 350px; }
         .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 11px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
         .chat-tabs { display: flex; border-bottom: 1px solid #333; }
         .chat-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 12px; }
@@ -34,8 +39,8 @@
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; }
         .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; }
 
-        /* MUSIC PLAYER */
-        .music-player { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); width: 260px; background: rgba(0,0,0,0.9); border: 1px solid #444; border-radius: 8px; padding: 10px; z-index: 9500; display: none; }
+        /* MUSIC SPECIFIC */
+        .music-player { height: auto; padding: 10px; }
         .mp-title { font-size: 11px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
         .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
@@ -44,7 +49,7 @@
         .vol-slider { -webkit-appearance: none; width: 100%; height: 4px; background: #333; border-radius: 2px; outline: none; }
         .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #FFD700; cursor: pointer; transition: 0.2s; }
         
-        /* --- CHIPS UI (SMALLER PANEL) --- */
+        /* CHIPS UI */
         .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
         .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
         .chip:hover { transform: scale(1.1); }
@@ -53,7 +58,7 @@
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
         
-        /* --- BOARD CHIP (BIGGER ON GRID) --- */
+        /* BOARD CHIP (BIGGER ON GRID) */
         .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; }
         .chip.chip-board::after { inset: 4px; }
         .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
@@ -112,15 +117,13 @@
 
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
         
-        /* MATCHING GRID WIDTH (50 + 12*44 + 34 + gaps) ~ 620px */
         .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; }
         .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; }
         
-        /* GRID: 50px Zero + 12 * 42px Cols + 34px Row Labels */
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
         
-        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--grid-gold); z-index: 5; }
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--grid-gold); z-index: 5; position: relative; }
         .red-cell { background-color: var(--cell-red); } .black-cell { background-color: var(--cell-black); }
         .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 10px 0 0 10px; }
         .zone-2to1 { grid-column: 14; writing-mode: vertical-rl; color: #F3C620; font-size: 9px; }
@@ -132,8 +135,8 @@
         
         .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
         .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
-        .hotspot:hover { background: rgba(255,255,255,0.15); }
-
+        /* HOVER EFFECT REMOVED */
+        
         /* BUTTONS (Floating Style) */
         .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 20px; z-index: 5000; }
         .icon-btn-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; opacity: 0.8; transition: 0.2s; }
@@ -173,7 +176,7 @@
         </div>
     </div>
 
-    <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel panel-position" id="chatPanel">
         <div class="chat-header">
             <span id="chatTitle">GLOBAL</span>
             <span onclick="toggleChat()" style="cursor:pointer; font-size:16px;">&times;</span>
@@ -198,7 +201,7 @@
         </div>
     </div>
 
-    <div class="music-player" id="globalMusicPlayer">
+    <div class="music-player panel-position" id="globalMusicPlayer">
         <div class="mp-title">
             <span>CASINO DJ</span>
             <span onclick="toggleMusicUI()" style="cursor:pointer;">x</span>
@@ -358,7 +361,6 @@
         let myUser = "Guest";
         let myBal = 0;
         let currentRoom = 'lobby';
-        let currentTableScale = 1; // Global Scale Tracker
 
         // --- AUTH ---
         const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
@@ -385,7 +387,14 @@
         // --- CHAT ---
         function toggleChat() {
             let p = document.getElementById('chatPanel');
-            p.classList.toggle('active');
+            let m = document.getElementById('globalMusicPlayer');
+            
+            if(p.classList.contains('active')) {
+                p.classList.remove('active');
+            } else {
+                p.classList.add('active');
+                m.classList.remove('active'); // Exclusive
+            }
         }
         function tabChat(t) {
             document.querySelectorAll('.chat-content').forEach(e=>e.classList.remove('active'));
@@ -409,13 +418,13 @@
             let box = (d.type === 'public' || d.type === 'public_admin') ? document.getElementById('chatList') : document.getElementById('supportList');
             let col = d.type === 'public_admin' ? '#FF3D00' : '#FFD700';
             if(d.type.includes('support')) col = '#00E5FF';
-            box.innerHTML += `<div class="chat-msg"><b style="color:${col}">${d.user}:</b> ${d.msg}</div>`;
+            box.innerHTML += `<div class="chat-msg"><b style="color:${col}">[${d.user}]:</b> ${d.msg}</div>`;
             box.scrollTop = box.scrollHeight;
         });
         socket.on('chat_history', (hist) => {
             let box = document.getElementById('chatList'); box.innerHTML = '';
             hist.forEach(d => {
-                box.innerHTML += `<div class="chat-msg"><b style="color:#FFD700">${d.user}:</b> ${d.msg}</div>`;
+                box.innerHTML += `<div class="chat-msg"><b style="color:#FFD700">[${d.user}]:</b> ${d.msg}</div>`;
             });
             box.scrollTop = box.scrollHeight;
         });
@@ -427,7 +436,14 @@
 
         function toggleMusicUI() {
             let p = document.getElementById('globalMusicPlayer');
-            p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none';
+            let c = document.getElementById('chatPanel');
+            
+            if(p.classList.contains('active')) {
+                p.classList.remove('active');
+            } else {
+                p.classList.add('active');
+                c.classList.remove('active'); // Exclusive
+            }
         }
         function toggleMusic() {
             if(audio.paused) { 
@@ -474,7 +490,7 @@
             let w = window.innerWidth;
             let wrapper = document.getElementById('rWrapper');
             
-            // Available space logic (Height - HUD - Padding)
+            // Available space logic
             let availH = h - 20; 
             let availW = w - 20; 
             
@@ -487,9 +503,8 @@
             let scale = Math.min(scaleH, scaleW) * 0.95; 
             
             if(scale < 0.5) scale = 0.5;
-            if(scale > 1.8) scale = 1.8; // Allow larger upscale for HD
+            if(scale > 1.8) scale = 1.8;
             
-            currentTableScale = scale; // Store for chip logic
             wrapper.style.transform = `scale(${scale})`;
         }
 
@@ -498,6 +513,7 @@
             document.getElementById('view-lobby').classList.add('active');
             document.getElementById('backBtn').style.display = 'none';
             document.getElementById('chatPanel').classList.remove('active');
+            document.getElementById('globalMusicPlayer').classList.remove('active');
             currentRoom = 'lobby';
             socket.emit('switch_room', 'lobby');
             clearRoulette();
@@ -568,19 +584,15 @@
             drawWheel(0);
         }
         
-        // --- HOTSPOTS (PRECISION MATH) ---
+        // --- PRECISION BETTING ZONES ---
         function buildHotspots() {
             const overlay = document.getElementById('ghostOverlay');
             overlay.innerHTML = ''; 
             
-            // GRID CONSTANTS (Matches CSS)
-            const PAD = 5; 
-            const GAP = 2; 
-            const COL_W = 42; 
-            const ROW_H = 42; 
-            const ZERO_W = 50;
-            const OFFSET_X = PAD + ZERO_W + GAP; // 57px
-            const OFFSET_Y = PAD; // 5px
+            // Grid geometry (Matches CSS)
+            const CELL_W = 42; const CELL_H = 42; const GAP = 2; 
+            const OFFSET_X = 50 + 5 + GAP; // 57px (Zero + Padding)
+            const OFFSET_Y = 5; 
 
             function createZone(x, y, w, h, numbers) {
                 let el = document.createElement('div');
@@ -588,50 +600,49 @@
                 el.style.left = x + 'px'; el.style.top = y + 'px';
                 el.style.width = w + 'px'; el.style.height = h + 'px';
                 el.onclick = (e) => {
-                    let centerX = x + w/2; let centerY = y + h/2;
+                    // Center of this hotspot zone
+                    let centerX = x + w/2; 
+                    let centerY = y + h/2;
                     placeRouletteBet(centerX, centerY, numbers);
                 };
                 overlay.appendChild(el);
             }
 
-            // Columns
             for(let c=0; c<12; c++) {
-                let x = OFFSET_X + (c * (COL_W + GAP));
-                let nTop = (c * 3) + 3; 
-                let nMid = (c * 3) + 2; 
-                let nBot = (c * 3) + 1; 
+                let x = OFFSET_X + (c * (CELL_W + GAP));
+                let nTop = (c * 3) + 3; let nMid = (c * 3) + 2; let nBot = (c * 3) + 1; 
                 
-                // Straight (Inner part of cell)
-                createZone(x+8, OFFSET_Y+8, COL_W-16, ROW_H-16, [nTop]);
-                createZone(x+8, OFFSET_Y+ROW_H+GAP+8, COL_W-16, ROW_H-16, [nMid]);
-                createZone(x+8, OFFSET_Y+(ROW_H+GAP)*2+8, COL_W-16, ROW_H-16, [nBot]);
+                // Single Number (Inner area)
+                createZone(x+8, OFFSET_Y+8, CELL_W-16, CELL_H-16, [nTop]);
+                createZone(x+8, OFFSET_Y+CELL_H+GAP+8, CELL_W-16, CELL_H-16, [nMid]);
+                createZone(x+8, OFFSET_Y+(CELL_H+GAP)*2+8, CELL_W-16, CELL_H-16, [nBot]);
 
                 // Vertical Splits
-                createZone(x, OFFSET_Y + ROW_H - 6, COL_W, 12, [nTop, nMid]); 
-                createZone(x, OFFSET_Y + (ROW_H*2) + GAP - 6, COL_W, 12, [nMid, nBot]);
+                createZone(x, OFFSET_Y + CELL_H - 6, CELL_W, 12, [nTop, nMid]); 
+                createZone(x, OFFSET_Y + (CELL_H*2) + GAP - 6, CELL_W, 12, [nMid, nBot]);
                 
-                // Street (Top edge)
-                createZone(x, OFFSET_Y - 10, COL_W, 15, [nBot, nMid, nTop]); 
+                // Streets (Top)
+                createZone(x, OFFSET_Y - 10, CELL_W, 15, [nBot, nMid, nTop]); 
 
                 if(c < 11) {
                     let nextTop = nTop + 3; let nextMid = nMid + 3; let nextBot = nBot + 3;
-                    let borderX = x + COL_W - 6;
+                    let borderX = x + CELL_W - 6;
                     // Horizontal Splits
-                    createZone(borderX, OFFSET_Y, 12, ROW_H, [nTop, nextTop]); 
-                    createZone(borderX, OFFSET_Y+ROW_H+GAP, 12, ROW_H, [nMid, nextMid]);
-                    createZone(borderX, OFFSET_Y+(ROW_H+GAP)*2, 12, ROW_H, [nBot, nextBot]);
+                    createZone(borderX, OFFSET_Y, 12, CELL_H, [nTop, nextTop]); 
+                    createZone(borderX, OFFSET_Y+CELL_H+GAP, 12, CELL_H, [nMid, nextMid]);
+                    createZone(borderX, OFFSET_Y+(CELL_H+GAP)*2, 12, CELL_H, [nBot, nextBot]);
                     // Corners
-                    createZone(borderX, OFFSET_Y + ROW_H - 6, 12, 12, [nTop, nMid, nextTop, nextMid]);
-                    createZone(borderX, OFFSET_Y + (ROW_H*2) + GAP - 6, 12, 12, [nMid, nBot, nextMid, nextBot]);
-                    // Six Line
+                    createZone(borderX, OFFSET_Y + CELL_H - 6, 12, 12, [nTop, nMid, nextTop, nextMid]);
+                    createZone(borderX, OFFSET_Y + (CELL_H*2) + GAP - 6, 12, 12, [nMid, nBot, nextMid, nextBot]);
+                    // Six Lines
                     createZone(borderX, OFFSET_Y - 10, 12, 15, [nBot, nMid, nTop, nextBot, nextMid, nextTop]);
                 }
             }
             
-            // 0 Zone
-            createZone(PAD, PAD, ZERO_W, (ROW_H+GAP)*3, [0]);
+            // Zero
+            createZone(5, 5, 50, (CELL_H+GAP)*3, [0]);
             
-            // Bind Buttons via Scale-Corrected Logic
+            // Map Outside Bets
             bindButton('btn-red', REDS);
             bindButton('btn-black', range(1,36).filter(x=>!REDS.includes(x)));
             bindButton('btn-even', range(1,36).filter(x=>x%2===0));
@@ -649,14 +660,9 @@
         function bindButton(id, nums) {
             let el = document.getElementById(id);
             if(el) el.onclick = () => {
-                let rect = el.getBoundingClientRect();
-                let wrap = document.getElementById('grid').getBoundingClientRect();
-                
-                // IMPORTANT: Calculate unscaled offset
-                // (Screen Coord - Wrap Screen Coord) / scale
-                let x = ((rect.left + rect.width/2) - wrap.left) / currentTableScale;
-                let y = ((rect.top + rect.height/2) - wrap.top) / currentTableScale;
-                
+                // Correct center offset relative to parent grid
+                let x = el.offsetLeft + el.offsetWidth / 2;
+                let y = el.offsetTop + el.offsetHeight / 2;
                 placeRouletteBet(x, y, nums);
             };
         }
@@ -668,7 +674,7 @@
             myBal -= rChip; updateDisplay();
             rBetTotal += rChip; document.getElementById('r-bet-display').innerText = rBetTotal;
             
-            // VISUAL CHIP
+            // VISUAL CHIP (NEW STYLE)
             let chipStyle = 'chip-50';
             if(rChip===100) chipStyle='chip-100';
             if(rChip===1000) chipStyle='chip-1k';
@@ -681,7 +687,7 @@
             mk.style.position = 'absolute';
             mk.style.left = x + 'px'; 
             mk.style.top = y + 'px';
-            mk.style.transform = 'translate(-50%, -50%)'; // Just center it, size handled in CSS
+            mk.style.transform = 'translate(-50%, -50%)';
             
             document.getElementById('rOverlay').appendChild(mk);
 
@@ -738,24 +744,19 @@
 
         function drawWheel(angle = 0) {
             ctx.clearRect(0,0,W,H);
-            // Outer Ring
             let grad = ctx.createRadialGradient(CX, CY, R_TRACK_INNER, CX, CY, R_TRACK_OUTER);
             grad.addColorStop(0, "#3a1f12"); grad.addColorStop(0.4, "#63391f"); grad.addColorStop(0.9, "#211108"); grad.addColorStop(1, "#000");
             ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_OUTER, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
-            // Inner
             ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_INNER, 0, Math.PI*2); ctx.fillStyle = "#0a2118"; ctx.fill();
 
             ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
             
             WHEEL.forEach((lbl, i) => drawWedge(i, lbl, 1.0, false));
             
-            // Hub
             ctx.beginPath(); ctx.arc(0,0, R_HUB, 0, Math.PI*2);
             let hGrad = ctx.createRadialGradient(0,0, 20, 0,0, R_HUB); hGrad.addColorStop(0, "#666"); hGrad.addColorStop(1, "#222");
             ctx.fillStyle = hGrad; ctx.fill();
-            // Gold Ring
             ctx.beginPath(); ctx.arc(0,0, R_HUB-5, 0, Math.PI*2); ctx.strokeStyle = "#c9a44c"; ctx.lineWidth = 4; ctx.stroke();
-            // Pin
             ctx.beginPath(); ctx.arc(0,0, 30, 0, Math.PI*2); ctx.fillStyle = "#444"; ctx.fill();
             ctx.restore();
         }
@@ -765,11 +766,9 @@
             ctx.save();
             if (scale !== 1.0) { const mid = ang+slice/2; ctx.rotate(mid); ctx.scale(scale, scale); ctx.rotate(-mid); if(glow){ctx.shadowColor="#FFF"; ctx.shadowBlur=30;} }
             
-            // Path
             ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, R_POCKETS, ang, ang+slice); ctx.closePath();
             ctx.fillStyle = getLabelColor(lbl); ctx.fill();
             
-            // Gradient Overlay
             if(!glow) {
                 let pGrad = ctx.createRadialGradient(0,0, R_NUMBERS, 0,0, R_POCKETS);
                 pGrad.addColorStop(0, "rgba(0,0,0,0)"); pGrad.addColorStop(1, "rgba(0,0,0,0.5)");
@@ -777,12 +776,10 @@
             } else {
                 ctx.lineWidth = 5; ctx.strokeStyle = "#FFF"; ctx.stroke();
             }
-            // Divider
             if(!glow) {
                 ctx.beginPath(); ctx.moveTo(Math.cos(ang)*R_HUB, Math.sin(ang)*R_HUB); ctx.lineTo(Math.cos(ang)*R_POCKETS, Math.sin(ang)*R_POCKETS);
                 ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 2; ctx.stroke();
             }
-            // Text
             ctx.save(); ctx.rotate(ang + slice/2); ctx.translate(R_NUMBERS+10, 0); ctx.rotate(Math.PI/2);
             ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
             ctx.fillText(lbl, 0, 0); ctx.restore();
@@ -796,14 +793,12 @@
             let final = targetAngle + (Math.PI*2 * 5);
             let start = null;
             
-            // Zoom Win Anim after spin
             function winAnim(ts) {
                 if(!start) start=ts; let el = ts-start;
                 drawWheel(final); // Keep static
                 ctx.save(); ctx.translate(CX, CY); ctx.rotate(final);
                 const scale = 1.12 + Math.sin(el * 0.005) * 0.03; // Throb
                 drawWedge(idx, WHEEL[idx], scale, true);
-                // Redraw Hub over wedge
                 ctx.beginPath(); ctx.arc(0,0, R_HUB, 0, Math.PI*2);
                 let hGrad = ctx.createRadialGradient(0,0, 20, 0,0, R_HUB); hGrad.addColorStop(0, "#666"); hGrad.addColorStop(1, "#222");
                 ctx.fillStyle = hGrad; ctx.fill();
