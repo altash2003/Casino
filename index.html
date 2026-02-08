@@ -22,9 +22,9 @@
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
         /* CHAT PANEL */
-        .chat-panel { position: fixed; right: 0; top: 0; width: 300px; height: 100%; background: rgba(0,0,0,0.9); border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 8000; transition: transform 0.3s; }
+        .chat-panel { position: fixed; right: 0; top: 0; width: 300px; height: 100%; background: rgba(0,0,0,0.95); border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 8000; transition: transform 0.3s; }
         .chat-panel.hidden { transform: translateX(100%); }
-        .chat-header { padding: 10px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 12px; border-bottom: 1px solid #333; }
+        .chat-header { padding: 10px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 12px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; }
         .chat-tabs { display: flex; border-bottom: 1px solid #333; }
         .chat-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 14px; }
         .chat-tab.active { background: #222; color: #FFD700; border-bottom: 2px solid #FFD700; }
@@ -34,13 +34,14 @@
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; }
         .chat-msg { margin-bottom: 8px; font-size: 14px; word-wrap: break-word; }
 
-        /* MUSIC PLAYER (Roulette) */
-        .music-player { position: absolute; bottom: 20px; left: 20px; width: 250px; background: rgba(0,0,0,0.8); border: 1px solid #444; border-radius: 8px; padding: 10px; z-index: 50; display: none; }
+        /* MUSIC PLAYER */
+        .music-player { position: absolute; bottom: 20px; left: 20px; width: 250px; background: rgba(0,0,0,0.8); border: 1px solid #444; border-radius: 8px; padding: 10px; z-index: 9500; display: none; }
         .mp-title { font-size: 12px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
         .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
         .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
-        .mp-status { font-size: 10px; color: #00E5FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mp-status { font-size: 10px; color: #00E5FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom:5px; }
+        .vol-slider { width:100%; accent-color:#FFD700; height:4px; }
 
         /* LOBBY */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
@@ -50,9 +51,18 @@
         .gc-title { font-size: 32px; color: #FFD700; font-weight: 800; margin-bottom: 20px; }
         .gc-icon { font-size: 60px; margin-bottom: 20px; }
 
+        /* COMMON HUD (Top Bar for Games) */
+        .game-hud-bar { width: 100%; padding: 10px 0; margin-bottom: 10px; display: flex; gap: 30px; align-items: center; justify-content: center; }
+        .hud-item { text-align: center; }
+        .hud-lbl { font-size: 10px; color: #aaa; font-weight: bold; }
+        .hud-val { font-size: 30px; color: white; font-weight: bold; line-height: 1; }
+        .hud-btn { cursor: pointer; transition: 0.2s; }
+        .hud-btn:hover { transform: scale(1.1); }
+        .hud-btn-icon { font-size: 24px; margin-bottom: 2px; }
+
         /* COLOR GAME */
         #view-colorgame { background: url('background.jpg') center/cover; justify-content: center; align-items: center; }
-        .cg-main-area { width: calc(100% - 300px); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .cg-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .cg-timer { font-size: 100px; font-weight: 800; text-shadow: 0 0 20px cyan; line-height: 1; }
         .cg-status { font-size: 24px; letter-spacing: 5px; color: #aaa; margin-bottom: 20px; }
         .cg-dice-row { display: flex; gap: 20px; justify-content: center; }
@@ -69,7 +79,7 @@
         /* ROULETTE */
         :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
         #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; align-items: center; justify-content: center; }
-        .r-main-area { width: calc(100% - 300px); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .r-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #wheel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; justify-content: center; align-items: center; }
         #wheel-overlay.show { display: flex; }
         canvas { border-radius: 50%; }
@@ -111,7 +121,10 @@
     </div>
 
     <div class="chat-panel hidden" id="chatPanel">
-        <div class="chat-header" id="chatTitle">GLOBAL</div>
+        <div class="chat-header">
+            <span id="chatTitle">GLOBAL</span>
+            <span onclick="toggleChat()" style="cursor:pointer; font-size:16px;">&times;</span>
+        </div>
         <div class="chat-tabs">
             <div class="chat-tab active" onclick="tabChat('public')">PUBLIC</div>
             <div class="chat-tab" onclick="tabChat('support')">SUPPORT</div>
@@ -130,6 +143,26 @@
             <input id="supportInput" class="chat-input" placeholder="Message Admin...">
             <button onclick="sendSupport()" style="background:#00E5FF; border:none; padding:0 10px; cursor:pointer;">></button>
         </div>
+    </div>
+
+    <div class="music-player" id="globalMusicPlayer">
+        <div class="mp-title">
+            <span>CASINO DJ</span>
+            <span onclick="toggleMusicUI()" style="cursor:pointer;">x</span>
+        </div>
+        <div class="mp-controls">
+            <button class="mp-btn" onclick="toggleMusic()"><i class="fa fa-play"></i> / <i class="fa fa-pause"></i></button>
+            <button class="mp-btn" onclick="stopMusic()"><i class="fa fa-stop"></i></button>
+        </div>
+        <input class="mp-input" id="musicUrl" placeholder="MP3 URL here...">
+        <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
+        <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
+            <i class="fa fa-volume-down" style="font-size:10px; color:#aaa;"></i>
+            <input type="range" class="vol-slider" min="0" max="1" step="0.1" value="0.5" onchange="setVolume(this.value)">
+            <i class="fa fa-volume-up" style="font-size:10px; color:#aaa;"></i>
+        </div>
+        <div class="mp-status" id="mpStatus">Ready</div>
+        <audio id="audioEl" loop></audio>
     </div>
 
     <button class="global-back" id="backBtn" onclick="goToLobby()">← LOBBY</button>
@@ -156,15 +189,35 @@
 
     <div id="view-colorgame" class="view-section">
         <div class="cg-main-area">
-            <div class="cg-focus">
+            
+            <div class="game-hud-bar">
+                <div class="hud-item">
+                    <div class="hud-lbl">TIMER</div>
+                    <div class="hud-val" id="cg-timer" style="color:#FFD700;">20</div>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-lbl">BET</div>
+                    <div class="hud-val" id="cg-bet-total">0</div>
+                </div>
+                <div class="hud-item hud-btn" onclick="toggleMusicUI()">
+                    <div class="hud-btn-icon">🎵</div>
+                    <div class="hud-lbl">MUSIC</div>
+                </div>
+                <div class="hud-item hud-btn" onclick="toggleChat()">
+                    <div class="hud-btn-icon">💬</div>
+                    <div class="hud-lbl">CHAT</div>
+                </div>
+            </div>
+
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
                 <div class="cg-status" id="cg-status">BETS OPEN</div>
-                <div class="cg-timer" id="cg-timer">20</div>
                 <div class="cg-dice-row">
                     <div id="d1" class="die">?</div>
                     <div id="d2" class="die">?</div>
                     <div id="d3" class="die">?</div>
                 </div>
             </div>
+
             <div class="cg-bet-panel">
                 <div class="cg-chip-rack">
                     <div class="cg-chip active" onclick="setCgChip(50, this)">50</div>
@@ -199,34 +252,24 @@
             </div>
         </div>
 
-        <div class="music-player" id="rMusicPlayer">
-            <div class="mp-title">
-                <span>CASINO DJ</span>
-                <span onclick="document.getElementById('rMusicPlayer').style.display='none'" style="cursor:pointer;">x</span>
-            </div>
-            <div class="mp-controls">
-                <button class="mp-btn" onclick="toggleMusic()"><i class="fa fa-play"></i></button>
-                <button class="mp-btn" onclick="stopMusic()"><i class="fa fa-stop"></i></button>
-            </div>
-            <input class="mp-input" id="musicUrl" placeholder="MP3 URL here...">
-            <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
-            <div class="mp-status" id="mpStatus">Ready</div>
-            <audio id="audioEl" loop></audio>
-        </div>
-
         <div class="r-main-area">
-            <div style="margin-bottom:10px; display:flex; gap:20px; align-items:center;">
-                <div style="text-align:center;">
-                    <div style="font-size:10px; color:#aaa;">TIMER</div>
-                    <div id="r-timer" style="font-size:30px; color:#FFD700; font-weight:bold;">--</div>
+            
+            <div class="game-hud-bar">
+                <div class="hud-item">
+                    <div class="hud-lbl">TIMER</div>
+                    <div class="hud-val" id="r-timer" style="color:#FFD700;">--</div>
                 </div>
-                <div style="text-align:center;">
-                    <div style="font-size:10px; color:#aaa;">BET</div>
-                    <div id="r-bet-display" style="font-size:30px; color:white; font-weight:bold;">0</div>
+                <div class="hud-item">
+                    <div class="hud-lbl">BET</div>
+                    <div class="hud-val" id="r-bet-display">0</div>
                 </div>
-                <div style="text-align:center; cursor:pointer;" onclick="document.getElementById('rMusicPlayer').style.display='block'">
-                    <div style="font-size:24px;">🎵</div>
-                    <div style="font-size:10px; color:#aaa;">MUSIC</div>
+                <div class="hud-item hud-btn" onclick="toggleMusicUI()">
+                    <div class="hud-btn-icon">🎵</div>
+                    <div class="hud-lbl">MUSIC</div>
+                </div>
+                <div class="hud-item hud-btn" onclick="toggleChat()">
+                    <div class="hud-btn-icon">💬</div>
+                    <div class="hud-lbl">CHAT</div>
                 </div>
             </div>
 
@@ -288,6 +331,9 @@
         }
 
         // --- CHAT ---
+        function toggleChat() {
+            document.getElementById('chatPanel').classList.toggle('hidden');
+        }
         function tabChat(t) {
             document.querySelectorAll('.chat-content').forEach(e=>e.classList.remove('active'));
             document.querySelectorAll('.chat-tab').forEach(e=>e.classList.remove('active'));
@@ -330,16 +376,44 @@
             box.scrollTop = box.scrollHeight;
         });
 
+        // --- MUSIC ---
+        const audio = document.getElementById('audioEl');
+        const DEFAULT_MUSIC = "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; 
+
+        function toggleMusicUI() {
+            let p = document.getElementById('globalMusicPlayer');
+            p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none';
+        }
+        function toggleMusic() {
+            if(audio.paused) { 
+                if(!audio.src) audio.src = DEFAULT_MUSIC;
+                audio.play(); 
+                document.getElementById('mpStatus').innerText = "Playing: Standard Jazz";
+            } else { audio.pause(); }
+        }
+        function stopMusic() { audio.pause(); audio.currentTime=0; document.getElementById('mpStatus').innerText = "Stopped"; }
+        function playCustom() {
+            let url = document.getElementById('musicUrl').value;
+            if(url) {
+                audio.src = url;
+                audio.play();
+                document.getElementById('mpStatus').innerText = "Playing Custom";
+            }
+        }
+        function setVolume(v) {
+            audio.volume = v;
+        }
+
         // --- NAV ---
         function enterGame(g) {
             document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
             document.getElementById('view-'+g).classList.add('active');
             document.getElementById('backBtn').style.display = 'block';
             
-            // Show Chat
-            document.getElementById('chatPanel').classList.remove('hidden');
+            // Setup Chat
+            document.getElementById('chatPanel').classList.remove('hidden'); // Auto open?
             document.getElementById('chatTitle').innerText = g.toUpperCase() + " CHAT";
-            document.getElementById('chatList').innerHTML = ''; // Clear UI, wait for history
+            document.getElementById('chatList').innerHTML = ''; // Clear UI
             
             currentRoom = g;
             socket.emit('switch_room', g);
@@ -353,7 +427,6 @@
             currentRoom = 'lobby';
             socket.emit('switch_room', 'lobby');
             clearRoulette();
-            stopMusic(); // Stop music when leaving roulette
         }
         socket.on('lobby_counts', (c) => {
             document.getElementById('count-colorgame').innerText = (c.colorgame||0) + " Playing";
@@ -361,34 +434,15 @@
         });
         socket.on('notification', (d) => alert(d.msg));
 
-        // --- MUSIC PLAYER ---
-        const audio = document.getElementById('audioEl');
-        // Default casino jazz
-        const DEFAULT_MUSIC = "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; 
-
-        function toggleMusic() {
-            if(audio.paused) { 
-                if(!audio.src) audio.src = DEFAULT_MUSIC;
-                audio.play(); 
-                document.getElementById('mpStatus').innerText = "Playing: Standard Jazz";
-            } else { audio.pause(); }
-        }
-        function stopMusic() { audio.pause(); audio.currentTime=0; }
-        function playCustom() {
-            let url = document.getElementById('musicUrl').value;
-            if(url) {
-                audio.src = url;
-                audio.play();
-                document.getElementById('mpStatus').innerText = "Playing: Custom Track";
-            }
-        }
 
         // --- COLOR GAME ---
         let cgChip = 50;
+        let cgBetTotal = 0;
         function setCgChip(v, el) { cgChip = v; document.querySelectorAll('.cg-chip').forEach(e=>e.classList.remove('active')); el.classList.add('active'); }
         function placeCgBet(c) {
             if(myBal < cgChip) { alert("Insufficient funds"); return; }
             myBal -= cgChip; updateDisplay();
+            cgBetTotal += cgChip; document.getElementById('cg-bet-total').innerText = cgBetTotal;
             socket.emit('place_bet', { color: c, amount: cgChip });
             let el = document.getElementById('cg-bet-'+c); el.innerText = parseInt(el.innerText)+cgChip;
         }
@@ -405,7 +459,10 @@
                 ['d1','d2','d3'].forEach((id,i) => document.getElementById(id).className=`die ${r[i].toLowerCase()}`);
             }
         });
-        socket.on('game_reset', () => { ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'].forEach(c=>document.getElementById('cg-bet-'+c).innerText='0'); });
+        socket.on('game_reset', () => { 
+            ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'].forEach(c=>document.getElementById('cg-bet-'+c).innerText='0');
+            cgBetTotal = 0; document.getElementById('cg-bet-total').innerText = '0';
+        });
         socket.on('win_notification', (d) => alert(`WIN! +${d.amount}`));
 
 
