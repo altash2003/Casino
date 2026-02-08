@@ -10,9 +10,7 @@ const io = new Server(server);
 // --- DATABASE ---
 const DB_FILE = 'database.json';
 let users = {};
-if (fs.existsSync(DB_FILE)) { 
-    try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; }
-}
+if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } }
 
 function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
 function logHistory(username, msg, bal) {
@@ -26,61 +24,58 @@ let activeSockets = {}; // socket.id -> { username, room }
 let supportHistory = []; 
 let playerCounts = { lobby: 0, colorgame: 0, roulette: 0 };
 
-app.use(express.static(__dirname));
+// Chat History Buffers (so new joiners see recent chat)
+let chatHistory = {
+    colorgame: [],
+    roulette: []
+};
 
-// ROUTES
+app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 app.get('/admin', (req, res) => { res.sendFile(__dirname + '/admin.html'); });
 
-// --- GAME LOOP 1: COLOR GAME ---
+// --- GAME LOOPS ---
+
+// 1. COLOR GAME
 let colorState = { status: 'BETTING', timeLeft: 20, bets: [] };
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
-        if(colorState.timeLeft <= 3) io.emit('countdown_beep', colorState.timeLeft);
-        
+        if(colorState.timeLeft <= 3) io.to('colorgame').emit('countdown_beep', colorState.timeLeft);
         if(colorState.timeLeft <= 0) {
             colorState.status = 'ROLLING';
             const COLORS = ['RED', 'GREEN', 'BLUE', 'YELLOW', 'PINK', 'WHITE'];
             let result = [COLORS[Math.floor(Math.random()*6)], COLORS[Math.floor(Math.random()*6)], COLORS[Math.floor(Math.random()*6)]];
-            
-            io.emit('game_rolling');
-            
+            io.to('colorgame').emit('game_rolling');
             setTimeout(() => {
-                io.emit('game_result', result);
+                io.to('colorgame').emit('game_result', result);
                 processColorWinners(result);
-                
                 setTimeout(() => {
                     colorState.status = 'BETTING'; colorState.timeLeft = 20; colorState.bets = [];
-                    io.emit('timer_update', 20);
-                    io.emit('game_reset');
+                    io.to('colorgame').emit('timer_update', 20);
+                    io.to('colorgame').emit('game_reset');
                 }, 5000);
             }, 3000);
-        } else {
-            io.emit('timer_update', colorState.timeLeft);
-        }
+        } else { io.to('colorgame').emit('timer_update', colorState.timeLeft); }
     }
 }, 1000);
 
-// --- GAME LOOP 2: ROULETTE ---
+// 2. ROULETTE
 let rouletteState = { status: 'BETTING', timeLeft: 30, bets: [] };
 setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
-        io.emit('roulette_timer', rouletteState.timeLeft);
-
+        io.to('roulette').emit('roulette_timer', rouletteState.timeLeft);
         if(rouletteState.timeLeft <= 0) {
             rouletteState.status = 'SPINNING';
             let resultNum = Math.floor(Math.random() * 37);
-            
-            io.emit('roulette_spin_start', resultNum);
-
+            io.to('roulette').emit('roulette_spin_start', resultNum);
             setTimeout(() => {
-                io.emit('roulette_result_log', resultNum);
+                io.to('roulette').emit('roulette_result_log', resultNum);
                 processRouletteWinners(resultNum);
                 setTimeout(() => {
                     rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
-                    io.emit('roulette_new_round');
+                    io.to('roulette').emit('roulette_new_round');
                 }, 5000);
             }, 6000);
         }
@@ -92,8 +87,7 @@ function processColorWinners(result) {
     colorState.bets.forEach(bet => {
         let matches = result.filter(c => c === bet.color).length;
         if(matches > 0) {
-            let mult = matches + 1;
-            let win = bet.amount * mult;
+            let win = bet.amount * (matches + 1);
             if(users[bet.username]) {
                 users[bet.username].balance += win;
                 logHistory(bet.username, `WIN ColorGame +${win}`, users[bet.username].balance);
@@ -109,15 +103,7 @@ function processRouletteWinners(winningNumber) {
     rouletteState.bets.forEach(bet => {
         if(bet.numbers.includes(winningNumber)) {
             let count = bet.numbers.length;
-            let payoutMult = 0;
-            if (count === 1) payoutMult = 36;
-            else if (count === 2) payoutMult = 18;
-            else if (count === 3) payoutMult = 12;
-            else if (count === 4) payoutMult = 9;
-            else if (count === 6) payoutMult = 6;
-            else if (count === 12) payoutMult = 3;
-            else if (count === 18) payoutMult = 2;
-
+            let payoutMult = count === 1 ? 36 : count === 2 ? 18 : count === 3 ? 12 : count === 4 ? 9 : count === 6 ? 6 : count === 12 ? 3 : 2;
             let win = bet.amount * payoutMult;
             if(users[bet.username]) {
                 users[bet.username].balance += win;
@@ -138,7 +124,7 @@ io.on('connection', (socket) => {
     socket.on('login', (data) => {
         if(users[data.username] && users[data.username].password === data.password) {
             joinRoom(socket, data.username, 'lobby');
-            socket.emit('login_success', { username: data.username, balance: users[data.username].balance, history: users[data.username].history || [] });
+            socket.emit('login_success', { username: data.username, balance: users[data.username].balance });
         } else { socket.emit('login_error', "Invalid Credentials"); }
     });
 
@@ -147,7 +133,7 @@ io.on('connection', (socket) => {
             users[data.username] = { password: data.password, balance: 1000, history: [] };
             saveDatabase();
             joinRoom(socket, data.username, 'lobby');
-            socket.emit('login_success', { username: data.username, balance: 1000, history: [] });
+            socket.emit('login_success', { username: data.username, balance: 1000 });
         } else { socket.emit('login_error', "Username taken"); }
     });
 
@@ -156,43 +142,44 @@ io.on('connection', (socket) => {
         if(u) joinRoom(socket, u.username, room);
     });
 
-    // --- CHAT & SUPPORT (From your Color Game file) ---
-    socket.on('chat_msg', (msg) => {
+    // --- CHAT SYSTEM (PER GAME) ---
+    socket.on('chat_msg', (data) => {
+        // data: { msg, room }
         let u = activeSockets[socket.id];
-        if(u) io.emit('chat_broadcast', { type: 'public', user: u.username, msg: msg });
-    });
-    
-    socket.on('support_msg', (msg) => {
-        let u = activeSockets[socket.id];
-        if(u) {
-            let log = { user: u.username, msg: msg, time: Date.now() };
-            supportHistory.push(log);
-            // Send to Admin
-            io.emit('admin_support_receive', log); 
-            // Send back to user so they see it
-            socket.emit('chat_broadcast', { type: 'support_sent', msg: msg });
+        if(u && data.msg) {
+            let msgObj = { type: 'public', user: u.username, msg: data.msg, room: data.room };
+            
+            // Store in history
+            if(chatHistory[data.room]) {
+                chatHistory[data.room].push(msgObj);
+                if(chatHistory[data.room].length > 20) chatHistory[data.room].shift();
+            }
+
+            // Broadcast ONLY to that room
+            io.to(data.room).emit('chat_broadcast', msgObj);
         }
     });
 
-    // --- ADMIN ACTIONS (From your Server file) ---
+    socket.on('support_msg', (data) => {
+        // data: { msg, room }
+        let u = activeSockets[socket.id];
+        if(u && data.msg) {
+            let log = { user: u.username, msg: data.msg, room: data.room, time: Date.now() };
+            supportHistory.push(log);
+            io.emit('admin_support_receive', log); // Admin sees all
+            socket.emit('chat_broadcast', { type: 'support_sent', msg: data.msg, room: data.room });
+        }
+    });
+
+    // --- ADMIN ---
     socket.on('admin_reply_support', (data) => {
-        // Find user socket
         for(let id in activeSockets) {
             if(activeSockets[id].username === data.targetUser) {
                 io.to(id).emit('chat_broadcast', { type: 'support_reply', msg: data.msg });
             }
         }
     });
-
-    socket.on('admin_add_credits', (data) => {
-        if(users[data.username]) {
-            users[data.username].balance += parseInt(data.amount);
-            logHistory(data.username, `ADMIN ADD +${data.amount}`, users[data.username].balance);
-            saveDatabase();
-            refreshUser(data.username);
-        }
-    });
-
+    
     socket.on('admin_add_all', (amount) => {
         let amt = parseInt(amount);
         for(let id in activeSockets) {
@@ -200,7 +187,7 @@ io.on('connection', (socket) => {
             if(users[name]) {
                 users[name].balance += amt;
                 logHistory(name, `ADMIN GIFT +${amt}`, users[name].balance);
-                io.to(id).emit('notification', { msg: `GIFT! +${amt} CREDITS`, duration: 3000 });
+                io.to(id).emit('notification', { msg: `GIFT! +${amt} CREDITS` });
                 io.to(id).emit('update_balance', users[name].balance);
             }
         }
@@ -251,11 +238,10 @@ function joinRoom(socket, username, room) {
     socket.join(room);
     if(playerCounts[room] !== undefined) playerCounts[room]++;
     io.emit('lobby_counts', playerCounts);
-}
-
-function refreshUser(username) {
-    for(let id in activeSockets) {
-        if(activeSockets[id].username === username) io.to(id).emit('update_balance', users[username].balance);
+    
+    // Send Chat History for this room
+    if(chatHistory[room]) {
+        socket.emit('chat_history', chatHistory[room]);
     }
 }
 
