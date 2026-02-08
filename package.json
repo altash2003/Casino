@@ -1,7 +1,7 @@
 {
-  "name": "casino-merged",
+  "name": "casino-final",
   "version": "1.0.0",
-  "description": "Full Casino Merge",
+  "description": "Casino with Per-Game Chat and Music",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
