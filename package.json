@@ -1,7 +1,7 @@
 {
-  "name": "casino-master",
+  "name": "casino-roulette-complete",
   "version": "1.0.0",
-  "description": "Full Casino: Color Game & Roulette",
+  "description": "Casino with Color Game and Full Roulette",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
