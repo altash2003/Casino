@@ -21,14 +21,9 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* UNIFIED PANEL POSITION (Chat & Music share this) */
-        .panel-position { position: fixed; bottom: 100px; right: 20px; width: 280px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .panel-position.active { display: flex; animation: slideUp 0.2s ease-out; }
-        
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        /* CHAT SPECIFIC */
-        .chat-panel { height: 350px; }
+        /* CHAT PANEL */
+        .chat-panel { position: fixed; bottom: 100px; right: 20px; width: 280px; height: 350px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display:none; }
+        .chat-panel.active { display:flex; }
         .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 11px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
         .chat-tabs { display: flex; border-bottom: 1px solid #333; }
         .chat-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 12px; }
@@ -39,8 +34,8 @@
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; }
         .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; }
 
-        /* MUSIC SPECIFIC */
-        .music-player { height: auto; padding: 10px; }
+        /* MUSIC PLAYER */
+        .music-player { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); width: 260px; background: rgba(0,0,0,0.9); border: 1px solid #444; border-radius: 8px; padding: 10px; z-index: 9500; display: none; }
         .mp-title { font-size: 11px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
         .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
@@ -53,12 +48,12 @@
         .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
         .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
         .chip:hover { transform: scale(1.1); }
-        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: 2px solid #FFD700; }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; /* REMOVED BORDER */ }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
         
-        /* BOARD CHIP (BIGGER ON GRID) */
+        /* BOARD CHIP */
         .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; }
         .chip.chip-board::after { inset: 4px; }
         .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
@@ -102,24 +97,31 @@
         
         .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
         
-        .r-hud-container { width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        /* HUD CONTAINER - ALIGNS WITH TABLE WIDTH (730px) */
+        .r-hud-container { width: 730px; display: flex; justify-content: space-between; margin-bottom: 10px; }
         
         .r-hud-box { 
             background: #000; border-radius: 8px; padding: 10px 20px; 
-            min-width: 140px; text-align: center; display: flex; flex-direction: column; justify-content: center;
+            width: 180px; text-align: center; display: flex; flex-direction: column; justify-content: center;
         }
         .hud-bal { border: 2px solid #00E5FF; }
-        .hud-time { border: 2px solid #FFD700; }
+        .hud-time { border: 2px solid #FFD700; transition: 0.2s; }
         .hud-bet { border: 2px solid #444; }
         
+        /* URGENT TIMER STYLE */
+        .hud-time.urgent { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; animation: pulse 0.5s infinite alternate; }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+
         .r-lbl { font-size: 10px; color: #888; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
         .r-val { font-size: 28px; color: #fff; font-weight: 800; font-family: 'Oswald', sans-serif; line-height: 1; }
 
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
         
+        /* HISTORY MATCHING WIDTH */
         .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; }
-        .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; }
-        .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; }
+        .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; flex-shrink: 0; }
+        .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
+        .hist-empty { background: #333; opacity: 0.3; box-shadow: none; border: 1px solid #555; }
         
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
         
@@ -135,7 +137,6 @@
         
         .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
         .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
-        /* HOVER EFFECT REMOVED */
         
         /* BUTTONS (Floating Style) */
         .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 20px; z-index: 5000; }
@@ -176,7 +177,7 @@
         </div>
     </div>
 
-    <div class="chat-panel panel-position" id="chatPanel">
+    <div class="chat-panel" id="chatPanel">
         <div class="chat-header">
             <span id="chatTitle">GLOBAL</span>
             <span onclick="toggleChat()" style="cursor:pointer; font-size:16px;">&times;</span>
@@ -201,7 +202,7 @@
         </div>
     </div>
 
-    <div class="music-player panel-position" id="globalMusicPlayer">
+    <div class="music-player" id="globalMusicPlayer">
         <div class="mp-title">
             <span>CASINO DJ</span>
             <span onclick="toggleMusicUI()" style="cursor:pointer;">x</span>
@@ -306,7 +307,7 @@
                 
                 <div class="r-hud-container">
                     <div class="r-hud-box hud-bal"><div class="r-lbl">BALANCE</div><div class="r-val" id="r-balance">0</div></div>
-                    <div class="r-hud-box hud-time"><div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">--</div></div>
+                    <div class="r-hud-box hud-time" id="rTimerBox"><div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">--</div></div>
                     <div class="r-hud-box hud-bet"><div class="r-lbl">BET</div><div class="r-val" id="r-bet-display">0</div></div>
                 </div>
 
@@ -361,6 +362,10 @@
         let myUser = "Guest";
         let myBal = 0;
         let currentRoom = 'lobby';
+        let currentTableScale = 1;
+
+        // Beep Sound
+        const tickSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); // Short placeholder, replace with real beep if needed
 
         // --- AUTH ---
         const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
@@ -432,18 +437,13 @@
         // --- MUSIC ---
         const audio = document.getElementById('audioEl');
         const DEFAULT_MUSIC = "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; 
-        audio.volume = 0.2; // Default 20%
+        audio.volume = 0.2; 
 
         function toggleMusicUI() {
             let p = document.getElementById('globalMusicPlayer');
             let c = document.getElementById('chatPanel');
-            
-            if(p.classList.contains('active')) {
-                p.classList.remove('active');
-            } else {
-                p.classList.add('active');
-                c.classList.remove('active'); // Exclusive
-            }
+            if(p.classList.contains('active')) p.classList.remove('active');
+            else { p.classList.add('active'); c.classList.remove('active'); }
         }
         function toggleMusic() {
             if(audio.paused) { 
@@ -455,15 +455,9 @@
         function stopMusic() { audio.pause(); audio.currentTime=0; document.getElementById('mpStatus').innerText = "Stopped"; }
         function playCustom() {
             let url = document.getElementById('musicUrl').value;
-            if(url) {
-                audio.src = url;
-                audio.play();
-                document.getElementById('mpStatus').innerText = "Playing Custom";
-            }
+            if(url) { audio.src = url; audio.play(); document.getElementById('mpStatus').innerText = "Playing Custom"; }
         }
-        function setVolume(v) {
-            audio.volume = v / 100;
-        }
+        function setVolume(v) { audio.volume = v / 100; }
 
         // --- NAV ---
         function enterGame(g) {
@@ -494,7 +488,7 @@
             let availH = h - 20; 
             let availW = w - 20; 
             
-            // Base size of table wrapper is approx 760 x 500
+            // Table Base Size (approx)
             let baseW = 760;
             let baseH = 500; 
             
@@ -505,6 +499,7 @@
             if(scale < 0.5) scale = 0.5;
             if(scale > 1.8) scale = 1.8;
             
+            currentTableScale = scale; // Store for chip logic
             wrapper.style.transform = `scale(${scale})`;
         }
 
@@ -580,8 +575,19 @@
                 d.style.gridRow = row; d.style.gridColumn = col;
                 grid.appendChild(d);
             }
+            initHistory();
             buildHotspots();
             drawWheel(0);
+        }
+
+        function initHistory() {
+            let h = document.getElementById('rHistory');
+            h.innerHTML = '';
+            for(let i=0; i<12; i++) {
+                let b = document.createElement('div');
+                b.className = 'hist-ball hist-empty';
+                h.appendChild(b);
+            }
         }
         
         // --- PRECISION BETTING ZONES ---
@@ -612,7 +618,7 @@
                 let x = OFFSET_X + (c * (CELL_W + GAP));
                 let nTop = (c * 3) + 3; let nMid = (c * 3) + 2; let nBot = (c * 3) + 1; 
                 
-                // Single Number (Inner area)
+                // Straight
                 createZone(x+8, OFFSET_Y+8, CELL_W-16, CELL_H-16, [nTop]);
                 createZone(x+8, OFFSET_Y+CELL_H+GAP+8, CELL_W-16, CELL_H-16, [nMid]);
                 createZone(x+8, OFFSET_Y+(CELL_H+GAP)*2+8, CELL_W-16, CELL_H-16, [nBot]);
@@ -639,7 +645,7 @@
                 }
             }
             
-            // Zero
+            // 0 Zone
             createZone(5, 5, 50, (CELL_H+GAP)*3, [0]);
             
             // Map Outside Bets
@@ -674,7 +680,7 @@
             myBal -= rChip; updateDisplay();
             rBetTotal += rChip; document.getElementById('r-bet-display').innerText = rBetTotal;
             
-            // VISUAL CHIP (NEW STYLE)
+            // VISUAL CHIP
             let chipStyle = 'chip-50';
             if(rChip===100) chipStyle='chip-100';
             if(rChip===1000) chipStyle='chip-1k';
@@ -705,7 +711,22 @@
             document.getElementById('winner-stage').classList.remove('active');
         }
 
-        socket.on('roulette_timer', (t) => { if(currentRoom==='roulette') { document.getElementById('r-timer').innerText = t; document.getElementById('wheel-overlay').classList.remove('show'); }});
+        socket.on('roulette_timer', (t) => { 
+            if(currentRoom==='roulette') { 
+                let tb = document.getElementById('rTimerBox');
+                document.getElementById('r-timer').innerText = t; 
+                document.getElementById('wheel-overlay').classList.remove('show');
+                
+                // URGENT STATE
+                if(t <= 3 && t > 0) {
+                    tb.classList.add('urgent');
+                    // Play sound
+                    try { tickSound.play().catch(e=>{}); } catch(e){}
+                } else {
+                    tb.classList.remove('urgent');
+                }
+            }
+        });
         
         socket.on('roulette_spin_start', (wNum) => {
             if(currentRoom==='roulette') {
@@ -716,10 +737,17 @@
         
         socket.on('roulette_result_log', (n) => {
              let h = document.getElementById('rHistory');
+             
+             // Remove placeholder if exists
+             let empty = h.querySelector('.hist-empty');
+             if(empty) empty.remove();
+             
              let b = document.createElement('div');
              b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
              b.innerText = n;
              h.prepend(b);
+             
+             // Keep length 12
              if(h.children.length > 12) h.lastChild.remove();
         });
 
