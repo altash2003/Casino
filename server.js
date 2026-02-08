@@ -67,7 +67,7 @@ setInterval(() => {
                     rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
                     io.to('roulette').emit('roulette_new_round');
                 }, 5000);
-            }, 8000); // 8s spin animation
+            }, 8000); 
         }
     }
 }, 1000);
@@ -79,7 +79,6 @@ function processColorWinners(result) {
             let win = bet.amount * (matches + 1);
             if(users[bet.username]) {
                 users[bet.username].balance += win;
-                logHistory(bet.username, `WIN ColorGame +${win}`, users[bet.username].balance);
                 io.to(bet.socketId).emit('win_notification', { game: 'COLOR GAME', amount: win });
                 io.to(bet.socketId).emit('update_balance', users[bet.username].balance);
             }
@@ -96,7 +95,6 @@ function processRouletteWinners(winningNumber) {
             let win = bet.amount * payoutMult;
             if(users[bet.username]) {
                 users[bet.username].balance += win;
-                logHistory(bet.username, `WIN Roulette +${win}`, users[bet.username].balance);
                 io.to(bet.socketId).emit('roulette_win', { amount: win, number: winningNumber });
                 io.to(bet.socketId).emit('update_balance', users[bet.username].balance);
             }
@@ -165,7 +163,6 @@ io.on('connection', (socket) => {
             let name = activeSockets[id].username;
             if(users[name]) {
                 users[name].balance += amt;
-                logHistory(name, `ADMIN GIFT +${amt}`, users[name].balance);
                 io.to(id).emit('notification', { msg: `GIFT! +${amt} CREDITS` });
                 io.to(id).emit('update_balance', users[name].balance);
             }
@@ -193,6 +190,40 @@ io.on('connection', (socket) => {
         if(users[u.username].balance >= data.amount) {
             users[u.username].balance -= data.amount;
             rouletteState.bets.push({ username: u.username, numbers: data.numbers, amount: data.amount, socketId: socket.id });
+        }
+    });
+
+    // --- UNDO / CLEAR LOGIC ---
+    socket.on('roulette_clear', () => {
+        let u = activeSockets[socket.id];
+        if(!u || rouletteState.status !== 'BETTING') return;
+        // Find bets by this socket
+        let userBets = rouletteState.bets.filter(b => b.socketId === socket.id);
+        if(userBets.length > 0) {
+            let refund = userBets.reduce((a,b) => a + b.amount, 0);
+            users[u.username].balance += refund;
+            // Remove bets
+            rouletteState.bets = rouletteState.bets.filter(b => b.socketId !== socket.id);
+            socket.emit('update_balance', users[u.username].balance);
+            socket.emit('bets_cleared');
+        }
+    });
+
+    socket.on('roulette_undo', () => {
+        let u = activeSockets[socket.id];
+        if(!u || rouletteState.status !== 'BETTING') return;
+        // Find last bet
+        let myBets = rouletteState.bets.filter(b => b.socketId === socket.id);
+        if(myBets.length > 0) {
+            let lastBet = myBets[myBets.length - 1];
+            users[u.username].balance += lastBet.amount;
+            // Remove specific instance (simple approximation: remove last entry matching socket)
+            // Ideally we need unique IDs per bet, but popping form filtered list works if order preserved
+            let idx = rouletteState.bets.lastIndexOf(lastBet);
+            if(idx > -1) rouletteState.bets.splice(idx, 1);
+            
+            socket.emit('update_balance', users[u.username].balance);
+            socket.emit('bet_undone');
         }
     });
 
