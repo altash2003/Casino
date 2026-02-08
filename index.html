@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASINO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;800&family=Oswald:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #FFD700;
+            --felt: #01431E;
+            --red: #d32f2f;
+            --black: #222;
+        }
+        body { margin:0; font-family: 'Rajdhani', sans-serif; background: url('background.jpg') no-repeat center fixed; background-size: cover; color:white; height:100vh; overflow:hidden; }
+        
+        /* --- UTILS --- */
+        .hidden { display: none !important; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+        .full-screen { width: 100%; height: 100%; position: absolute; top:0; left:0; }
+        .btn-action { padding: 10px 20px; border:none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-action:hover { transform: scale(1.05); }
+
+        /* --- AUTH --- */
+        #authOverlay { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 9999; }
+        .auth-box { background: rgba(20,20,20,0.9); border: 1px solid #444; padding: 40px; border-radius: 15px; text-align: center; width: 300px; }
+        .auth-input { width: 100%; padding: 10px; margin: 10px 0; background: rgba(255,255,255,0.1); border: 1px solid #555; color: white; text-align: center; font-size: 18px; }
+        .auth-btn { width: 100%; background: var(--gold); color: black; font-size: 18px; margin-top: 10px; }
+
+        /* --- HEADER / HUD --- */
+        .top-hud { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; z-index: 50; }
+        .user-display { text-align: right; pointer-events: auto; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 10px; border: 1px solid #444; }
+        .back-btn { pointer-events: auto; background: rgba(0,0,0,0.5); color: white; border: 1px solid #555; text-decoration: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+        /* --- LOBBY --- */
+        #view-lobby { z-index: 10; display: flex; justify-content: center; align-items: center; gap: 30px; }
+        .game-card { width: 250px; height: 350px; background: rgba(20,20,30,0.9); border: 2px solid #333; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; position: relative; }
+        .game-card:hover { transform: translateY(-10px); border-color: var(--gold); box-shadow: 0 0 30px rgba(255,215,0,0.3); }
+        .card-title { font-size: 30px; color: var(--gold); font-weight: 800; text-transform: uppercase; margin-bottom: 10px; }
+        .card-icon { font-size: 60px; margin-bottom: 20px; }
+        .card-count { color: #00E5FF; font-size: 14px; }
+
+        /* --- COLOR GAME STYLES --- */
+        #view-colorgame { z-index: 20; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .cg-panel { background: rgba(0,0,0,0.6); padding: 30px; border-radius: 20px; border: 1px solid #444; text-align: center; }
+        .dice-row { display: flex; gap: 20px; justify-content: center; margin: 30px 0; }
+        .die { width: 80px; height: 80px; background: #222; border: 2px solid #555; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
+        .cg-bet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .cg-btn { padding: 20px; width: 100px; border: none; font-weight: 800; cursor: pointer; border-radius: 5px; color: white; opacity: 0.9; }
+        .cg-btn:hover { opacity: 1; transform: scale(1.05); }
+        /* Colors */
+        .bg-red { background: var(--red); } .bg-green { background: #388e3c; } .bg-blue { background: #1976d2; }
+        .bg-yellow { background: #fbc02d; color: black; } .bg-pink { background: #e91e63; } .bg-white { background: #eee; color: black; }
+
+        /* --- ROULETTE STYLES --- */
+        #view-roulette { z-index: 20; background: rgba(1, 20, 5, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .roulette-table { background: var(--felt); padding: 20px; border-radius: 20px; border: 8px solid var(--gold); position: relative; }
+        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 40px) 40px; grid-template-rows: repeat(3, 40px) 40px 40px; gap: 2px; margin-bottom: 20px; }
+        .r-cell { border: 1px solid var(--gold); display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; font-family: 'Oswald', sans-serif; }
+        .r-red { background: var(--red); } .r-black { background: var(--black); } .r-green { background: green; }
+        .r-zone-0 { grid-row: 1/4; grid-column: 1; }
+        .r-chip { width: 28px; height: 28px; background: white; color: black; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 10px; position: absolute; pointer-events: none; box-shadow: 0 2px 4px black; font-weight: bold; }
+        
+        /* Wheel Overlay */
+        #roulette-wheel-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 100; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.8); border-radius: 50%; }
+        #roulette-wheel-overlay.show { opacity: 1; pointer-events: auto; }
+        canvas { border-radius: 50%; }
+        .pointer { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); border-top: 30px solid #f0e6d2; border-left: 15px solid transparent; border-right: 15px solid transparent; z-index: 102; }
+
+    </style>
+</head>
+<body>
+
+    <div id="authOverlay" class="full-screen flex-center">
+        <div class="auth-box">
+            <h1 style="color:var(--gold); margin-bottom:20px;">CASINO ACCESS</h1>
+            <input id="user" class="auth-input btn-action" placeholder="USERNAME">
+            <input id="pass" type="password" class="auth-input btn-action" placeholder="PASSWORD">
+            <button onclick="login()" class="auth-btn btn-action">ENTER</button>
+            <button onclick="register()" class="auth-btn btn-action" style="background:transparent; border:1px solid #555; color:#aaa; font-size:14px; margin-top:5px;">CREATE IDENTITY</button>
+            <div id="authErr" style="color:red; margin-top:10px; height:20px;"></div>
+        </div>
+    </div>
+
+    <div class="top-hud">
+        <button id="globalBackBtn" class="back-btn hidden" onclick="switchView('lobby')">← LOBBY</button>
+        <div class="user-display hidden" id="userInfo">
+            <div style="font-size:10px; color:#aaa;">PLAYER</div>
+            <div id="uName" style="font-size:20px; font-weight:bold;">Guest</div>
+            <div id="uBal" style="color:var(--gold); font-size:18px;">$0</div>
+        </div>
+    </div>
+
+    <div id="view-lobby" class="full-screen hidden">
+        <div class="game-card" onclick="switchView('colorgame')">
+            <div class="card-title">COLOR GAME</div>
+            <div class="card-icon">🎨</div>
+            <div class="card-count" id="count-colorgame">0 Playing</div>
+        </div>
+        <div class="game-card" onclick="switchView('roulette')">
+            <div class="card-title">ROULETTE</div>
+            <div class="card-icon">🎡</div>
+            <div class="card-count" id="count-roulette">0 Playing</div>
+        </div>
+    </div>
+
+    <div id="view-colorgame" class="full-screen hidden">
+        <div class="cg-panel">
+            <h1 style="color:var(--gold); margin:0;">COLOR GAME</h1>
+            <div id="cg-timer" style="font-size:60px; font-weight:800; color:var(--gold);">--</div>
+            <div id="cg-status" style="font-size:20px; margin-bottom:20px;">BETS OPEN</div>
+            
+            <div class="dice-row">
+                <div id="d1" class="die">?</div>
+                <div id="d2" class="die">?</div>
+                <div id="d3" class="die">?</div>
+            </div>
+
+            <div style="margin-bottom:10px;">
+                BET: <input type="number" id="cg-bet" value="100" style="width:80px; padding:5px; text-align:center;">
+            </div>
+
+            <div class="cg-bet-grid">
+                <button class="cg-btn bg-red" onclick="placeColorBet('RED')">RED</button>
+                <button class="cg-btn bg-green" onclick="placeColorBet('GREEN')">GREEN</button>
+                <button class="cg-btn bg-blue" onclick="placeColorBet('BLUE')">BLUE</button>
+                <button class="cg-btn bg-yellow" onclick="placeColorBet('YELLOW')">YELLOW</button>
+                <button class="cg-btn bg-pink" onclick="placeColorBet('PINK')">PINK</button>
+                <button class="cg-btn bg-white" onclick="placeColorBet('WHITE')">WHITE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-roulette" class="full-screen hidden">
+        
+        <div id="roulette-wheel-overlay">
+            <div style="position:relative;">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+            </div>
+        </div>
+
+        <div class="roulette-table" id="r-table-wrapper">
+            <div style="text-align:center; margin-bottom:10px;">
+                <span id="r-timer" style="font-size:30px; color:var(--gold); font-weight:bold;">--</span>
+                <div>TOTAL BET: <span id="r-total-bet">0</span></div>
+            </div>
+
+            <div class="r-grid" id="r-grid">
+                <div class="r-cell r-green r-zone-0" onclick="placeRouletteBet(0, [0], this)">0</div>
+                </div>
+
+            <div class="flex-center" style="gap:10px;">
+                <button class="btn-action bg-red" style="color:white; width:100px;" onclick="placeRouletteBet('RED', [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36], this)">RED</button>
+                <button class="btn-action bg-black" style="color:white; width:100px; background:#222;" onclick="placeRouletteBet('BLACK', [2,4,6,8,10,11,13,15,17,20,22,24,26,28,29,31,33,35], this)">BLACK</button>
+            </div>
+            
+            <div style="margin-top:15px; text-align:center;">
+                Chip: <select id="r-chip-val" style="padding:5px;"><option value="50">50</option><option value="100">100</option><option value="1000">1000</option></select>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentRoom = 'lobby';
+        
+        // --- AUTH LOGIC ---
+        const storedUser = localStorage.getItem('casino_user');
+        const storedPass = localStorage.getItem('casino_pass');
+
+        if(storedUser && storedPass) {
+            socket.emit('login', { username: storedUser, password: storedPass });
+        }
+
+        function login() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            socket.emit('login', { username: u, password: p });
+        }
+
+        function register() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            socket.emit('register', { username: u, password: p });
+        }
+
+        socket.on('login_success', (data) => {
+            localStorage.setItem('casino_user', data.username);
+            localStorage.setItem('casino_pass', document.getElementById('pass').value || storedPass);
+            
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('userInfo').classList.remove('hidden');
+            
+            updateUserDisplay(data.username, data.balance);
+            switchView('lobby');
+        });
+
+        socket.on('login_error', (msg) => {
+            document.getElementById('authErr').innerText = msg;
+        });
+
+        socket.on('update_balance', (bal) => {
+            document.getElementById('uBal').innerText = '$' + bal;
+        });
+
+        function updateUserDisplay(name, bal) {
+            document.getElementById('uName').innerText = name;
+            document.getElementById('uBal').innerText = '$' + bal;
+        }
+
+        // --- NAVIGATION ---
+        function switchView(viewName) {
+            // Hide all views
+            document.getElementById('view-lobby').classList.add('hidden');
+            document.getElementById('view-colorgame').classList.add('hidden');
+            document.getElementById('view-roulette').classList.add('hidden');
+            
+            // Show Target
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+
+            // Handle Back Button
+            if(viewName === 'lobby') {
+                document.getElementById('globalBackBtn').classList.add('hidden');
+            } else {
+                document.getElementById('globalBackBtn').classList.remove('hidden');
+            }
+
+            // Socket Room Switching
+            currentRoom = viewName;
+            socket.emit('switch_room', viewName);
+
+            // Cleanup specific views
+            if(viewName !== 'roulette') {
+                document.getElementById('roulette-wheel-overlay').classList.remove('show');
+            }
+        }
+
+        // --- LOBBY LOGIC ---
+        socket.on('lobby_counts', (counts) => {
+            document.getElementById('count-colorgame').innerText = (counts.colorgame || 0) + " Playing";
+            document.getElementById('count-roulette').innerText = (counts.roulette || 0) + " Playing";
+        });
+
+        socket.on('win_notification', (data) => {
+            // Global toaster
+            let msg = `WIN! ${data.game}: +$${data.amount}`;
+            if(data.number !== undefined) msg += ` (Result: ${data.number})`;
+            alert(msg); // Replace with nice toast if desired
+        });
+
+        // --- COLOR GAME LOGIC ---
+        socket.on('color_timer', (t) => {
+            if(currentRoom !== 'colorgame') return;
+            document.getElementById('cg-timer').innerText = t;
+            document.getElementById('cg-status').innerText = "BETS OPEN";
+        });
+
+        socket.on('color_rolling', () => {
+            if(currentRoom !== 'colorgame') return;
+            document.getElementById('cg-status').innerText = "ROLLING...";
+            document.getElementById('cg-timer').innerText = "";
+            let colors = ['red','green','blue','yellow','pink','white'];
+            let rollInt = setInterval(() => {
+                ['d1','d2','d3'].forEach(id => {
+                    let c = colors[Math.floor(Math.random()*6)];
+                    let el = document.getElementById(id);
+                    el.className = `die bg-${c.toLowerCase()}`;
+                    el.innerText = "";
+                });
+            }, 100);
+            window.colorRollInt = rollInt;
+        });
+
+        socket.on('color_result', (res) => {
+            if(window.colorRollInt) clearInterval(window.colorRollInt);
+            if(currentRoom !== 'colorgame') return;
+            document.getElementById('cg-status').innerText = "RESULT";
+            ['d1','d2','d3'].forEach((id, i) => {
+                let el = document.getElementById(id);
+                el.className = `die bg-${res[i].toLowerCase()}`;
+            });
+        });
+
+        socket.on('color_new_round', () => {
+            if(currentRoom !== 'colorgame') return;
+            document.getElementById('cg-status').innerText = "NEW ROUND";
+            ['d1','d2','d3'].forEach(id => {
+                let el = document.getElementById(id);
+                el.className = 'die'; el.innerText = "?";
+            });
+        });
+
+        function placeColorBet(color) {
+            let amt = parseInt(document.getElementById('cg-bet').value);
+            if(amt > 0) socket.emit('place_bet_color', { color: color, amount: amt });
+        }
+
+
+        // --- ROULETTE LOGIC ---
+        // 1. Build Grid
+        const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+        const rGrid = document.getElementById('r-grid');
+        for(let i=1; i<=36; i++) {
+            let d = document.createElement('div');
+            d.className = `r-cell ${REDS.includes(i)?'r-red':'r-black'}`;
+            d.innerText = i;
+            let row = (i%3===0)? 1 : (i%3===2? 2 : 3);
+            let col = Math.floor((i-1)/3) + 2;
+            d.style.gridRow = row; d.style.gridColumn = col;
+            d.onclick = function() { placeRouletteBet(i, [i], this); };
+            rGrid.appendChild(d);
+        }
+
+        // 2. Wheel Canvas
+        const rCanvas = document.getElementById('wheelCanvas');
+        const ctx = rCanvas.getContext('2d');
+        const WHEEL_NUMS = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+        
+        function drawWheel(angleOffset = 0) {
+            const CX=250, CY=250, R=230;
+            const slice = (Math.PI*2)/WHEEL_NUMS.length;
+            ctx.clearRect(0,0,500,500);
+            ctx.save(); ctx.translate(CX,CY); ctx.rotate(angleOffset);
+            
+            WHEEL_NUMS.forEach((num, i) => {
+                const a = i * slice;
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, R, a, a+slice);
+                ctx.fillStyle = (num===0)?'green': (REDS.includes(num)?'#d32f2f':'#222');
+                ctx.fill(); ctx.stroke();
+                
+                ctx.save(); ctx.rotate(a + slice/2); ctx.translate(190, 0); ctx.rotate(Math.PI/2);
+                ctx.fillStyle='white'; ctx.font='18px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.fillText(num, 0, 0); ctx.restore();
+            });
+            ctx.restore();
+        }
+        drawWheel(0); // Init
+
+        let rCurrentBet = 0;
+        
+        function placeRouletteBet(id, nums, el) {
+            let val = parseInt(document.getElementById('r-chip-val').value);
+            rCurrentBet += val;
+            document.getElementById('r-total-bet').innerText = rCurrentBet;
+
+            // Visual Chip
+            let rect = el.getBoundingClientRect();
+            let wrapper = document.getElementById('r-table-wrapper').getBoundingClientRect();
+            let chip = document.createElement('div');
+            chip.className = 'r-chip'; chip.innerText = val;
+            chip.style.left = (rect.left - wrapper.left + rect.width/2 - 14) + 'px';
+            chip.style.top = (rect.top - wrapper.top + rect.height/2 - 14) + 'px';
+            document.getElementById('r-table-wrapper').appendChild(chip);
+
+            socket.emit('place_bet_roulette', { numbers: nums, amount: val });
+        }
+
+        socket.on('roulette_timer', (t) => {
+            if(currentRoom !== 'roulette') return;
+            document.getElementById('r-timer').innerText = t;
+            document.getElementById('roulette-wheel-overlay').classList.remove('show');
+        });
+
+        socket.on('roulette_spinning', (winningNumber) => {
+            if(currentRoom !== 'roulette') return;
+            document.getElementById('r-timer').innerText = "SPIN";
+            document.getElementById('roulette-wheel-overlay').classList.add('show');
+
+            const slice = (Math.PI*2)/WHEEL_NUMS.length;
+            const index = WHEEL_NUMS.indexOf(winningNumber);
+            const targetAngle = (Math.PI*1.5) - (index * slice) - (slice/2);
+            const finalAngle = targetAngle + (Math.PI*2 * 5); // 5 spins
+
+            let start = null;
+            function animate(timestamp) {
+                if(!start) start = timestamp;
+                let progress = (timestamp - start) / 5000;
+                if(progress > 1) progress = 1;
+                let ease = 1 - Math.pow(1 - progress, 3);
+                drawWheel(finalAngle * ease);
+                if(progress < 1) requestAnimationFrame(animate);
+            }
+            requestAnimationFrame(animate);
+        });
+
+        socket.on('roulette_new_round', () => {
+            rCurrentBet = 0;
+            document.getElementById('r-total-bet').innerText = "0";
+            document.querySelectorAll('.r-chip').forEach(c => c.remove());
+        });
+
+    </script>
+</body>
+</html>
