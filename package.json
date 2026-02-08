@@ -1,7 +1,7 @@
 {
-  "name": "casino-spa",
+  "name": "casino-master",
   "version": "1.0.0",
-  "description": "Single Page Casino",
+  "description": "Full Casino: Color Game & Roulette",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
