@@ -1,7 +1,7 @@
 {
-  "name": "casino-roulette-complete",
+  "name": "casino-merged",
   "version": "1.0.0",
-  "description": "Casino with Color Game and Full Roulette",
+  "description": "Full Casino Merge",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
