@@ -10,114 +10,90 @@
 
     <style>
         /* === GLOBAL RESET & SHARED === */
-        body { margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; }
+        body { margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
         .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; }
         .view-section.active { display: flex; }
-        .global-back { position: fixed; top: 20px; left: 20px; z-index: 9000; background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
+        .global-back { position: fixed; top: 10px; left: 10px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
 
         /* === AUTH & LOBBY === */
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
         .auth-box { background: #111; border: 1px solid #333; padding: 40px; border-radius: 12px; text-align: center; width: 300px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
         .lobby-grid { display: flex; gap: 40px; }
         .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .game-card:hover { border-color: #FFD700; transform: translateY(-10px); }
-        .user-hud { position: absolute; top: 20px; right: 20px; text-align: right; background: rgba(0,0,0,0.6); padding: 10px 20px; border-radius: 8px; border: 1px solid #444; z-index: 100; }
+        .gc-title { font-size: 32px; color: #FFD700; font-weight: 800; margin-bottom: 20px; }
+        .gc-icon { font-size: 60px; margin-bottom: 20px; }
 
+        /* === CHAT SYSTEM (FROM COLOR GAME) === */
+        .chat-panel { position: fixed; right: 0; top: 0; width: 300px; height: 100%; background: rgba(0,0,0,0.9); border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 8000; transition: transform 0.3s; }
+        .chat-panel.closed { transform: translateX(100%); }
+        .chat-tabs { display: flex; border-bottom: 1px solid #333; }
+        .chat-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; }
+        .chat-tab.active { background: #222; color: #FFD700; border-bottom: 2px solid #FFD700; }
+        .chat-content { flex: 1; overflow-y: auto; padding: 10px; display: none; }
+        .chat-content.active { display: block; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #333; display: flex; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; }
+        .chat-msg { margin-bottom: 8px; font-size: 14px; word-wrap: break-word; }
+        
         /* === COLOR GAME STYLES === */
         #view-colorgame { background: url('background.jpg') center/cover; justify-content: center; align-items: center; }
-        .cg-wrapper { background: rgba(20,20,30,0.8); backdrop-filter: blur(10px); border: 1px solid #444; border-radius: 16px; width: 95%; max-width: 1200px; height: 90vh; display:flex; flex-direction:column; }
-        .cg-focus { flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-        .cg-dice-row { display: flex; gap: 20px; margin: 20px 0; }
-        .die { width: 90px; height: 90px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; border: 3px solid rgba(255,255,255,0.2); background: #222; color:white; }
+        .cg-main-area { width: calc(100% - 300px); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .cg-focus { text-align: center; margin-bottom: 30px; }
+        .cg-timer { font-size: 100px; font-weight: 800; text-shadow: 0 0 20px cyan; line-height: 1; }
+        .cg-status { font-size: 24px; letter-spacing: 5px; color: #aaa; margin-bottom: 20px; }
+        .cg-dice-row { display: flex; gap: 20px; justify-content: center; }
+        .die { width: 90px; height: 90px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 3px solid rgba(255,255,255,0.2); background: #222; }
         .die.red { background: #d32f2f; } .die.green { background: #388e3c; } .die.blue { background: #1976d2; }
-        .die.pink { background: #e91e63; } .die.white { background: #f5f5f5; color:black; } .die.yellow { background: #fbc02d; color:black; }
+        .die.pink { background: #e91e63; } .die.white { background: #eee; color:black; } .die.yellow { background: #fbc02d; color:black; }
         
-        .cg-panel { padding: 20px; background: rgba(0,0,0,0.3); border-top: 1px solid #444; }
+        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; }
         .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-        .cg-card { height: 80px; border: 2px solid rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; }
-        .cg-card:hover { filter: brightness(1.2); }
+        .cg-bet-card { width: 80px; height: 100px; border: 1px solid #555; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; transition: 0.2s; }
+        .cg-bet-card:hover { transform: scale(1.05); }
         .cg-chip-rack { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
-        .cg-chip { width: 40px; height: 40px; border-radius: 50%; background: #222; border: 2px solid #555; color: #aaa; display: flex; justify-content: center; align-items: center; cursor: pointer; font-weight: bold; font-size: 12px; }
-        .cg-chip.active { border-color: #FFD700; color: #FFD700; background: #333; transform: scale(1.1); }
+        .cg-chip { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; }
+        .cg-chip.active { border-color: #FFD700; background: #444; color: #FFD700; transform: scale(1.1); }
 
-        /* === ROULETTE STYLES (IMPORTED FROM YOUR FILE) === */
-        :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; --btn-classic-bg: #263238; }
-        
-        #view-roulette {
-            background-color: #05140a;
-            background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
+        /* === ROULETTE STYLES === */
+        :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
+        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; align-items: center; justify-content: center; }
+        .r-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-        /* Wheel Overlay */
-        #wheel-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        #wheel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; justify-content: center; align-items: center; }
         #wheel-overlay.show { display: flex; }
-        .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 205; }
         canvas { border-radius: 50%; }
+        .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); border-top: 36px solid #f0e6d2; border-left: 18px solid transparent; border-right: 18px solid transparent; z-index: 5005; }
+        
+        .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 25px; border-radius: 20px; border: 8px solid #002b12; box-shadow: 0 0 0 10px #F3C620; display: flex; flex-direction: column; align-items: center; gap: 15px; transform: scale(0.9); }
+        .r-history { width: 705px; height: 40px; background: rgba(0,0,0,0.3); border-radius: 5px; display: flex; align-items: center; gap: 5px; overflow: hidden; padding: 0 5px; }
+        .hist-ball { width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 12px; }
+        .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; }
 
-        /* Roulette HUD */
-        .hud-container { display: flex; gap: 20px; margin-bottom: 20px; }
-        .hud-box { background: linear-gradient(180deg, #111, #000); border: 1px solid #444; border-radius: 12px; width: 140px; height: 70px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 6px 15px rgba(0,0,0,0.6); }
-        .hud-label { font-size: 11px; color: #888; font-weight: 700; text-transform: uppercase; }
-        .hud-value { font-size: 22px; font-weight: 600; color: #fff; font-family: 'Courier New', monospace; }
-        #timer-box { border: 2px solid #F3C620; width: 90px; } 
-
-        /* Table */
-        .table-wrapper {
-            position: relative; background-color: var(--bg-felt);
-            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 10px);
-            padding: 30px 40px; border-radius: 25px;
-            box-shadow: inset 0 0 60px rgba(0,0,0,0.8), 0 0 0 8px #002b12, 0 0 0 10px #F3C620;
-            display: flex; flex-direction: column; align-items: center; gap: 15px;
-        }
-
-        /* History Strip */
-        .history-strip { width: 705px; height: 50px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0; overflow: hidden; }
-        .history-ball { width: 34px; height: 34px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: 800; color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.6); }
-        .hist-red { background: radial-gradient(circle at 35% 35%, #ff5252 0%, #d32f2f 40%, #8e0000 100%); }
-        .hist-black { background: radial-gradient(circle at 35% 35%, #555 0%, #222 40%, #000 100%); }
-        .hist-green { background: radial-gradient(circle at 35% 35%, #05a045 0%, #016D29 40%, #004d1a 100%); }
-
-        /* Grid */
-        .grid-frame { width: 705px; display: grid; grid-template-columns: 56px repeat(12, 46px) 38px; grid-template-rows: repeat(3, 46px) 46px 46px; gap: 3px; padding: 8px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); }
-        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 16px; color: #fff; cursor: pointer; border: 2px solid var(--grid-gold); box-sizing: border-box; transition: 0.1s; }
+        .r-grid { display: grid; grid-template-columns: 56px repeat(12, 46px) 38px; grid-template-rows: repeat(3, 46px) 46px 46px; gap: 3px; padding: 8px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); }
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 16px; cursor: pointer; border: 2px solid var(--grid-gold); }
         .red-cell { background-color: var(--cell-red); } .black-cell { background-color: var(--cell-black); }
-        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; font-size: 24px; border-radius: 20px 0 0 20px; }
-        .zone-2to1 { grid-column: 14; background-color: var(--bg-felt); font-size: 11px; writing-mode: vertical-rl; color: #F3C620; }
-        .label-cell { background-color: var(--bg-felt); color: white; font-size: 13px; text-transform: uppercase; }
+        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 20px 0 0 20px; }
+        .zone-2to1 { grid-column: 14; writing-mode: vertical-rl; color: #F3C620; font-size: 10px; }
+        .label-cell { font-size: 12px; text-transform: uppercase; }
         .zone-dozen { grid-row: 4; } .doz-1 { grid-column: 2 / 6; } .doz-2 { grid-column: 6 / 10; } .doz-3 { grid-column: 10 / 14; }
         .zone-bottom { grid-row: 5; } .low { grid-column: 2 / 4; } .even { grid-column: 4 / 6; } .odd { grid-column: 10 / 12; } .high { grid-column: 12 / 14; }
-        .diamond-cell { grid-column: 6 / 8; grid-row: 5; background-color: var(--bg-felt); display: flex; align-items: center; justify-content: center; }
-        .diamond-cell.black-bg { grid-column: 8 / 10; }
-        .diamond { width: 26px; height: 26px; transform: rotate(45deg); pointer-events: none; }
-        .diamond.red { background-color: var(--cell-red); } .diamond.black { background-color: #111; }
-
-        /* Overlays & Chips */
-        .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
-        .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; }
-        .hotspot:hover { background: rgba(255,255,255,0.1); }
-
-        .controls-row { display: flex; justify-content: space-between; width: 705px; margin-top: 10px; }
-        .btn-french { background: var(--btn-classic-bg); color: #cfd8dc; border: 1px solid #455a64; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; text-transform: uppercase; }
-        .btn-french:hover { background: #37474f; color: white; border-color: white; }
-
-        .chips-bar { display: flex; gap: 12px; padding: 8px 25px; background: rgba(0,0,0,0.2); border-radius: 60px; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px; }
-        .r-chip-btn { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; position: relative; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 11px; color: #333; background: #e0dfd5; border: 2px solid #ccc; }
-        .r-chip-btn.active { transform: scale(1.15) translateY(-5px); border-color: #FFD700; box-shadow: 0 0 10px #FFD700; }
+        .diamond-cell { grid-column: 6 / 8; grid-row: 5; display:flex; justify-content:center; align-items:center; } .diamond-cell.blk { grid-column: 8 / 10; }
+        .diamond { width: 20px; height: 20px; transform: rotate(45deg); } .diamond.red { background: #d32f2f; } .diamond.black { background: #111; }
         
-        .marker-chip { width: 30px; height: 30px; border-radius: 50%; background: white; border: 2px dashed #333; color: black; position: absolute; pointer-events: none; z-index: 100; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: bold; box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
+        .r-chip-marker { width: 24px; height: 24px; border-radius: 50%; background: white; color: black; position: absolute; z-index: 100; font-size: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; pointer-events: none; border: 2px dashed #333; }
         
         /* Winner Animation */
-        #winner-stage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3000; display: none; justify-content: center; align-items: center; }
-        #winner-stage.active { display: flex; }
-        .winners-container { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; max-width: 80%; }
-        .clone-cell { width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 20px; color: white; border: 3px solid #F3C620; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); background: #222; position: relative; }
-        .clone-red { background: #d32f2f; } .clone-black { background: #111; } .clone-green { background: #016D29; }
-        .win-amt-label { position: absolute; top: -30px; width: 100%; text-align: center; color: #FFD700; font-family: 'Arial Black'; font-weight: 900; font-size: 18px; text-shadow: 2px 2px 0 #000; z-index: 3005; }
+        #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 4000; display:none; justify-content:center; align-items:center; }
+        #winner-stage.active { display:flex; }
+        .win-box { background: #222; border: 4px solid #FFD700; padding: 20px; border-radius: 10px; text-align: center; animation: popIn 0.3s; }
+        .win-num { font-size: 60px; font-weight: 800; }
+        .win-amt { font-size: 30px; color: #FFD700; }
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
     </style>
 </head>
@@ -126,24 +102,43 @@
     <div id="authOverlay">
         <div class="auth-box">
             <h1 style="color:#FFD700; margin-bottom:20px;">CASINO LOGIN</h1>
-            <input type="text" id="user" class="auth-input" placeholder="USERNAME">
-            <input type="password" id="pass" class="auth-input" placeholder="PASSWORD">
-            <button onclick="login()" class="auth-btn">ENTER CASINO</button>
-            <button onclick="register()" class="auth-btn" style="background:transparent; border:1px solid #555; color:#aaa; font-size:12px;">NEW PLAYER</button>
-            <div id="loginErr" style="color:red; margin-top:10px; font-size:12px;"></div>
+            <input id="user" class="auth-input" placeholder="USERNAME">
+            <input id="pass" class="auth-input" type="password" placeholder="PASSWORD">
+            <button onclick="login()" class="auth-btn">ENTER</button>
+            <button onclick="register()" class="auth-btn" style="background:transparent; border:1px solid #555; color:#aaa; font-size:12px;">REGISTER</button>
+            <div id="loginErr" style="color:red; margin-top:5px;"></div>
+        </div>
+    </div>
+
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-tabs">
+            <div class="chat-tab active" onclick="tabChat('public')">PUBLIC</div>
+            <div class="chat-tab" onclick="tabChat('support')">SUPPORT</div>
+        </div>
+        <div id="tab-public" class="chat-content active">
+            <div id="chatList" style="height:100%;"></div>
+        </div>
+        <div id="tab-support" class="chat-content">
+            <div id="supportList" style="height:100%;"></div>
+        </div>
+        <div class="chat-input-area" id="input-public">
+            <input id="chatInput" class="chat-input" placeholder="Type here...">
+            <button onclick="sendChat()" style="background:#FFD700; border:none; padding:0 10px; cursor:pointer;">></button>
+        </div>
+        <div class="chat-input-area" id="input-support" style="display:none;">
+            <input id="supportInput" class="chat-input" placeholder="Message Admin...">
+            <button onclick="sendSupport()" style="background:#00E5FF; border:none; padding:0 10px; cursor:pointer;">></button>
         </div>
     </div>
 
     <button class="global-back" id="backBtn" onclick="goToLobby()">← LOBBY</button>
-    
-    <div class="user-hud" id="userHud" style="display:none;">
-        <div style="font-size:10px; color:#aaa; font-weight:bold;">PLAYER</div>
-        <div id="hudUser" style="font-size:18px; font-weight:bold; color:white;">Guest</div>
-        <div id="hudBal" style="font-size:18px; font-weight:bold; color:#FFD700;">$0</div>
-    </div>
 
     <div id="view-lobby" class="view-section active">
-        <h1 style="font-size:60px; color:#FFD700; text-shadow:0 0 20px rgba(0,0,0,0.8); margin-bottom:20px; font-weight:800;">GRAND CASINO</h1>
+        <h1 style="font-size:60px; color:#FFD700; text-shadow:0 0 20px rgba(0,0,0,0.8); margin-bottom:10px;">GRAND CASINO</h1>
+        <div style="margin-bottom:20px; font-size:18px;">
+            PLAYER: <span id="lobbyUser" style="color:#FFD700; font-weight:bold;">Guest</span> | 
+            BALANCE: <span id="lobbyBal" style="color:#00E5FF; font-weight:bold;">$0</span>
+        </div>
         <div class="lobby-grid">
             <div class="game-card" onclick="enterGame('colorgame')">
                 <div class="gc-title">COLOR GAME</div>
@@ -159,20 +154,17 @@
     </div>
 
     <div id="view-colorgame" class="view-section">
-        <div class="cg-wrapper">
-            <div style="padding:15px; border-bottom:1px solid #444; font-weight:bold; color:#aaa; display:flex; justify-content:space-between;">
-                <span>COLOR GAME</span>
-                <span id="cg-status">BETS OPEN</span>
-            </div>
+        <div class="cg-main-area">
             <div class="cg-focus">
-                <div id="cg-timer" style="font-size:80px; font-weight:800; color:white;">20</div>
+                <div class="cg-status" id="cg-status">BETS OPEN</div>
+                <div class="cg-timer" id="cg-timer">20</div>
                 <div class="cg-dice-row">
                     <div id="d1" class="die">?</div>
                     <div id="d2" class="die">?</div>
                     <div id="d3" class="die">?</div>
                 </div>
             </div>
-            <div class="cg-panel">
+            <div class="cg-bet-panel">
                 <div class="cg-chip-rack">
                     <div class="cg-chip active" onclick="setCgChip(50, this)">50</div>
                     <div class="cg-chip" onclick="setCgChip(100, this)">100</div>
@@ -180,76 +172,70 @@
                     <div class="cg-chip" onclick="setCgChip(1000, this)">1K</div>
                 </div>
                 <div class="cg-bet-grid">
-                    <div class="cg-card" style="background:linear-gradient(135deg, #d32f2f, #b71c1c);" onclick="placeCgBet('RED')"><b style="color:white;">RED</b><div id="cg-bet-RED" style="color:white; font-weight:bold;">0</div></div>
-                    <div class="cg-card" style="background:linear-gradient(135deg, #388e3c, #1b5e20);" onclick="placeCgBet('GREEN')"><b style="color:white;">GREEN</b><div id="cg-bet-GREEN" style="color:white; font-weight:bold;">0</div></div>
-                    <div class="cg-card" style="background:linear-gradient(135deg, #1976d2, #0d47a1);" onclick="placeCgBet('BLUE')"><b style="color:white;">BLUE</b><div id="cg-bet-BLUE" style="color:white; font-weight:bold;">0</div></div>
-                    <div class="cg-card" style="background:linear-gradient(135deg, #fbc02d, #f57f17);" onclick="placeCgBet('YELLOW')"><b style="color:black;">YELLOW</b><div id="cg-bet-YELLOW" style="color:black; font-weight:bold;">0</div></div>
-                    <div class="cg-card" style="background:linear-gradient(135deg, #e91e63, #c2185b);" onclick="placeCgBet('PINK')"><b style="color:white;">PINK</b><div id="cg-bet-PINK" style="color:white; font-weight:bold;">0</div></div>
-                    <div class="cg-card" style="background:linear-gradient(135deg, #f5f5f5, #bdbdbd);" onclick="placeCgBet('WHITE')"><b style="color:black;">WHITE</b><div id="cg-bet-WHITE" style="color:black; font-weight:bold;">0</div></div>
+                    <div class="cg-bet-card" style="background: #d32f2f;" onclick="placeCgBet('RED')"><b>RED</b><span id="cg-bet-RED">0</span></div>
+                    <div class="cg-bet-card" style="background: #388e3c;" onclick="placeCgBet('GREEN')"><b>GREEN</b><span id="cg-bet-GREEN">0</span></div>
+                    <div class="cg-bet-card" style="background: #1976d2;" onclick="placeCgBet('BLUE')"><b>BLUE</b><span id="cg-bet-BLUE">0</span></div>
+                    <div class="cg-bet-card" style="background: #fbc02d; color:black;" onclick="placeCgBet('YELLOW')"><b>YEL</b><span id="cg-bet-YELLOW">0</span></div>
+                    <div class="cg-bet-card" style="background: #e91e63;" onclick="placeCgBet('PINK')"><b>PINK</b><span id="cg-bet-PINK">0</span></div>
+                    <div class="cg-bet-card" style="background: #eee; color:black;" onclick="placeCgBet('WHITE')"><b>WHT</b><span id="cg-bet-WHITE">0</span></div>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="view-roulette" class="view-section">
-        
         <div id="wheel-overlay">
             <div style="position:relative;">
                 <div class="pointer"></div>
-                <canvas id="wheelCanvas" width="800" height="800" style="width:500px; height:500px;"></canvas>
+                <canvas id="wheelCanvas" width="600" height="600" style="width:400px; height:400px;"></canvas>
             </div>
         </div>
-
+        
         <div id="winner-stage">
-            <div class="winners-container" id="winnersContainer"></div>
-        </div>
-
-        <div class="hud-container">
-            <div class="hud-box">
-                <div class="hud-label">TIMER</div>
-                <div class="hud-value" id="r-timer">--</div>
-            </div>
-            <div class="hud-box">
-                <div class="hud-label">CURRENT BET</div>
-                <div class="hud-value" id="r-bet-display">0</div>
+            <div class="win-box">
+                <div class="win-num" id="win-num-display">0</div>
+                <div class="win-amt" id="win-amt-display">+0</div>
             </div>
         </div>
 
-        <div class="table-wrapper" id="tableWrapper">
-            <div class="history-strip" id="historyLog">
+        <div class="r-main-area">
+            <div style="margin-bottom:10px; display:flex; gap:20px; align-items:center;">
+                <div style="text-align:center;">
+                    <div style="font-size:10px; color:#aaa;">TIMER</div>
+                    <div id="r-timer" style="font-size:30px; color:#FFD700; font-weight:bold;">--</div>
                 </div>
-            
-            <div class="grid-frame" id="grid">
-                <div class="ghost-overlay" id="overlay"></div>
-                <div class="cell zone-0" id="cell-0">0</div>
-                <div class="cell zone-2to1" style="grid-row: 1" id="btn-row1">2 TO 1</div>
-                <div class="cell zone-2to1" style="grid-row: 2" id="btn-row2">2 TO 1</div>
-                <div class="cell zone-2to1" style="grid-row: 3" id="btn-row3">2 TO 1</div>
-                <div class="cell label-cell zone-dozen doz-1" id="btn-doz1">1st 12</div>
-                <div class="cell label-cell zone-dozen doz-2" id="btn-doz2">2nd 12</div>
-                <div class="cell label-cell zone-dozen doz-3" id="btn-doz3">3rd 12</div>
-                <div class="cell label-cell zone-bottom low" id="btn-low">1-18</div>
-                <div class="cell label-cell zone-bottom even" id="btn-even">EVEN</div>
-                <div class="cell label-cell diamond-cell" id="btn-red"><div class="diamond red"></div></div>
-                <div class="cell label-cell diamond-cell black-bg" id="btn-black"><div class="diamond black"></div></div>
-                <div class="cell label-cell zone-bottom odd" id="btn-odd">ODD</div>
-                <div class="cell label-cell zone-bottom high" id="btn-high">19-36</div>
-            </div>
-
-            <div class="controls-row">
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-french" onclick="preset('voisins')">Voisins</button>
-                    <button class="btn-french" onclick="preset('tier')">Tier</button>
-                    <button class="btn-french" onclick="preset('orphelins')">Orphelins</button>
+                <div style="text-align:center;">
+                    <div style="font-size:10px; color:#aaa;">BET</div>
+                    <div id="r-bet-display" style="font-size:30px; color:white; font-weight:bold;">0</div>
                 </div>
             </div>
 
-            <div class="chips-bar">
-                <div class="r-chip-btn active" onclick="setRChip(50, this)">50</div>
-                <div class="r-chip-btn" onclick="setRChip(100, this)">100</div>
-                <div class="r-chip-btn" onclick="setRChip(500, this)">500</div>
-                <div class="r-chip-btn" onclick="setRChip(1000, this)">1K</div>
-                <div class="r-chip-btn" onclick="setRChip(10000, this)">10K</div>
+            <div class="r-table-wrapper" id="rWrapper">
+                <div class="r-history" id="rHistory"></div>
+                
+                <div class="r-grid" id="grid">
+                    <div style="position:absolute; inset:0; z-index:50;" id="rOverlay"></div>
+                    <div class="cell zone-0" id="cell-0">0</div>
+                    <div class="cell zone-2to1" style="grid-row:1" id="btn-row1">2to1</div>
+                    <div class="cell zone-2to1" style="grid-row:2" id="btn-row2">2to1</div>
+                    <div class="cell zone-2to1" style="grid-row:3" id="btn-row3">2to1</div>
+                    <div class="cell label-cell zone-dozen doz-1" id="btn-doz1">1st 12</div>
+                    <div class="cell label-cell zone-dozen doz-2" id="btn-doz2">2nd 12</div>
+                    <div class="cell label-cell zone-dozen doz-3" id="btn-doz3">3rd 12</div>
+                    <div class="cell label-cell zone-bottom low" id="btn-low">1-18</div>
+                    <div class="cell label-cell zone-bottom even" id="btn-even">EVEN</div>
+                    <div class="cell label-cell diamond-cell" id="btn-red"><div class="diamond red"></div></div>
+                    <div class="cell label-cell diamond-cell blk" id="btn-black"><div class="diamond black"></div></div>
+                    <div class="cell label-cell zone-bottom odd" id="btn-odd">ODD</div>
+                    <div class="cell label-cell zone-bottom high" id="btn-high">19-36</div>
+                    </div>
+                
+                <div class="cg-chip-rack">
+                    <div class="cg-chip r-chip-btn active" onclick="setRChip(50, this)">50</div>
+                    <div class="cg-chip r-chip-btn" onclick="setRChip(100, this)">100</div>
+                    <div class="cg-chip r-chip-btn" onclick="setRChip(500, this)">500</div>
+                    <div class="cg-chip r-chip-btn" onclick="setRChip(1000, this)">1k</div>
+                </div>
             </div>
         </div>
     </div>
@@ -257,282 +243,226 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        let myUser = "Guest";
+        let myBal = 0;
         let currentRoom = 'lobby';
-        let userBalance = 0; // Local tracking
 
         // --- AUTH ---
-        const sUser = localStorage.getItem('c_user');
-        const sPass = localStorage.getItem('c_pass');
-        if(sUser && sPass) socket.emit('login', { username: sUser, password: sPass });
+        const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
+        if(sU && sP) socket.emit('login', { username: sU, password: sP });
 
-        function login() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            socket.emit('login', { username: u, password: p });
-        }
-        function register() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            socket.emit('register', { username: u, password: p });
-        }
+        function login() { socket.emit('login', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
+        function register() { socket.emit('register', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
         
         socket.on('login_success', (data) => {
-            localStorage.setItem('c_user', data.username);
-            localStorage.setItem('c_pass', document.getElementById('pass').value || sPass);
+            localStorage.setItem('u', data.username); localStorage.setItem('p', document.getElementById('pass').value || sP);
             document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('userHud').style.display = 'block';
-            document.getElementById('hudUser').innerText = data.username;
-            userBalance = data.balance;
-            document.getElementById('hudBal').innerText = '$' + userBalance;
+            myUser = data.username; myBal = data.balance;
+            updateDisplay();
         });
-        socket.on('login_error', (msg) => document.getElementById('loginErr').innerText = msg);
-        socket.on('update_balance', (bal) => {
-            userBalance = bal;
-            document.getElementById('hudBal').innerText = '$' + bal;
+        socket.on('login_error', (m) => document.getElementById('loginErr').innerText = m);
+        socket.on('update_balance', (b) => { myBal = b; updateDisplay(); });
+        function updateDisplay() {
+            document.getElementById('lobbyUser').innerText = myUser;
+            document.getElementById('lobbyBal').innerText = '$' + myBal;
+        }
+
+        // --- CHAT ---
+        function tabChat(t) {
+            document.querySelectorAll('.chat-content').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.chat-tab').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.chat-input-area').forEach(e=>e.style.display='none');
+            document.getElementById('tab-'+t).classList.add('active');
+            document.getElementById('input-'+t).style.display='flex';
+            event.target.classList.add('active');
+        }
+        function sendChat() { let i = document.getElementById('chatInput'); if(i.value) { socket.emit('chat_msg', i.value); i.value=''; } }
+        function sendSupport() { let i = document.getElementById('supportInput'); if(i.value) { socket.emit('support_msg', i.value); i.value=''; } }
+        
+        socket.on('chat_broadcast', (d) => {
+            if(d.type === 'public') {
+                let box = document.getElementById('chatList');
+                box.innerHTML += `<div class="chat-msg"><b style="color:#FFD700">${d.user}:</b> ${d.msg}</div>`;
+                box.scrollTop = box.scrollHeight;
+            } else {
+                let box = document.getElementById('supportList');
+                let col = d.type==='support_sent' ? '#888' : '#00E5FF';
+                let name = d.type==='support_sent' ? 'YOU' : 'ADMIN';
+                box.innerHTML += `<div class="chat-msg"><b style="color:${col}">${name}:</b> ${d.msg}</div>`;
+                box.scrollTop = box.scrollHeight;
+            }
         });
 
         // --- NAV ---
-        function enterGame(game) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById('view-' + game).classList.add('active');
+        function enterGame(g) {
+            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+            document.getElementById('view-'+g).classList.add('active');
             document.getElementById('backBtn').style.display = 'block';
-            currentRoom = game;
-            socket.emit('switch_room', game);
-            if(game === 'roulette') initRoulette();
+            
+            // Adjust chat panel visibility if needed (e.g. keep visible but allow shrinking)
+            
+            currentRoom = g;
+            socket.emit('switch_room', g);
+            if(g === 'roulette') initRoulette();
         }
         function goToLobby() {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
             document.getElementById('view-lobby').classList.add('active');
             document.getElementById('backBtn').style.display = 'none';
             currentRoom = 'lobby';
             socket.emit('switch_room', 'lobby');
-            clearRouletteTable();
+            clearRoulette();
         }
         socket.on('lobby_counts', (c) => {
             document.getElementById('count-colorgame').innerText = (c.colorgame||0) + " Playing";
             document.getElementById('count-roulette').innerText = (c.roulette||0) + " Playing";
         });
+        socket.on('notification', (d) => alert(d.msg));
 
-        // --- COLOR GAME LOGIC ---
+        // --- COLOR GAME ---
         let cgChip = 50;
-        function setCgChip(val, el) { cgChip = val; document.querySelectorAll('.cg-chip').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
-        function placeCgBet(color) {
-            if(userBalance < cgChip) { alert("Insufficient funds"); return; }
-            userBalance -= cgChip; // Optimistic
-            document.getElementById('hudBal').innerText = '$' + userBalance;
-            socket.emit('place_bet', { color: color, amount: cgChip });
-            let el = document.getElementById('cg-bet-'+color);
-            el.innerText = parseInt(el.innerText) + cgChip;
+        function setCgChip(v, el) { cgChip = v; document.querySelectorAll('.cg-chip').forEach(e=>e.classList.remove('active')); el.classList.add('active'); }
+        function placeCgBet(c) {
+            if(myBal < cgChip) { alert("Insufficient funds"); return; }
+            myBal -= cgChip; updateDisplay();
+            socket.emit('place_bet', { color: c, amount: cgChip });
+            let el = document.getElementById('cg-bet-'+c); el.innerText = parseInt(el.innerText)+cgChip;
         }
-        socket.on('countdown_beep', (t)=>{ /* sfx */ });
-        socket.on('timer_update', (t)=>{ if(currentRoom==='colorgame') { document.getElementById('cg-timer').innerText = t; document.getElementById('cg-status').innerText='BETS OPEN'; }});
-        socket.on('game_rolling', ()=>{ if(currentRoom==='colorgame') { document.getElementById('cg-status').innerText='ROLLING...'; document.getElementById('cg-timer').innerText='--'; animateDice(); }});
-        function animateDice() {
-             let cols = ['red','green','blue','yellow','pink','white'];
-             window.cgInt = setInterval(()=>{ ['d1','d2','d3'].forEach(id=>{ document.getElementById(id).className=`die ${cols[Math.floor(Math.random()*6)]}`; }); }, 100);
+        socket.on('timer_update', (t) => { if(currentRoom==='colorgame') { document.getElementById('cg-timer').innerText = t; document.getElementById('cg-status').innerText = "BETS OPEN"; }});
+        socket.on('game_rolling', () => { if(currentRoom==='colorgame') { document.getElementById('cg-status').innerText = "ROLLING..."; document.getElementById('cg-timer').innerText="--"; cgRoll(); }});
+        function cgRoll() { 
+            let cols=['red','green','blue','yellow','pink','white'];
+            window.cgInt = setInterval(() => { ['d1','d2','d3'].forEach(id => document.getElementById(id).className=`die ${cols[Math.floor(Math.random()*6)]}`); }, 100);
         }
-        socket.on('game_result', (res)=>{ 
-            if(window.cgInt) clearInterval(window.cgInt); 
+        socket.on('game_result', (r) => { 
+            clearInterval(window.cgInt); 
             if(currentRoom==='colorgame') {
-                document.getElementById('cg-status').innerText='RESULT';
-                ['d1','d2','d3'].forEach((id,i)=>{ document.getElementById(id).className=`die ${res[i].toLowerCase()}`; });
+                document.getElementById('cg-status').innerText="RESULT";
+                ['d1','d2','d3'].forEach((id,i) => document.getElementById(id).className=`die ${r[i].toLowerCase()}`);
             }
         });
-        socket.on('game_reset', ()=>{ ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'].forEach(c=>document.getElementById('cg-bet-'+c).innerText='0'); });
-        socket.on('win_notification', (data)=>{ alert(`COLOR GAME WIN: +$${data.total}`); });
+        socket.on('game_reset', () => { ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'].forEach(c=>document.getElementById('cg-bet-'+c).innerText='0'); });
+        socket.on('win_notification', (d) => alert(`WIN! +${d.amount}`));
 
 
-        // ================= ROULETTE LOGIC (INTEGRATED FROM YOUR FILE) =================
+        // --- ROULETTE ---
         const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-        let rChip = 50;
-        let rBetTotal = 0;
-        let activeChips = {}; // key: coordinates, value: chipData
-        const WHEEL = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
-        const PRESETS = { 'voisins': [0, 2, 3, 4, 7, 12, 15, 18, 19, 21, 22, 25, 26, 28, 29, 32, 35], 'tier': [5, 8, 10, 11, 13, 16, 23, 24, 27, 30, 33, 36], 'orphelins': [1, 6, 9, 14, 17, 20, 31, 34] };
+        let rChip = 50; let rBetTotal = 0;
+        function setRChip(v, el) { rChip = v; document.querySelectorAll('.r-chip-btn').forEach(e=>e.classList.remove('active')); el.classList.add('active'); }
         
-        let rInitialized = false;
         function initRoulette() {
-            if(rInitialized) return;
-            buildGrid(); buildHotspots(); drawWheel(0);
-            rInitialized = true;
-        }
-
-        function buildGrid() {
-            const grid = document.getElementById('grid');
+            let grid = document.getElementById('grid');
+            if(document.getElementById('cell-1')) return; // already built
             for(let i=1; i<=36; i++) {
                 let d = document.createElement('div');
                 d.className = `cell ${REDS.includes(i)?'red-cell':'black-cell'}`;
                 d.innerText = i; d.id = `cell-${i}`;
                 let row = (i%3===0)?1:(i%3===2?2:3); let col = Math.floor((i-1)/3)+2;
                 d.style.gridRow = row; d.style.gridColumn = col;
-                bindHotspot(d, [i]); // Direct click
                 grid.appendChild(d);
+                bindClick(d, [i]);
             }
-        }
-
-        function buildHotspots() {
-            const ov = document.getElementById('overlay');
-            const CELL_W = 46, CELL_H = 46, GAP = 3, OFF_X = 56 + GAP;
-            // Example splits/streets logic simplified for hotspot creation
-            // Note: In a real deploy, you'd map every split. Here we map the main buttons and 1-36.
-            // Mapping Side Bets
-            bindHotspot(document.getElementById('btn-red'), REDS);
-            bindHotspot(document.getElementById('btn-black'), Array.from({length:36},(_,i)=>i+1).filter(n=>!REDS.includes(n)));
-            bindHotspot(document.getElementById('btn-even'), Array.from({length:36},(_,i)=>i+1).filter(n=>n%2===0));
-            bindHotspot(document.getElementById('btn-odd'), Array.from({length:36},(_,i)=>i+1).filter(n=>n%2!==0));
-            bindHotspot(document.getElementById('btn-low'), Array.from({length:18},(_,i)=>i+1));
-            bindHotspot(document.getElementById('btn-high'), Array.from({length:18},(_,i)=>i+19));
-            bindHotspot(document.getElementById('btn-doz1'), Array.from({length:12},(_,i)=>i+1));
-            bindHotspot(document.getElementById('btn-doz2'), Array.from({length:12},(_,i)=>i+13));
-            bindHotspot(document.getElementById('btn-doz3'), Array.from({length:12},(_,i)=>i+25));
-            bindHotspot(document.getElementById('cell-0'), [0]);
+            // Bind Buttons
+            bindClick(document.getElementById('cell-0'), [0]);
+            bindClick(document.getElementById('btn-red'), REDS);
+            bindClick(document.getElementById('btn-black'), range(1,36).filter(x=>!REDS.includes(x)));
+            bindClick(document.getElementById('btn-even'), range(1,36).filter(x=>x%2===0));
+            bindClick(document.getElementById('btn-odd'), range(1,36).filter(x=>x%2!==0));
+            bindClick(document.getElementById('btn-low'), range(1,18));
+            bindClick(document.getElementById('btn-high'), range(19,36));
+            bindClick(document.getElementById('btn-doz1'), range(1,12));
+            bindClick(document.getElementById('btn-doz2'), range(13,24));
+            bindClick(document.getElementById('btn-doz3'), range(25,36));
             
-            // Helper for manual mapping in HTML
-            // Note: The specific coordinate hotspots from your file would go here.
+            drawWheel(0);
         }
-
-        function bindHotspot(el, nums) {
+        
+        function range(s,e) { return Array.from({length:e-s+1},(_,i)=>s+i); }
+        function bindClick(el, nums) {
             if(!el) return;
-            el.onclick = (e) => {
+            el.onclick = function(e) {
+                if(myBal < rChip) { alert("Insufficient funds"); return; }
+                myBal -= rChip; updateDisplay();
+                rBetTotal += rChip; document.getElementById('r-bet-display').innerText = rBetTotal;
+                
+                // Visual
                 let rect = el.getBoundingClientRect();
-                let wrap = document.getElementById('tableWrapper').getBoundingClientRect();
-                // Calc relative x,y center of element
+                let wrap = document.getElementById('rWrapper').getBoundingClientRect();
                 let x = rect.left - wrap.left + rect.width/2;
                 let y = rect.top - wrap.top + rect.height/2;
-                placeRouletteBet(x, y, nums, el.id);
-            };
-        }
+                
+                let mk = document.createElement('div');
+                mk.className = 'r-chip-marker'; mk.innerText = rChip;
+                mk.style.left = x+'px'; mk.style.top = y+'px';
+                document.getElementById('rOverlay').appendChild(mk);
 
-        function setRChip(val, el) { rChip = val; document.querySelectorAll('.r-chip-btn').forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
-
-        function placeRouletteBet(x, y, nums, domId) {
-            if(userBalance < rChip) { alert("Insufficient Funds"); return; }
-            
-            // Optimistic Update
-            userBalance -= rChip;
-            document.getElementById('hudBal').innerText = '$' + userBalance;
-            rBetTotal += rChip;
-            document.getElementById('r-bet-display').innerText = rBetTotal;
-
-            // Visual
-            let key = Math.round(x) + '_' + Math.round(y);
-            if(!activeChips[key]) {
-                let d = document.createElement('div');
-                d.className = 'marker-chip'; d.innerText = rChip;
-                d.style.left = x + 'px'; d.style.top = y + 'px';
-                document.getElementById('overlay').appendChild(d);
-                activeChips[key] = { el: d, amt: rChip, nums: nums, domId: domId };
-            } else {
-                activeChips[key].amt += rChip;
-                activeChips[key].el.innerText = activeChips[key].amt;
-                activeChips[key].el.style.transform = 'scale(1.2)';
-                setTimeout(()=>activeChips[key].el.style.transform='scale(1)', 100);
+                socket.emit('place_bet_roulette', { numbers: nums, amount: rChip });
             }
-
-            socket.emit('place_bet_roulette', { numbers: nums, amount: rChip, domId: domId });
         }
 
-        function preset(type) {
-            let nums = PRESETS[type];
-            if(nums) nums.forEach(n => {
-                let cell = document.getElementById(`cell-${n}`);
-                if(cell) cell.click();
-            });
-        }
-
-        function clearRouletteTable() {
-            rBetTotal = 0;
-            document.getElementById('r-bet-display').innerText = '0';
-            document.getElementById('overlay').innerHTML = '';
-            activeChips = {};
-            document.getElementById('winnersContainer').innerHTML = '';
+        function clearRoulette() {
+            rBetTotal=0; document.getElementById('r-bet-display').innerText='0';
+            document.getElementById('rOverlay').innerHTML='';
             document.getElementById('winner-stage').classList.remove('active');
         }
 
-        // --- ROULETTE SOCKETS ---
-        socket.on('roulette_timer', (t) => {
-            if(currentRoom !== 'roulette') return;
-            document.getElementById('r-timer').innerText = t;
-            document.getElementById('wheel-overlay').classList.remove('show');
+        socket.on('roulette_timer', (t) => { if(currentRoom==='roulette') { document.getElementById('r-timer').innerText = t; document.getElementById('wheel-overlay').classList.remove('show'); }});
+        
+        socket.on('roulette_spin_start', (wNum) => {
+            if(currentRoom==='roulette') {
+                document.getElementById('wheel-overlay').classList.add('show');
+                spinWheel(wNum);
+            }
+        });
+        
+        socket.on('roulette_result_log', (n) => {
+             let h = document.getElementById('rHistory');
+             let b = document.createElement('div');
+             b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
+             b.innerText = n;
+             h.prepend(b);
+             if(h.children.length > 12) h.lastChild.remove();
         });
 
-        const cvs = document.getElementById('wheelCanvas');
-        const ctx = cvs.getContext('2d');
+        socket.on('roulette_win', (d) => {
+            let stage = document.getElementById('winner-stage');
+            stage.classList.add('active');
+            document.getElementById('win-num-display').innerText = d.number;
+            document.getElementById('win-num-display').style.color = d.number===0?'green':(REDS.includes(d.number)?'red':'white');
+            document.getElementById('win-amt-display').innerText = '+' + d.amount;
+            setTimeout(() => stage.classList.remove('active'), 4000);
+        });
+        
+        socket.on('roulette_new_round', clearRoulette);
+
+        // Wheel Logic
+        const cvs = document.getElementById('wheelCanvas'); const ctx = cvs.getContext('2d');
+        const WHEEL = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
         function drawWheel(angle) {
-            const CX=400, CY=400, R=380; // Scaled for 800x800 canvas
-            const slice = (Math.PI*2)/WHEEL.length;
-            ctx.clearRect(0,0,800,800);
-            ctx.save(); ctx.translate(CX,CY); ctx.rotate(angle);
+            const CX=300, CY=300, R=280; const slice=(Math.PI*2)/WHEEL.length;
+            ctx.clearRect(0,0,600,600); ctx.save(); ctx.translate(CX,CY); ctx.rotate(angle);
             WHEEL.forEach((n,i)=>{
-                let a = i*slice;
-                ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,a,a+slice);
-                ctx.fillStyle = n===0?'#016D29':(REDS.includes(n)?'#d32f2f':'#222');
-                ctx.fill(); ctx.stroke();
-                ctx.save(); ctx.rotate(a+slice/2); ctx.translate(320,0); ctx.rotate(Math.PI/2);
-                ctx.fillStyle='white'; ctx.font='30px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
-                ctx.fillText(n,0,0); ctx.restore();
+                let a = i*slice; ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,R,a,a+slice);
+                ctx.fillStyle = n===0?'#016D29':(REDS.includes(n)?'#d32f2f':'#222'); ctx.fill(); ctx.stroke();
+                ctx.save(); ctx.rotate(a+slice/2); ctx.translate(240,0); ctx.rotate(Math.PI/2);
+                ctx.fillStyle='white'; ctx.font='20px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(n,0,0); ctx.restore();
             });
             ctx.restore();
         }
-
-        socket.on('roulette_spin_start', (winningNum) => {
-            if(currentRoom !== 'roulette') return;
-            document.getElementById('wheel-overlay').classList.add('show');
-            // Calc angle
-            const slice = (Math.PI*2)/WHEEL.length;
-            const idx = WHEEL.indexOf(winningNum);
-            const target = (Math.PI*1.5) - (idx*slice) - (slice/2);
-            const final = target + (Math.PI*2 * 5);
-            
+        function spinWheel(targetNum) {
+            let idx = WHEEL.indexOf(targetNum);
+            let slice = (Math.PI*2)/WHEEL.length;
+            let targetAngle = (Math.PI*1.5) - (idx*slice) - (slice/2);
+            let final = targetAngle + (Math.PI*2 * 5);
             let start = null;
             function anim(ts) {
-                if(!start) start = ts;
-                let p = (ts - start)/5000;
-                if(p>1) p=1;
-                let ease = 1 - Math.pow(1-p, 3);
-                drawWheel(final * ease);
+                if(!start) start=ts; let p=(ts-start)/5000;
+                if(p>1) p=1; let ease = 1 - Math.pow(1-p, 3);
+                drawWheel(final*ease);
                 if(p<1) requestAnimationFrame(anim);
             }
             requestAnimationFrame(anim);
-        });
-
-        // Add history ball
-        socket.on('roulette_result_log', (num) => {
-            if(currentRoom !== 'roulette') return;
-            let h = document.getElementById('historyLog');
-            let b = document.createElement('div');
-            b.className = `history-ball ${num===0?'hist-green':(REDS.includes(num)?'hist-red':'hist-black')}`;
-            b.innerText = num;
-            h.prepend(b);
-            if(h.children.length > 15) h.lastChild.remove();
-        });
-
-        // Winner Animation (Mario Style)
-        socket.on('roulette_win', (data) => {
-            // data: {amount, number}
-            let stage = document.getElementById('winner-stage');
-            stage.classList.add('active');
-            let con = document.getElementById('winnersContainer');
-            
-            let div = document.createElement('div');
-            div.className = `clone-cell ${data.number===0?'clone-green':(REDS.includes(data.number)?'clone-red':'clone-black')}`;
-            div.innerText = data.number;
-            
-            let label = document.createElement('div');
-            label.className = 'win-amt-label';
-            label.innerText = '+' + data.amount;
-            div.appendChild(label);
-            con.appendChild(div);
-
-            setTimeout(() => {
-                con.innerHTML = '';
-                stage.classList.remove('active');
-            }, 3000);
-        });
-
-        socket.on('roulette_new_round', () => {
-            clearRouletteTable();
-        });
+        }
 
     </script>
 </body>
