@@ -21,8 +21,8 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* CHAT PANEL (Casual/Compact) */
-        .chat-panel { position: fixed; bottom: 90px; right: 20px; width: 280px; height: 350px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display:none; }
+        /* CHAT PANEL */
+        .chat-panel { position: fixed; bottom: 100px; right: 20px; width: 280px; height: 350px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display:none; }
         .chat-panel.active { display:flex; }
         .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 11px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
         .chat-tabs { display: flex; border-bottom: 1px solid #333; }
@@ -35,35 +35,30 @@
         .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; }
 
         /* MUSIC PLAYER */
-        .music-player { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); width: 260px; background: rgba(0,0,0,0.9); border: 1px solid #444; border-radius: 8px; padding: 10px; z-index: 9500; display: none; }
+        .music-player { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); width: 260px; background: rgba(0,0,0,0.9); border: 1px solid #444; border-radius: 8px; padding: 10px; z-index: 9500; display: none; }
         .mp-title { font-size: 11px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
         .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
         .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
         .mp-status { font-size: 10px; color: #00E5FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom:5px; }
-        
-        /* CUSTOM VOLUME SLIDER (Small) */
         .vol-slider { -webkit-appearance: none; width: 100%; height: 4px; background: #333; border-radius: 2px; outline: none; }
         .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #FFD700; cursor: pointer; transition: 0.2s; }
-        .vol-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
-
-        /* CHIPS (UI Element) */
-        .chips-bar { display: flex; gap: 10px; padding: 5px 15px; background: rgba(0,0,0,0.3); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; }
+        
+        /* CHIPS (UI) */
+        .chips-bar { display: flex; gap: 10px; padding: 10px 25px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
         .chip { width: 42px; height: 42px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
         .chip:hover { transform: scale(1.1); }
-        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: 2px solid #FFD700; }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
         .chip::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 22px; height: 22px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 9px; font-weight: 800; color: #333; }
-        
-        /* CHIP COLORS */
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-100 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
-
-        /* BOARD CHIP (Visual on table) */
+        
+        /* BOARD CHIP */
         .chip.chip-board { width: 24px; height: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 100; }
         .chip.chip-board::after { inset: 3px; }
         .chip.chip-board .chip-label { width: 12px; height: 12px; font-size: 7px; border: 0.5px solid #ccc; }
@@ -83,7 +78,6 @@
         .hud-stat { text-align:center; }
         .hud-stat label { font-size:10px; color:#888; font-weight:bold; letter-spacing:1px; display:block; }
         .hud-stat div { font-size:24px; font-weight:bold; color:white; }
-        
         .cg-center { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
         .cg-timer { font-size: 100px; font-weight: 800; text-shadow: 0 0 20px cyan; line-height: 1; }
         .cg-status { font-size: 24px; letter-spacing: 5px; color: #aaa; margin-bottom: 20px; }
@@ -91,35 +85,39 @@
         .die { width: 90px; height: 90px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 3px solid rgba(255,255,255,0.2); background: #222; }
         .die.red { background: #d32f2f; } .die.green { background: #388e3c; } .die.blue { background: #1976d2; }
         .die.pink { background: #e91e63; } .die.white { background: #eee; color:black; } .die.yellow { background: #fbc02d; color:black; }
-        
-        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; width: 80%; max-width: 600px; }
+        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; width: 80%; max-width: 600px; margin-bottom: 20px; }
         .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 15px; }
         .cg-bet-card { height: 80px; border: 1px solid #555; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; transition: 0.2s; }
-        .cg-bet-card:hover { transform: scale(1.05); border-color: white; }
-
+        
         /* ROULETTE LAYOUT */
         :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
         #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; overflow:hidden; }
+        .r-main-area { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-origin: center center; }
         
-        /* 1. TOP HUD */
-        .r-top-bar { position: absolute; top: 0; left: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.8); border-bottom: 1px solid #333; display: flex; justify-content: center; align-items: center; gap: 40px; z-index: 100; backdrop-filter: blur(5px); }
+        /* --- TABLE SCALING WRAPPER --- */
+        .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
         
-        /* 2. MIDDLE TABLE AREA (SCALES) */
-        .r-middle-area { position: absolute; top: 70px; bottom: 80px; left: 0; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.1s; }
+        /* HUD CONTAINER (Inside Scaler so it sticks to table) */
+        .r-hud-container { width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px; }
         
-        /* 3. BOTTOM CONTROLS */
-        .r-bottom-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.9); border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; box-sizing: border-box; z-index: 100; }
-        .r-controls-right { display: flex; gap: 15px; }
+        /* SPECIFIC HUD BOX STYLES (MATCHING PHOTO 3) */
+        .r-hud-box { 
+            background: #000; border-radius: 8px; padding: 10px 20px; 
+            min-width: 140px; text-align: center; display: flex; flex-direction: column; justify-content: center;
+        }
+        .hud-bal { border: 2px solid #00E5FF; }
+        .hud-time { border: 2px solid #FFD700; }
+        .hud-bet { border: 2px solid #444; }
         
-        /* CONTROL BUTTONS */
-        .control-btn { background: #222; border: 1px solid #444; color: #ccc; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; gap: 8px; align-items: center; transition: 0.2s; font-size: 12px; }
-        .control-btn:hover { background: #333; border-color: #FFD700; color: white; }
+        .r-lbl { font-size: 10px; color: #888; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+        .r-val { font-size: 28px; color: #fff; font-weight: 800; font-family: 'Oswald', sans-serif; line-height: 1; }
 
-        /* ROULETTE TABLE */
-        .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 730px; }
-        .r-history { width: 100%; height: 35px; background: rgba(0,0,0,0.3); border-radius: 5px; display: flex; align-items: center; gap: 5px; overflow: hidden; padding: 0 5px; }
-        .hist-ball { width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 11px; box-shadow: 0 2px 4px black; }
+        /* TABLE */
+        .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
+        
+        /* HISTORY MATCHING WIDTH */
+        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; }
+        .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; }
         
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
@@ -134,12 +132,21 @@
         .diamond-cell { grid-column: 6 / 8; grid-row: 5; display:flex; justify-content:center; align-items:center; } .diamond-cell.blk { grid-column: 8 / 10; }
         .diamond { width: 18px; height: 18px; transform: rotate(45deg); } .diamond.red { background: #d32f2f; } .diamond.black { background: #111; }
         
-        /* OVERLAY FOR BETS (Z-Index fix) */
         .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
         .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
         .hotspot:hover { background: rgba(255,255,255,0.15); }
 
-        /* WHEEL POPUP */
+        /* BUTTONS: ICON TOP, TEXT BOTTOM */
+        .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 20px; z-index: 5000; }
+        .icon-btn-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; opacity: 0.8; transition: 0.2s; }
+        .icon-btn-wrapper:hover { opacity: 1; transform: scale(1.1); }
+        .icon-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .icon-label { font-size: 10px; font-weight: bold; color: #ccc; letter-spacing: 1px; }
+        
+        /* Specific Icons */
+        .btn-music .icon-circle { background: linear-gradient(135deg, #7c4dff, #512da8); }
+        .btn-chat .icon-circle { background: linear-gradient(135deg, #42a5f5, #1565c0); }
+
         #wheel-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.5s ease; }
         #wheel-overlay.show { display: flex; animation: fadeIn 0.3s; opacity: 1; }
         .wheelPanel { width: 500px; max-width: 95vw; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-radius: 50%; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
@@ -147,7 +154,6 @@
         canvas { border-radius: 50%; width: 100%; height: 100%; object-fit: contain; }
         .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 5005; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); pointer-events: none; transition: opacity 0.5s ease; opacity: 1; }
 
-        /* WINNER ANIM */
         #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 4000; display:none; justify-content:center; align-items:center; }
         #winner-stage.active { display:flex; }
         .win-box { background: #222; border: 4px solid #FFD700; padding: 20px; border-radius: 10px; text-align: center; animation: popIn 0.3s; }
@@ -239,55 +245,37 @@
 
     <div id="view-colorgame" class="view-section">
         <div class="cg-main-area">
-            
             <div class="cg-top-bar">
-                <div class="hud-stat">
-                    <label>BALANCE</label>
-                    <div id="cg-balance" style="color:#00E5FF">0</div>
-                </div>
-                <div class="hud-stat">
-                    <label>TIMER</label>
-                    <div id="cg-timer" style="color:#FFD700">20</div>
-                </div>
-                <div class="hud-stat">
-                    <label>BET</label>
-                    <div id="cg-bet-total">0</div>
-                </div>
+                <div class="hud-stat"><label>BALANCE</label><div id="cg-balance" style="color:#00E5FF">0</div></div>
+                <div class="hud-stat"><label>TIMER</label><div id="cg-timer" style="color:#FFD700">20</div></div>
+                <div class="hud-stat"><label>BET</label><div id="cg-bet-total">0</div></div>
             </div>
-
             <div class="cg-center">
                 <div class="cg-status" id="cg-status">BETS OPEN</div>
                 <div class="cg-dice-row">
-                    <div id="d1" class="die">?</div>
-                    <div id="d2" class="die">?</div>
-                    <div id="d3" class="die">?</div>
+                    <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
                 </div>
             </div>
-
-            <div class="bottom-controls" style="margin-bottom:15px;">
-                <div class="control-btn" onclick="toggleMusicUI()"><span>🎵</span> MUSIC</div>
-                <div class="control-btn" onclick="toggleChat()"><span>💬</span> CHAT</div>
+            
+            <div class="icon-controls">
+                <div class="icon-btn-wrapper btn-music" onclick="toggleMusicUI()">
+                    <div class="icon-circle"><i class="fa fa-music" style="color:white; font-size:20px;"></i></div>
+                    <span class="icon-label">MUSIC</span>
+                </div>
+                <div class="icon-btn-wrapper btn-chat" onclick="toggleChat()">
+                    <div class="icon-circle"><i class="fa fa-comment" style="color:white; font-size:20px;"></i></div>
+                    <span class="icon-label">CHAT</span>
+                </div>
             </div>
 
             <div class="cg-bet-panel">
-                <div class="chips-bar" style="background:rgba(0,0,0,0.5); justify-content:center;">
-                    <div class="chip chip-50 active" onclick="setCgChip(50, this)">
-                        <div class="chip-label">50</div>
-                    </div>
-                    <div class="chip chip-100" onclick="setCgChip(100, this)">
-                        <div class="chip-label">100</div>
-                    </div>
-                    <div class="chip chip-1k" onclick="setCgChip(1000, this)">
-                        <div class="chip-label">1K</div>
-                    </div>
-                    <div class="chip chip-10k" onclick="setCgChip(10000, this)">
-                        <div class="chip-label">10K</div>
-                    </div>
-                    <div class="chip chip-100k" onclick="setCgChip(100000, this)">
-                        <div class="chip-label">100K</div>
-                    </div>
+                <div class="chips-bar">
+                    <div class="chip chip-50 active" onclick="setCgChip(50, this)"><div class="chip-label">50</div></div>
+                    <div class="chip chip-100" onclick="setCgChip(100, this)"><div class="chip-label">100</div></div>
+                    <div class="chip chip-1k" onclick="setCgChip(1000, this)"><div class="chip-label">1K</div></div>
+                    <div class="chip chip-10k" onclick="setCgChip(10000, this)"><div class="chip-label">10K</div></div>
+                    <div class="chip chip-100k" onclick="setCgChip(100000, this)"><div class="chip-label">100K</div></div>
                 </div>
-
                 <div class="cg-bet-grid">
                     <div class="cg-bet-card" style="background: #d32f2f;" onclick="placeCgBet('RED')"><b>RED</b><span id="cg-bet-RED">0</span></div>
                     <div class="cg-bet-card" style="background: #388e3c;" onclick="placeCgBet('GREEN')"><b>GREEN</b><span id="cg-bet-GREEN">0</span></div>
@@ -311,29 +299,28 @@
         </div>
         
         <div id="winner-stage">
-            <div class="win-box">
-                <div class="win-num" id="win-num-display">0</div>
-                <div class="win-amt" id="win-amt-display">+0</div>
-            </div>
+            <div class="win-box"><div class="win-num" id="win-num-display">0</div><div class="win-amt" id="win-amt-display">+0</div></div>
         </div>
 
-        <div class="r-top-bar">
-            <div class="hud-stat">
-                <label>BALANCE</label>
-                <div id="r-balance" style="color:#00E5FF">0</div>
-            </div>
-            <div class="hud-stat">
-                <label>TIMER</label>
-                <div id="r-timer" style="color:#FFD700">--</div>
-            </div>
-            <div class="hud-stat">
-                <label>BET</label>
-                <div id="r-bet-display">0</div>
-            </div>
-        </div>
-
-        <div class="r-middle-area">
+        <div class="r-main-area">
+            
             <div class="r-table-scaler" id="rWrapper">
+                
+                <div class="r-hud-container">
+                    <div class="r-hud-box hud-bal">
+                        <div class="r-lbl">BALANCE</div>
+                        <div class="r-val" id="r-balance">0</div>
+                    </div>
+                    <div class="r-hud-box hud-time">
+                        <div class="r-lbl">TIMER</div>
+                        <div class="r-val" id="r-timer">--</div>
+                    </div>
+                    <div class="r-hud-box hud-bet">
+                        <div class="r-lbl">BET</div>
+                        <div class="r-val" id="r-bet-display">0</div>
+                    </div>
+                </div>
+
                 <div class="r-table-wrapper">
                     <div class="r-history" id="rHistory"></div>
                     
@@ -355,32 +342,26 @@
                         <div class="cell label-cell zone-bottom odd" id="btn-odd">ODD</div>
                         <div class="cell label-cell zone-bottom high" id="btn-high">19-36</div>
                         </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="r-bottom-bar">
-            <div class="chips-bar">
-                <div class="chip chip-50 active" onclick="setRChip(50, this)">
-                    <div class="chip-label">50</div>
-                </div>
-                <div class="chip chip-100" onclick="setRChip(100, this)">
-                    <div class="chip-label">100</div>
-                </div>
-                <div class="chip chip-1k" onclick="setRChip(1000, this)">
-                    <div class="chip-label">1K</div>
-                </div>
-                <div class="chip chip-10k" onclick="setRChip(10000, this)">
-                    <div class="chip-label">10K</div>
-                </div>
-                <div class="chip chip-100k" onclick="setRChip(100000, this)">
-                    <div class="chip-label">100K</div>
+                    
+                    <div class="chips-bar">
+                        <div class="chip chip-50 active" onclick="setRChip(50, this)"><div class="chip-label">50</div></div>
+                        <div class="chip chip-100" onclick="setRChip(100, this)"><div class="chip-label">100</div></div>
+                        <div class="chip chip-1k" onclick="setRChip(1000, this)"><div class="chip-label">1K</div></div>
+                        <div class="chip chip-10k" onclick="setRChip(10000, this)"><div class="chip-label">10K</div></div>
+                        <div class="chip chip-100k" onclick="setRChip(100000, this)"><div class="chip-label">100K</div></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="r-controls-right">
-                <div class="control-btn" onclick="toggleMusicUI()"><span>🎵</span> MUSIC</div>
-                <div class="control-btn" onclick="toggleChat()"><span>💬</span> CHAT</div>
+            <div class="icon-controls">
+                <div class="icon-btn-wrapper btn-music" onclick="toggleMusicUI()">
+                    <div class="icon-circle"><i class="fa fa-music" style="color:white; font-size:20px;"></i></div>
+                    <span class="icon-label">MUSIC</span>
+                </div>
+                <div class="icon-btn-wrapper btn-chat" onclick="toggleChat()">
+                    <div class="icon-circle"><i class="fa fa-comment" style="color:white; font-size:20px;"></i></div>
+                    <span class="icon-label">CHAT</span>
+                </div>
             </div>
         </div>
     </div>
@@ -505,22 +486,21 @@
             let h = window.innerHeight;
             let w = window.innerWidth;
             let wrapper = document.getElementById('rWrapper');
-            // Calc available space (Total H - Top - Bottom - Padding)
-            // 100vh - 70px (Top) - 80px (Bottom) = available height
-            let availH = h - 160; 
-            let availW = w - 40; 
             
-            // Base size of table wrapper is approx 730px wide x 400px high
-            let baseW = 730;
-            let baseH = 400; 
+            // Available space logic
+            let availH = h - 20; 
+            let availW = w - 20; 
+            
+            // Table Base Size (approx)
+            let baseW = 760;
+            let baseH = 500; 
             
             let scaleH = availH / baseH; 
             let scaleW = availW / baseW; 
-            let scale = Math.min(scaleH, scaleW) * 0.95; 
+            let scale = Math.min(scaleH, scaleW) * 0.92; 
             
             if(scale < 0.5) scale = 0.5;
-            // Cap max scale to avoid pixelation
-            if(scale > 1.3) scale = 1.3; 
+            if(scale > 1.6) scale = 1.6;
             
             wrapper.style.transform = `scale(${scale})`;
         }
