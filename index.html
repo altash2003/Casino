@@ -21,9 +21,13 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* CHAT PANEL */
-        .chat-panel { position: fixed; bottom: 100px; right: 20px; width: 280px; height: 350px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display:none; }
-        .chat-panel.active { display:flex; }
+        /* UNIFIED PANEL POSITION */
+        .panel-position { position: fixed; bottom: 100px; right: 20px; width: 280px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .panel-position.active { display: flex; animation: slideUp 0.2s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* CHAT SPECIFIC */
+        .chat-panel { height: 350px; }
         .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 11px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
         .chat-tabs { display: flex; border-bottom: 1px solid #333; }
         .chat-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 12px; }
@@ -34,8 +38,8 @@
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; }
         .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; }
 
-        /* MUSIC PLAYER */
-        .music-player { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); width: 260px; background: rgba(0,0,0,0.9); border: 1px solid #444; border-radius: 8px; padding: 10px; z-index: 9500; display: none; }
+        /* MUSIC SPECIFIC */
+        .music-player { height: auto; padding: 10px; }
         .mp-title { font-size: 11px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
         .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
@@ -48,7 +52,7 @@
         .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
         .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
         .chip:hover { transform: scale(1.1); }
-        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; /* REMOVED BORDER */ }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
@@ -138,6 +142,12 @@
         .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
         .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
         
+        /* TABLE CONTROLS (NEW) */
+        .table-controls { display: flex; gap: 10px; margin-bottom: 5px; width: 100%; justify-content: center; }
+        .t-btn { background: #111; border: 1px solid #444; color: #aaa; padding: 5px 12px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .t-btn:hover { background: #333; color: white; border-color: #FFD700; }
+        .t-btn i { font-size: 12px; }
+
         /* BUTTONS (Floating Style) */
         .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 20px; z-index: 5000; }
         .icon-btn-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; opacity: 0.8; transition: 0.2s; }
@@ -177,7 +187,7 @@
         </div>
     </div>
 
-    <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel panel-position" id="chatPanel">
         <div class="chat-header">
             <span id="chatTitle">GLOBAL</span>
             <span onclick="toggleChat()" style="cursor:pointer; font-size:16px;">&times;</span>
@@ -202,7 +212,7 @@
         </div>
     </div>
 
-    <div class="music-player" id="globalMusicPlayer">
+    <div class="music-player panel-position" id="globalMusicPlayer">
         <div class="mp-title">
             <span>CASINO DJ</span>
             <span onclick="toggleMusicUI()" style="cursor:pointer;">x</span>
@@ -228,7 +238,7 @@
         <h1 style="font-size:60px; color:#FFD700; text-shadow:0 0 20px rgba(0,0,0,0.8); margin-bottom:10px;">GRAND CASINO</h1>
         <div style="margin-bottom:20px; font-size:18px;">
             PLAYER: <span id="lobbyUser" style="color:#FFD700; font-weight:bold;">Guest</span> | 
-            BALANCE: <span id="lobbyBal" style="color:#00E5FF; font-weight:bold;">$0</span>
+            BALANCE: <span id="lobbyBal" style="color:#00E5FF; font-weight:bold;">0</span>
         </div>
         <div class="lobby-grid">
             <div class="game-card" onclick="enterGame('colorgame')">
@@ -333,6 +343,13 @@
                         <div class="cell label-cell zone-bottom high" id="btn-high">19-36</div>
                     </div>
                     
+                    <div class="table-controls">
+                        <div class="t-btn" onclick="sendUndo()"><i class="fa fa-undo"></i> UNDO</div>
+                        <div class="t-btn" onclick="sendClear()"><i class="fa fa-trash"></i> CLEAR</div>
+                        <div class="t-btn" onclick="sendRebet()"><i class="fa fa-refresh"></i> REBET</div>
+                        <div class="t-btn" onclick="sendX2()"><b>x2</b> DOUBLE</div>
+                    </div>
+
                     <div class="chips-bar">
                         <div class="chip chip-50 active" onclick="setRChip(50, this)"><div class="chip-label">50</div></div>
                         <div class="chip chip-100" onclick="setRChip(100, this)"><div class="chip-label">100</div></div>
@@ -363,9 +380,12 @@
         let myBal = 0;
         let currentRoom = 'lobby';
         let currentTableScale = 1;
+        
+        let lastRoundBets = []; // For Rebet
+        let currentRoundBets = []; // For Undo/X2
 
-        // Beep Sound
-        const tickSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"); // Short placeholder, replace with real beep if needed
+        // Beep Sound (Base64 short beep)
+        const tickSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU");
 
         // --- AUTH ---
         const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
@@ -384,9 +404,9 @@
         socket.on('update_balance', (b) => { myBal = b; updateDisplay(); });
         function updateDisplay() {
             document.getElementById('lobbyUser').innerText = myUser;
-            document.getElementById('lobbyBal').innerText = '$' + myBal;
-            document.getElementById('cg-balance').innerText = '$' + myBal;
-            document.getElementById('r-balance').innerText = '$' + myBal;
+            document.getElementById('lobbyBal').innerText = myBal; // Raw number
+            document.getElementById('cg-balance').innerText = myBal;
+            document.getElementById('r-balance').innerText = myBal;
         }
 
         // --- CHAT ---
@@ -680,6 +700,9 @@
             myBal -= rChip; updateDisplay();
             rBetTotal += rChip; document.getElementById('r-bet-display').innerText = rBetTotal;
             
+            // Record bet for logic
+            currentRoundBets.push({ nums: nums, amount: rChip, x: x, y: y });
+
             // VISUAL CHIP
             let chipStyle = 'chip-50';
             if(rChip===100) chipStyle='chip-100';
@@ -700,12 +723,62 @@
             socket.emit('place_bet_roulette', { numbers: nums, amount: rChip });
         }
         
+        // --- BUTTON ACTIONS ---
+        function sendClear() {
+            socket.emit('roulette_clear');
+        }
+        function sendUndo() {
+            socket.emit('roulette_undo');
+        }
+        function sendRebet() {
+            if(lastRoundBets.length === 0) return;
+            lastRoundBets.forEach(b => {
+                // Delay slightly to visualize
+                setTimeout(() => {
+                    // Logic check for balance inside placeRouletteBet
+                    // Since placeRouletteBet updates local state, we just call it
+                    placeRouletteBet(b.x, b.y, b.nums);
+                }, 50);
+            });
+        }
+        function sendX2() {
+            // Duplicate current bets
+            // Copy array first to avoid infinite loop
+            let betsToDouble = [...currentRoundBets]; 
+            betsToDouble.forEach(b => {
+                placeRouletteBet(b.x, b.y, b.nums);
+            });
+        }
+
+        socket.on('bets_cleared', () => {
+            currentRoundBets = [];
+            document.getElementById('rOverlay').innerHTML = '';
+            rBetTotal = 0; document.getElementById('r-bet-display').innerText = '0';
+        });
+        
+        socket.on('bet_undone', () => {
+            // Remove last visual chip
+            let chips = document.getElementById('rOverlay').children;
+            if(chips.length > 0) chips[chips.length-1].remove();
+            
+            // Remove last from logic tracker
+            let undone = currentRoundBets.pop();
+            if(undone) {
+                rBetTotal -= undone.amount;
+                document.getElementById('r-bet-display').innerText = rBetTotal;
+            }
+        });
+
         function formatChip(v) {
             if(v >= 1000) return (v/1000) + 'k';
             return v;
         }
 
         function clearRoulette() {
+            // Move current to last round
+            if(currentRoundBets.length > 0) lastRoundBets = [...currentRoundBets];
+            currentRoundBets = [];
+            
             rBetTotal=0; document.getElementById('r-bet-display').innerText='0';
             document.getElementById('rOverlay').innerHTML='';
             document.getElementById('winner-stage').classList.remove('active');
@@ -720,7 +793,6 @@
                 // URGENT STATE
                 if(t <= 3 && t > 0) {
                     tb.classList.add('urgent');
-                    // Play sound
                     try { tickSound.play().catch(e=>{}); } catch(e){}
                 } else {
                     tb.classList.remove('urgent');
