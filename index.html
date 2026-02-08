@@ -44,24 +44,25 @@
         .vol-slider { -webkit-appearance: none; width: 100%; height: 4px; background: #333; border-radius: 2px; outline: none; }
         .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #FFD700; cursor: pointer; transition: 0.2s; }
         
-        /* CHIPS (UI) */
-        .chips-bar { display: flex; gap: 10px; padding: 10px 25px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
-        .chip { width: 42px; height: 42px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
+        /* --- CHIPS UI (SMALLER PANEL) --- */
+        .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
+        .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
         .chip:hover { transform: scale(1.1); }
-        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: 2px solid #FFD700; }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
-        .chip::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
-        .chip-label { position: relative; z-index: 10; width: 22px; height: 22px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 9px; font-weight: 800; color: #333; }
+        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
+        .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
+        
+        /* --- BOARD CHIP (BIGGER ON GRID) --- */
+        .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; }
+        .chip.chip-board::after { inset: 4px; }
+        .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
+
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-100 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
-        
-        /* BOARD CHIP */
-        .chip.chip-board { width: 24px; height: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 100; }
-        .chip.chip-board::after { inset: 3px; }
-        .chip.chip-board .chip-label { width: 12px; height: 12px; font-size: 7px; border: 0.5px solid #ccc; }
 
         /* LOBBY */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
@@ -71,7 +72,7 @@
         .gc-title { font-size: 32px; color: #FFD700; font-weight: 800; margin-bottom: 20px; }
         .gc-icon { font-size: 60px; margin-bottom: 20px; }
 
-        /* COLOR GAME LAYOUT */
+        /* COLOR GAME */
         #view-colorgame { background: url('background.jpg') center/cover; justify-content: center; align-items: center; }
         .cg-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 20px; box-sizing: border-box; }
         .cg-top-bar { display:flex; justify-content:center; gap:40px; width:100%; padding:20px; background:rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-bottom: 1px solid #333; }
@@ -94,13 +95,10 @@
         #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; overflow:hidden; }
         .r-main-area { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-origin: center center; }
         
-        /* --- TABLE SCALING WRAPPER --- */
         .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
         
-        /* HUD CONTAINER (Inside Scaler so it sticks to table) */
         .r-hud-container { width: 100%; display: flex; justify-content: space-between; margin-bottom: 10px; }
         
-        /* SPECIFIC HUD BOX STYLES (MATCHING PHOTO 3) */
         .r-hud-box { 
             background: #000; border-radius: 8px; padding: 10px 20px; 
             min-width: 140px; text-align: center; display: flex; flex-direction: column; justify-content: center;
@@ -112,14 +110,14 @@
         .r-lbl { font-size: 10px; color: #888; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
         .r-val { font-size: 28px; color: #fff; font-weight: 800; font-family: 'Oswald', sans-serif; line-height: 1; }
 
-        /* TABLE */
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
         
-        /* HISTORY MATCHING WIDTH */
+        /* MATCHING GRID WIDTH (50 + 12*44 + 34 + gaps) ~ 620px */
         .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; }
         .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; }
         
+        /* GRID: 50px Zero + 12 * 42px Cols + 34px Row Labels */
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
         
         .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--grid-gold); z-index: 5; }
@@ -136,14 +134,13 @@
         .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
         .hotspot:hover { background: rgba(255,255,255,0.15); }
 
-        /* BUTTONS: ICON TOP, TEXT BOTTOM */
+        /* BUTTONS (Floating Style) */
         .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 20px; z-index: 5000; }
         .icon-btn-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; opacity: 0.8; transition: 0.2s; }
         .icon-btn-wrapper:hover { opacity: 1; transform: scale(1.1); }
         .icon-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .icon-label { font-size: 10px; font-weight: bold; color: #ccc; letter-spacing: 1px; }
         
-        /* Specific Icons */
         .btn-music .icon-circle { background: linear-gradient(135deg, #7c4dff, #512da8); }
         .btn-chat .icon-circle { background: linear-gradient(135deg, #42a5f5, #1565c0); }
 
@@ -256,7 +253,6 @@
                     <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
                 </div>
             </div>
-            
             <div class="icon-controls">
                 <div class="icon-btn-wrapper btn-music" onclick="toggleMusicUI()">
                     <div class="icon-circle"><i class="fa fa-music" style="color:white; font-size:20px;"></i></div>
@@ -267,7 +263,6 @@
                     <span class="icon-label">CHAT</span>
                 </div>
             </div>
-
             <div class="cg-bet-panel">
                 <div class="chips-bar">
                     <div class="chip chip-50 active" onclick="setCgChip(50, this)"><div class="chip-label">50</div></div>
@@ -307,18 +302,9 @@
             <div class="r-table-scaler" id="rWrapper">
                 
                 <div class="r-hud-container">
-                    <div class="r-hud-box hud-bal">
-                        <div class="r-lbl">BALANCE</div>
-                        <div class="r-val" id="r-balance">0</div>
-                    </div>
-                    <div class="r-hud-box hud-time">
-                        <div class="r-lbl">TIMER</div>
-                        <div class="r-val" id="r-timer">--</div>
-                    </div>
-                    <div class="r-hud-box hud-bet">
-                        <div class="r-lbl">BET</div>
-                        <div class="r-val" id="r-bet-display">0</div>
-                    </div>
+                    <div class="r-hud-box hud-bal"><div class="r-lbl">BALANCE</div><div class="r-val" id="r-balance">0</div></div>
+                    <div class="r-hud-box hud-time"><div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">--</div></div>
+                    <div class="r-hud-box hud-bet"><div class="r-lbl">BET</div><div class="r-val" id="r-bet-display">0</div></div>
                 </div>
 
                 <div class="r-table-wrapper">
@@ -341,7 +327,7 @@
                         <div class="cell label-cell diamond-cell blk" id="btn-black"><div class="diamond black"></div></div>
                         <div class="cell label-cell zone-bottom odd" id="btn-odd">ODD</div>
                         <div class="cell label-cell zone-bottom high" id="btn-high">19-36</div>
-                        </div>
+                    </div>
                     
                     <div class="chips-bar">
                         <div class="chip chip-50 active" onclick="setRChip(50, this)"><div class="chip-label">50</div></div>
@@ -372,6 +358,7 @@
         let myUser = "Guest";
         let myBal = 0;
         let currentRoom = 'lobby';
+        let currentTableScale = 1; // Global Scale Tracker
 
         // --- AUTH ---
         const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
@@ -487,21 +474,22 @@
             let w = window.innerWidth;
             let wrapper = document.getElementById('rWrapper');
             
-            // Available space logic
+            // Available space logic (Height - HUD - Padding)
             let availH = h - 20; 
             let availW = w - 20; 
             
-            // Table Base Size (approx)
+            // Base size of table wrapper is approx 760 x 500
             let baseW = 760;
             let baseH = 500; 
             
             let scaleH = availH / baseH; 
             let scaleW = availW / baseW; 
-            let scale = Math.min(scaleH, scaleW) * 0.92; 
+            let scale = Math.min(scaleH, scaleW) * 0.95; 
             
             if(scale < 0.5) scale = 0.5;
-            if(scale > 1.6) scale = 1.6;
+            if(scale > 1.8) scale = 1.8; // Allow larger upscale for HD
             
+            currentTableScale = scale; // Store for chip logic
             wrapper.style.transform = `scale(${scale})`;
         }
 
@@ -580,13 +568,19 @@
             drawWheel(0);
         }
         
+        // --- HOTSPOTS (PRECISION MATH) ---
         function buildHotspots() {
             const overlay = document.getElementById('ghostOverlay');
             overlay.innerHTML = ''; 
             
-            const CELL_W = 42; const CELL_H = 42; const GAP = 2; 
-            const OFFSET_X = 50 + GAP; 
-            const OFFSET_Y = 5; 
+            // GRID CONSTANTS (Matches CSS)
+            const PAD = 5; 
+            const GAP = 2; 
+            const COL_W = 42; 
+            const ROW_H = 42; 
+            const ZERO_W = 50;
+            const OFFSET_X = PAD + ZERO_W + GAP; // 57px
+            const OFFSET_Y = PAD; // 5px
 
             function createZone(x, y, w, h, numbers) {
                 let el = document.createElement('div');
@@ -600,44 +594,44 @@
                 overlay.appendChild(el);
             }
 
-            // Columns loop
+            // Columns
             for(let c=0; c<12; c++) {
-                let x = OFFSET_X + (c * (CELL_W + GAP));
+                let x = OFFSET_X + (c * (COL_W + GAP));
                 let nTop = (c * 3) + 3; 
                 let nMid = (c * 3) + 2; 
                 let nBot = (c * 3) + 1; 
                 
-                // Straight
-                createZone(x+8, 8, CELL_W-16, CELL_H-16, [nTop]);
-                createZone(x+8, CELL_H+GAP+8, CELL_W-16, CELL_H-16, [nMid]);
-                createZone(x+8, (CELL_H+GAP)*2+8, CELL_W-16, CELL_H-16, [nBot]);
+                // Straight (Inner part of cell)
+                createZone(x+8, OFFSET_Y+8, COL_W-16, ROW_H-16, [nTop]);
+                createZone(x+8, OFFSET_Y+ROW_H+GAP+8, COL_W-16, ROW_H-16, [nMid]);
+                createZone(x+8, OFFSET_Y+(ROW_H+GAP)*2+8, COL_W-16, ROW_H-16, [nBot]);
 
                 // Vertical Splits
-                createZone(x, CELL_H - 6, CELL_W, 12, [nTop, nMid]); 
-                createZone(x, (CELL_H*2) + GAP - 6, CELL_W, 12, [nMid, nBot]);
+                createZone(x, OFFSET_Y + ROW_H - 6, COL_W, 12, [nTop, nMid]); 
+                createZone(x, OFFSET_Y + (ROW_H*2) + GAP - 6, COL_W, 12, [nMid, nBot]);
                 
-                // Street (Top of 3,6,9...)
-                createZone(x, -10, CELL_W, 15, [nBot, nMid, nTop]); 
+                // Street (Top edge)
+                createZone(x, OFFSET_Y - 10, COL_W, 15, [nBot, nMid, nTop]); 
 
                 if(c < 11) {
                     let nextTop = nTop + 3; let nextMid = nMid + 3; let nextBot = nBot + 3;
-                    let borderX = x + CELL_W - 6;
+                    let borderX = x + COL_W - 6;
                     // Horizontal Splits
-                    createZone(borderX, 0, 12, CELL_H, [nTop, nextTop]); 
-                    createZone(borderX, CELL_H+GAP, 12, CELL_H, [nMid, nextMid]);
-                    createZone(borderX, (CELL_H+GAP)*2, 12, CELL_H, [nBot, nextBot]);
+                    createZone(borderX, OFFSET_Y, 12, ROW_H, [nTop, nextTop]); 
+                    createZone(borderX, OFFSET_Y+ROW_H+GAP, 12, ROW_H, [nMid, nextMid]);
+                    createZone(borderX, OFFSET_Y+(ROW_H+GAP)*2, 12, ROW_H, [nBot, nextBot]);
                     // Corners
-                    createZone(borderX, CELL_H - 6, 12, 12, [nTop, nMid, nextTop, nextMid]);
-                    createZone(borderX, (CELL_H*2) + GAP - 6, 12, 12, [nMid, nBot, nextMid, nextBot]);
+                    createZone(borderX, OFFSET_Y + ROW_H - 6, 12, 12, [nTop, nMid, nextTop, nextMid]);
+                    createZone(borderX, OFFSET_Y + (ROW_H*2) + GAP - 6, 12, 12, [nMid, nBot, nextMid, nextBot]);
                     // Six Line
-                    createZone(borderX, -10, 12, 15, [nBot, nMid, nTop, nextBot, nextMid, nextTop]);
+                    createZone(borderX, OFFSET_Y - 10, 12, 15, [nBot, nMid, nTop, nextBot, nextMid, nextTop]);
                 }
             }
             
-            // 0
-            createZone(0, 0, 50, (CELL_H+GAP)*3, [0]);
+            // 0 Zone
+            createZone(PAD, PAD, ZERO_W, (ROW_H+GAP)*3, [0]);
             
-            // Map Buttons
+            // Bind Buttons via Scale-Corrected Logic
             bindButton('btn-red', REDS);
             bindButton('btn-black', range(1,36).filter(x=>!REDS.includes(x)));
             bindButton('btn-even', range(1,36).filter(x=>x%2===0));
@@ -656,12 +650,14 @@
             let el = document.getElementById(id);
             if(el) el.onclick = () => {
                 let rect = el.getBoundingClientRect();
-                let wrap = document.getElementById('grid').getBoundingClientRect(); // relative to grid container
-                placeRouletteBet(
-                    (rect.left - wrap.left) + rect.width/2, 
-                    (rect.top - wrap.top) + rect.height/2, 
-                    nums
-                );
+                let wrap = document.getElementById('grid').getBoundingClientRect();
+                
+                // IMPORTANT: Calculate unscaled offset
+                // (Screen Coord - Wrap Screen Coord) / scale
+                let x = ((rect.left + rect.width/2) - wrap.left) / currentTableScale;
+                let y = ((rect.top + rect.height/2) - wrap.top) / currentTableScale;
+                
+                placeRouletteBet(x, y, nums);
             };
         }
 
@@ -672,7 +668,7 @@
             myBal -= rChip; updateDisplay();
             rBetTotal += rChip; document.getElementById('r-bet-display').innerText = rBetTotal;
             
-            // VISUAL CHIP (NEW STYLE)
+            // VISUAL CHIP
             let chipStyle = 'chip-50';
             if(rChip===100) chipStyle='chip-100';
             if(rChip===1000) chipStyle='chip-1k';
@@ -685,7 +681,7 @@
             mk.style.position = 'absolute';
             mk.style.left = x + 'px'; 
             mk.style.top = y + 'px';
-            mk.style.transform = 'translate(-50%, -50%) scale(0.8)'; // Center it
+            mk.style.transform = 'translate(-50%, -50%)'; // Just center it, size handled in CSS
             
             document.getElementById('rOverlay').appendChild(mk);
 
