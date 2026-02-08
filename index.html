@@ -9,18 +9,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* === GLOBAL RESET & SHARED === */
-        body { margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
+        /* GLOBAL */
+        body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
         .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; }
         .view-section.active { display: flex; }
         .global-back { position: fixed; top: 10px; left: 10px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
 
-        /* === AUTH & LOBBY === */
+        /* AUTH */
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
         .auth-box { background: #111; border: 1px solid #333; padding: 40px; border-radius: 12px; text-align: center; width: 300px; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        
+
+        /* CHAT PANEL */
+        .chat-panel { position: fixed; right: 0; top: 0; width: 300px; height: 100%; background: rgba(0,0,0,0.9); border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 8000; transition: transform 0.3s; }
+        .chat-panel.hidden { transform: translateX(100%); }
+        .chat-header { padding: 10px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 12px; border-bottom: 1px solid #333; }
+        .chat-tabs { display: flex; border-bottom: 1px solid #333; }
+        .chat-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 14px; }
+        .chat-tab.active { background: #222; color: #FFD700; border-bottom: 2px solid #FFD700; }
+        .chat-content { flex: 1; overflow-y: auto; padding: 10px; display: none; }
+        .chat-content.active { display: block; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #333; display: flex; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; }
+        .chat-msg { margin-bottom: 8px; font-size: 14px; word-wrap: break-word; }
+
+        /* MUSIC PLAYER (Roulette) */
+        .music-player { position: absolute; bottom: 20px; left: 20px; width: 250px; background: rgba(0,0,0,0.8); border: 1px solid #444; border-radius: 8px; padding: 10px; z-index: 50; display: none; }
+        .mp-title { font-size: 12px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
+        .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
+        .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
+        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
+        .mp-status { font-size: 10px; color: #00E5FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* LOBBY */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
         .lobby-grid { display: flex; gap: 40px; }
         .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
@@ -28,52 +50,34 @@
         .gc-title { font-size: 32px; color: #FFD700; font-weight: 800; margin-bottom: 20px; }
         .gc-icon { font-size: 60px; margin-bottom: 20px; }
 
-        /* === CHAT SYSTEM (FROM COLOR GAME) === */
-        .chat-panel { position: fixed; right: 0; top: 0; width: 300px; height: 100%; background: rgba(0,0,0,0.9); border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 8000; transition: transform 0.3s; }
-        .chat-panel.closed { transform: translateX(100%); }
-        .chat-tabs { display: flex; border-bottom: 1px solid #333; }
-        .chat-tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; }
-        .chat-tab.active { background: #222; color: #FFD700; border-bottom: 2px solid #FFD700; }
-        .chat-content { flex: 1; overflow-y: auto; padding: 10px; display: none; }
-        .chat-content.active { display: block; }
-        .chat-input-area { padding: 10px; border-top: 1px solid #333; display: flex; }
-        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; }
-        .chat-msg { margin-bottom: 8px; font-size: 14px; word-wrap: break-word; }
-        
-        /* === COLOR GAME STYLES === */
+        /* COLOR GAME */
         #view-colorgame { background: url('background.jpg') center/cover; justify-content: center; align-items: center; }
-        .cg-main-area { width: calc(100% - 300px); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .cg-focus { text-align: center; margin-bottom: 30px; }
+        .cg-main-area { width: calc(100% - 300px); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .cg-timer { font-size: 100px; font-weight: 800; text-shadow: 0 0 20px cyan; line-height: 1; }
         .cg-status { font-size: 24px; letter-spacing: 5px; color: #aaa; margin-bottom: 20px; }
         .cg-dice-row { display: flex; gap: 20px; justify-content: center; }
         .die { width: 90px; height: 90px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 3px solid rgba(255,255,255,0.2); background: #222; }
         .die.red { background: #d32f2f; } .die.green { background: #388e3c; } .die.blue { background: #1976d2; }
         .die.pink { background: #e91e63; } .die.white { background: #eee; color:black; } .die.yellow { background: #fbc02d; color:black; }
-        
-        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; }
+        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; margin-top: 30px; }
         .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
         .cg-bet-card { width: 80px; height: 100px; border: 1px solid #555; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; transition: 0.2s; }
-        .cg-bet-card:hover { transform: scale(1.05); }
         .cg-chip-rack { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
         .cg-chip { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; }
         .cg-chip.active { border-color: #FFD700; background: #444; color: #FFD700; transform: scale(1.1); }
 
-        /* === ROULETTE STYLES === */
+        /* ROULETTE */
         :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
         #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; align-items: center; justify-content: center; }
-        .r-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-
+        .r-main-area { width: calc(100% - 300px); height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #wheel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 5000; display: none; justify-content: center; align-items: center; }
         #wheel-overlay.show { display: flex; }
         canvas { border-radius: 50%; }
         .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); border-top: 36px solid #f0e6d2; border-left: 18px solid transparent; border-right: 18px solid transparent; z-index: 5005; }
-        
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 25px; border-radius: 20px; border: 8px solid #002b12; box-shadow: 0 0 0 10px #F3C620; display: flex; flex-direction: column; align-items: center; gap: 15px; transform: scale(0.9); }
         .r-history { width: 705px; height: 40px; background: rgba(0,0,0,0.3); border-radius: 5px; display: flex; align-items: center; gap: 5px; overflow: hidden; padding: 0 5px; }
         .hist-ball { width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 12px; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; }
-
         .r-grid { display: grid; grid-template-columns: 56px repeat(12, 46px) 38px; grid-template-rows: repeat(3, 46px) 46px 46px; gap: 3px; padding: 8px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); }
         .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 16px; cursor: pointer; border: 2px solid var(--grid-gold); }
         .red-cell { background-color: var(--cell-red); } .black-cell { background-color: var(--cell-black); }
@@ -84,17 +88,13 @@
         .zone-bottom { grid-row: 5; } .low { grid-column: 2 / 4; } .even { grid-column: 4 / 6; } .odd { grid-column: 10 / 12; } .high { grid-column: 12 / 14; }
         .diamond-cell { grid-column: 6 / 8; grid-row: 5; display:flex; justify-content:center; align-items:center; } .diamond-cell.blk { grid-column: 8 / 10; }
         .diamond { width: 20px; height: 20px; transform: rotate(45deg); } .diamond.red { background: #d32f2f; } .diamond.black { background: #111; }
-        
         .r-chip-marker { width: 24px; height: 24px; border-radius: 50%; background: white; color: black; position: absolute; z-index: 100; font-size: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; pointer-events: none; border: 2px dashed #333; }
-        
-        /* Winner Animation */
         #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 4000; display:none; justify-content:center; align-items:center; }
         #winner-stage.active { display:flex; }
         .win-box { background: #222; border: 4px solid #FFD700; padding: 20px; border-radius: 10px; text-align: center; animation: popIn 0.3s; }
         .win-num { font-size: 60px; font-weight: 800; }
         .win-amt { font-size: 30px; color: #FFD700; }
         @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-
     </style>
 </head>
 <body>
@@ -110,7 +110,8 @@
         </div>
     </div>
 
-    <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel hidden" id="chatPanel">
+        <div class="chat-header" id="chatTitle">GLOBAL</div>
         <div class="chat-tabs">
             <div class="chat-tab active" onclick="tabChat('public')">PUBLIC</div>
             <div class="chat-tab" onclick="tabChat('support')">SUPPORT</div>
@@ -198,6 +199,21 @@
             </div>
         </div>
 
+        <div class="music-player" id="rMusicPlayer">
+            <div class="mp-title">
+                <span>CASINO DJ</span>
+                <span onclick="document.getElementById('rMusicPlayer').style.display='none'" style="cursor:pointer;">x</span>
+            </div>
+            <div class="mp-controls">
+                <button class="mp-btn" onclick="toggleMusic()"><i class="fa fa-play"></i></button>
+                <button class="mp-btn" onclick="stopMusic()"><i class="fa fa-stop"></i></button>
+            </div>
+            <input class="mp-input" id="musicUrl" placeholder="MP3 URL here...">
+            <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
+            <div class="mp-status" id="mpStatus">Ready</div>
+            <audio id="audioEl" loop></audio>
+        </div>
+
         <div class="r-main-area">
             <div style="margin-bottom:10px; display:flex; gap:20px; align-items:center;">
                 <div style="text-align:center;">
@@ -207,6 +223,10 @@
                 <div style="text-align:center;">
                     <div style="font-size:10px; color:#aaa;">BET</div>
                     <div id="r-bet-display" style="font-size:30px; color:white; font-weight:bold;">0</div>
+                </div>
+                <div style="text-align:center; cursor:pointer;" onclick="document.getElementById('rMusicPlayer').style.display='block'">
+                    <div style="font-size:24px;">🎵</div>
+                    <div style="font-size:10px; color:#aaa;">MUSIC</div>
                 </div>
             </div>
 
@@ -276,10 +296,19 @@
             document.getElementById('input-'+t).style.display='flex';
             event.target.classList.add('active');
         }
-        function sendChat() { let i = document.getElementById('chatInput'); if(i.value) { socket.emit('chat_msg', i.value); i.value=''; } }
-        function sendSupport() { let i = document.getElementById('supportInput'); if(i.value) { socket.emit('support_msg', i.value); i.value=''; } }
+        function sendChat() { 
+            let i = document.getElementById('chatInput'); 
+            if(i.value) { socket.emit('chat_msg', { msg: i.value, room: currentRoom }); i.value=''; } 
+        }
+        function sendSupport() { 
+            let i = document.getElementById('supportInput'); 
+            if(i.value) { socket.emit('support_msg', { msg: i.value, room: currentRoom }); i.value=''; } 
+        }
         
         socket.on('chat_broadcast', (d) => {
+            // Only show if it matches current room
+            if(d.room && d.room !== currentRoom) return;
+
             if(d.type === 'public') {
                 let box = document.getElementById('chatList');
                 box.innerHTML += `<div class="chat-msg"><b style="color:#FFD700">${d.user}:</b> ${d.msg}</div>`;
@@ -292,6 +321,14 @@
                 box.scrollTop = box.scrollHeight;
             }
         });
+        socket.on('chat_history', (hist) => {
+            let box = document.getElementById('chatList');
+            box.innerHTML = ''; // Clear old
+            hist.forEach(d => {
+                box.innerHTML += `<div class="chat-msg"><b style="color:#FFD700">${d.user}:</b> ${d.msg}</div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
 
         // --- NAV ---
         function enterGame(g) {
@@ -299,7 +336,10 @@
             document.getElementById('view-'+g).classList.add('active');
             document.getElementById('backBtn').style.display = 'block';
             
-            // Adjust chat panel visibility if needed (e.g. keep visible but allow shrinking)
+            // Show Chat
+            document.getElementById('chatPanel').classList.remove('hidden');
+            document.getElementById('chatTitle').innerText = g.toUpperCase() + " CHAT";
+            document.getElementById('chatList').innerHTML = ''; // Clear UI, wait for history
             
             currentRoom = g;
             socket.emit('switch_room', g);
@@ -309,15 +349,39 @@
             document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
             document.getElementById('view-lobby').classList.add('active');
             document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('chatPanel').classList.add('hidden');
             currentRoom = 'lobby';
             socket.emit('switch_room', 'lobby');
             clearRoulette();
+            stopMusic(); // Stop music when leaving roulette
         }
         socket.on('lobby_counts', (c) => {
             document.getElementById('count-colorgame').innerText = (c.colorgame||0) + " Playing";
             document.getElementById('count-roulette').innerText = (c.roulette||0) + " Playing";
         });
         socket.on('notification', (d) => alert(d.msg));
+
+        // --- MUSIC PLAYER ---
+        const audio = document.getElementById('audioEl');
+        // Default casino jazz
+        const DEFAULT_MUSIC = "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; 
+
+        function toggleMusic() {
+            if(audio.paused) { 
+                if(!audio.src) audio.src = DEFAULT_MUSIC;
+                audio.play(); 
+                document.getElementById('mpStatus').innerText = "Playing: Standard Jazz";
+            } else { audio.pause(); }
+        }
+        function stopMusic() { audio.pause(); audio.currentTime=0; }
+        function playCustom() {
+            let url = document.getElementById('musicUrl').value;
+            if(url) {
+                audio.src = url;
+                audio.play();
+                document.getElementById('mpStatus').innerText = "Playing: Custom Track";
+            }
+        }
 
         // --- COLOR GAME ---
         let cgChip = 50;
@@ -362,7 +426,6 @@
                 grid.appendChild(d);
                 bindClick(d, [i]);
             }
-            // Bind Buttons
             bindClick(document.getElementById('cell-0'), [0]);
             bindClick(document.getElementById('btn-red'), REDS);
             bindClick(document.getElementById('btn-black'), range(1,36).filter(x=>!REDS.includes(x)));
@@ -385,7 +448,6 @@
                 myBal -= rChip; updateDisplay();
                 rBetTotal += rChip; document.getElementById('r-bet-display').innerText = rBetTotal;
                 
-                // Visual
                 let rect = el.getBoundingClientRect();
                 let wrap = document.getElementById('rWrapper').getBoundingClientRect();
                 let x = rect.left - wrap.left + rect.width/2;
