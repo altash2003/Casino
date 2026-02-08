@@ -41,11 +41,25 @@
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
         .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
         .mp-status { font-size: 10px; color: #00E5FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom:5px; }
-        
-        /* CUSTOM VOLUME SLIDER (Small Circle) */
         .vol-slider { -webkit-appearance: none; width: 100%; height: 4px; background: #333; border-radius: 2px; outline: none; }
         .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #FFD700; cursor: pointer; transition: 0.2s; }
         .vol-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* --- NEW CHIP STYLES --- */
+        .chips-bar { display: flex; gap: 12px; padding: 8px 25px; background: rgba(0,0,0,0.2); border-radius: 60px; border: 1px solid rgba(255,255,255,0.05); justify-content: center; }
+        .chip { width: 48px; height: 48px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 6px 10px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
+        .chip:hover { transform: scale(1.1); }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.6); }
+        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
+        .chip::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
+        .chip-label { position: relative; z-index: 10; width: 26px; height: 26px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; color: #333; }
+        
+        /* Chip Colors */
+        .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
+        .chip-100 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
+        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
+        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
+        .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
 
         /* LOBBY */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
@@ -73,30 +87,21 @@
         .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; margin-top: 30px; }
         .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
         .cg-bet-card { width: 80px; height: 100px; border: 1px solid #555; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; transition: 0.2s; }
-        .cg-chip-rack { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
-        .cg-chip { width: 35px; height: 35px; border-radius: 50%; background: #222; border: 2px solid #555; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; }
-        .cg-chip.active { border-color: #FFD700; background: #444; color: #FFD700; transform: scale(1.1); }
-
+        
         /* ROULETTE */
         :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
         #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; align-items: center; justify-content: center; overflow:hidden; }
-        
         .r-main-area { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-origin: center center; }
-        
-        /* WHEEL POPUP (FROM FILE) */
         #wheel-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.5s ease; }
         #wheel-overlay.show { display: flex; animation: fadeIn 0.3s; opacity: 1; }
         .wheelPanel { width: 500px; max-width: 95vw; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-radius: 50%; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
         .stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         canvas { border-radius: 50%; width: 100%; height: 100%; object-fit: contain; }
         .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 5005; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); pointer-events: none; transition: opacity 0.5s ease; opacity: 1; }
-
-        /* ROULETTE HUD */
         .r-hud-row { display:flex; gap:20px; margin-bottom:10px; width: 100%; justify-content:center; }
         .r-hud-box { background:#111; border:1px solid #444; border-radius:8px; padding:10px 20px; text-align:center; min-width:100px; }
         .r-lbl { font-size:10px; color:#888; letter-spacing:1px; font-weight:bold; }
         .r-val { font-size:24px; color:white; font-weight:bold; }
-        
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 8px solid #002b12; box-shadow: 0 0 0 10px #F3C620; display: flex; flex-direction: column; align-items: center; gap: 10px; transition: transform 0.2s; }
         .r-history { width: 100%; height: 35px; background: rgba(0,0,0,0.3); border-radius: 5px; display: flex; align-items: center; gap: 5px; overflow: hidden; padding: 0 5px; }
         .hist-ball { width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 11px; }
@@ -112,12 +117,9 @@
         .diamond-cell { grid-column: 6 / 8; grid-row: 5; display:flex; justify-content:center; align-items:center; } .diamond-cell.blk { grid-column: 8 / 10; }
         .diamond { width: 18px; height: 18px; transform: rotate(45deg); } .diamond.red { background: #d32f2f; } .diamond.black { background: #111; }
         .r-chip-marker { width: 22px; height: 22px; border-radius: 50%; background: white; color: black; position: absolute; z-index: 100; font-size: 9px; display: flex; justify-content: center; align-items: center; font-weight: bold; pointer-events: none; border: 2px dashed #333; }
-        
-        /* BOTTOM CONTROLS */
         .bottom-controls { display:flex; gap:20px; margin-top:15px; }
         .control-btn { background:rgba(255,255,255,0.1); border:1px solid #555; padding:10px 20px; border-radius:20px; color:white; font-weight:bold; cursor:pointer; display:flex; gap:10px; align-items:center; transition:0.2s; }
         .control-btn:hover { background:rgba(255,255,255,0.2); }
-
         #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 4000; display:none; justify-content:center; align-items:center; }
         #winner-stage.active { display:flex; }
         .win-box { background: #222; border: 4px solid #FFD700; padding: 20px; border-radius: 10px; text-align: center; animation: popIn 0.3s; }
@@ -240,12 +242,24 @@
             </div>
 
             <div class="cg-bet-panel">
-                <div class="cg-chip-rack">
-                    <div class="cg-chip active" onclick="setCgChip(50, this)">50</div>
-                    <div class="cg-chip" onclick="setCgChip(100, this)">100</div>
-                    <div class="cg-chip" onclick="setCgChip(500, this)">500</div>
-                    <div class="cg-chip" onclick="setCgChip(1000, this)">1K</div>
+                <div class="chips-bar">
+                    <div class="chip chip-50 active" onclick="setCgChip(50, this)">
+                        <div class="chip-label">50</div>
+                    </div>
+                    <div class="chip chip-100" onclick="setCgChip(100, this)">
+                        <div class="chip-label">100</div>
+                    </div>
+                    <div class="chip chip-1k" onclick="setCgChip(1000, this)">
+                        <div class="chip-label">1K</div>
+                    </div>
+                    <div class="chip chip-10k" onclick="setCgChip(10000, this)">
+                        <div class="chip-label">10K</div>
+                    </div>
+                    <div class="chip chip-100k" onclick="setCgChip(100000, this)">
+                        <div class="chip-label">100K</div>
+                    </div>
                 </div>
+
                 <div class="cg-bet-grid">
                     <div class="cg-bet-card" style="background: #d32f2f;" onclick="placeCgBet('RED')"><b>RED</b><span id="cg-bet-RED">0</span></div>
                     <div class="cg-bet-card" style="background: #388e3c;" onclick="placeCgBet('GREEN')"><b>GREEN</b><span id="cg-bet-GREEN">0</span></div>
@@ -312,11 +326,22 @@
                     <div class="cell label-cell zone-bottom high" id="btn-high">19-36</div>
                     </div>
                 
-                <div class="cg-chip-rack">
-                    <div class="cg-chip r-chip-btn active" onclick="setRChip(50, this)">50</div>
-                    <div class="cg-chip r-chip-btn" onclick="setRChip(100, this)">100</div>
-                    <div class="cg-chip r-chip-btn" onclick="setRChip(500, this)">500</div>
-                    <div class="cg-chip r-chip-btn" onclick="setRChip(1000, this)">1k</div>
+                <div class="chips-bar">
+                    <div class="chip chip-50 active" onclick="setRChip(50, this)">
+                        <div class="chip-label">50</div>
+                    </div>
+                    <div class="chip chip-100" onclick="setRChip(100, this)">
+                        <div class="chip-label">100</div>
+                    </div>
+                    <div class="chip chip-1k" onclick="setRChip(1000, this)">
+                        <div class="chip-label">1K</div>
+                    </div>
+                    <div class="chip chip-10k" onclick="setRChip(10000, this)">
+                        <div class="chip-label">10K</div>
+                    </div>
+                    <div class="chip chip-100k" onclick="setRChip(100000, this)">
+                        <div class="chip-label">100K</div>
+                    </div>
                 </div>
             </div>
 
@@ -472,7 +497,11 @@
         // --- COLOR GAME ---
         let cgChip = 50;
         let cgBetTotal = 0;
-        function setCgChip(v, el) { cgChip = v; document.querySelectorAll('.cg-chip').forEach(e=>e.classList.remove('active')); el.classList.add('active'); }
+        function setCgChip(v, el) { 
+            cgChip = v; 
+            el.parentElement.querySelectorAll('.chip').forEach(e=>e.classList.remove('active')); 
+            el.classList.add('active'); 
+        }
         function placeCgBet(c) {
             if(myBal < cgChip) { alert("Insufficient funds"); return; }
             myBal -= cgChip; updateDisplay();
@@ -503,7 +532,11 @@
         // --- ROULETTE ---
         const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
         let rChip = 50; let rBetTotal = 0;
-        function setRChip(v, el) { rChip = v; document.querySelectorAll('.r-chip-btn').forEach(e=>e.classList.remove('active')); el.classList.add('active'); }
+        function setRChip(v, el) { 
+            rChip = v; 
+            el.parentElement.querySelectorAll('.chip').forEach(e=>e.classList.remove('active')); 
+            el.classList.add('active'); 
+        }
         
         function initRoulette() {
             let grid = document.getElementById('grid');
@@ -588,7 +621,7 @@
         
         socket.on('roulette_new_round', clearRoulette);
 
-        // --- NEW HD WHEEL LOGIC (Copied from WHEEL ONLY.html) ---
+        // --- NEW HD WHEEL LOGIC ---
         const cvs = document.getElementById('wheelCanvas'); const ctx = cvs.getContext('2d');
         const W = 800, H = 800, CX = 400, CY = 400;
         const R_TRACK_OUTER = 380, R_TRACK_INNER = 330, R_POCKETS = 320, R_NUMBERS = 250, R_HUB = 90;
