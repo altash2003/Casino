@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// --- DB & LOGS ---
+// --- DATABASE & LOGGING ---
 const DB_FILE = 'database.json';
 let users = {};
 if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } }
@@ -20,151 +20,119 @@ function logHistory(username, msg, bal) {
 }
 
 let activeSockets = {}; 
-let supportHistory = []; 
 let playerCounts = { lobby: 0, colorgame: 0, roulette: 0 };
 let chatHistory = { colorgame: [], roulette: [] };
-let rouletteHistory = []; // Global server-side history for roulette
+let rouletteHistory = []; 
 
 app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
-app.get('/admin', (req, res) => { res.sendFile(__dirname + '/admin.html'); });
 
-// --- ROULETTE GAME LOOP (STRICT STATE MACHINE) ---
+// ==========================================
+//  ROULETTE GAME ENGINE (STATE MACHINE)
+// ==========================================
 let rState = {
-    phase: 'BETTING', // BETTING, SPINNING, RESULT, PAYOUT
+    phase: 'BETTING', // BETTING, PROCESSING
     timeLeft: 20,
-    bets: [] // { username, numbers, amount, socketId }
+    bets: [] 
 };
 
+// Main Heartbeat (1 Second Tick)
 setInterval(() => {
-    // 1. BETTING PHASE
+    
+    // PHASE 1: BETTING (Countdown)
     if(rState.phase === 'BETTING') {
         rState.timeLeft--;
-        io.to('roulette').emit('roulette_timer', rState.timeLeft); // Sync Timer
+        
+        // Broadcast Timer to ALL clients
+        io.to('roulette').emit('roulette_state_update', {
+            phase: 'BETTING',
+            time: rState.timeLeft
+        });
 
-        // Countdown Ticks (3, 2, 1) handled by client based on this number
+        // 3... 2... 1... Audio Trigger handled by Client based on time
 
+        // TIME UP -> START GAME SEQUENCE
         if(rState.timeLeft <= 0) {
-            // TRANSITION TO SPINNING
-            rState.phase = 'SPINNING';
-            io.to('roulette').emit('roulette_state', 'LOCKED'); // Lock inputs immediately
-            
-            // Generate Result
-            let resultNum = Math.floor(Math.random() * 37);
-            
-            // Log to History
-            rouletteHistory.unshift(resultNum);
-            if(rouletteHistory.length > 23) rouletteHistory.pop();
-
-            // Broadcast Spin Target
-            io.to('roulette').emit('roulette_spin', resultNum);
-
-            // PROCESS WINNERS (Internal Calculation)
-            let roundWinners = [];
-            rState.bets.forEach(bet => {
-                if(bet.numbers.includes(resultNum)) {
-                    // Payout Logic
-                    let count = bet.numbers.length;
-                    let payoutMult = 0;
-                    if (count === 1) payoutMult = 36;
-                    else if (count === 2) payoutMult = 18;
-                    else if (count === 3) payoutMult = 12;
-                    else if (count === 4) payoutMult = 9;
-                    else if (count === 6) payoutMult = 6;
-                    else if (count === 12) payoutMult = 3;
-                    else if (count === 18) payoutMult = 2;
-                    
-                    let winAmount = bet.amount * payoutMult;
-                    
-                    // Update User DB
-                    if(users[bet.username]) {
-                        users[bet.username].balance += winAmount;
-                        roundWinners.push({ socketId: bet.socketId, win: winAmount, num: resultNum });
-                        logHistory(bet.username, `WIN Roulette +${winAmount}`, users[bet.username].balance);
-                    }
-                }
-            });
-            saveDatabase();
-
-            // WAIT FOR ANIMATIONS TO FINISH ON CLIENT
-            // Timeline:
-            // 0s: Start Spin (Duration 4s)
-            // 4s: Wheel Stop & Hold (Duration 1.5s)
-            // 5.5s: Wheel Hide, Reveal Table (Duration 1.5s)
-            // 7s: Start Gather Anim (Duration 2s)
-            // 9s: Start Payout Coin Anim (Duration 1.5s)
-            // 10.5s: Update Balances & Reset
-            
-            setTimeout(() => {
-                // SEND PAYOUTS (Triggers Coin Anim on Client)
-                roundWinners.forEach(w => {
-                    io.to(w.socketId).emit('roulette_payout', { amount: w.win, number: resultNum, balance: users[activeSockets[w.socketId]?.username]?.balance });
-                });
-                
-                // Update Histories for everyone
-                io.to('roulette').emit('roulette_history_update', rouletteHistory);
-
-                // RESET ROUND
-                setTimeout(() => {
-                    rState.phase = 'BETTING';
-                    rState.timeLeft = 20;
-                    rState.bets = [];
-                    io.to('roulette').emit('roulette_state', 'NEW_ROUND');
-                }, 1500); // Wait for coin anim to finish
-
-            }, 9000); // 4 + 1.5 + 1.5 + 2 = 9s
+            startRouletteRound();
         }
     }
+
 }, 1000);
 
+function startRouletteRound() {
+    rState.phase = 'PROCESSING';
+    
+    // 1. LOCK BETS (Immediate)
+    io.to('roulette').emit('roulette_state_update', { phase: 'LOCKED', time: 0 });
 
-// --- COLOR GAME LOOP ---
-let colorState = { status: 'BETTING', timeLeft: 20, bets: [] };
-setInterval(() => {
-    if(colorState.status === 'BETTING') {
-        colorState.timeLeft--;
-        if(colorState.timeLeft <= 3) io.to('colorgame').emit('countdown_beep', colorState.timeLeft);
-        if(colorState.timeLeft <= 0) {
-            colorState.status = 'ROLLING';
-            const COLORS = ['RED', 'GREEN', 'BLUE', 'YELLOW', 'PINK', 'WHITE'];
-            let result = [COLORS[Math.floor(Math.random()*6)], COLORS[Math.floor(Math.random()*6)], COLORS[Math.floor(Math.random()*6)]];
-            io.to('colorgame').emit('game_rolling');
-            setTimeout(() => {
-                io.to('colorgame').emit('game_result', result);
-                // Process Color Winners
-                colorState.bets.forEach(bet => {
-                    let matches = result.filter(c => c === bet.color).length;
-                    if(matches > 0) {
-                        let win = bet.amount * (matches + 1);
-                        if(users[bet.username]) {
-                            users[bet.username].balance += win;
-                            io.to(bet.socketId).emit('win_notification', { game: 'COLOR GAME', amount: win });
-                            io.to(bet.socketId).emit('update_balance', users[bet.username].balance);
-                        }
-                    }
+    // 2. GENERATE RESULT
+    let resultNum = Math.floor(Math.random() * 37);
+    rouletteHistory.unshift(resultNum);
+    if(rouletteHistory.length > 23) rouletteHistory.pop();
+
+    // 3. BROADCAST SPIN (Clients will show Wheel)
+    // Spin Duration on Client is fixed (e.g. 4s)
+    io.to('roulette').emit('roulette_spin_start', resultNum);
+
+    // 4. CALCULATE WINNERS (Internal)
+    let roundWinners = [];
+    rState.bets.forEach(bet => {
+        if(bet.numbers.includes(resultNum)) {
+            let count = bet.numbers.length;
+            // Payout Multipliers: 1->36x, 2->18x, 3->12x, 4->9x, 6->6x, 12->3x, 18->2x
+            let payoutMult = (count===1)?36 : (count===2)?18 : (count===3)?12 : (count===4)?9 : (count===6)?6 : (count===12)?3 : 2;
+            let winAmount = bet.amount * payoutMult;
+            
+            if(users[bet.username]) {
+                users[bet.username].balance += winAmount;
+                roundWinners.push({ 
+                    socketId: bet.socketId, 
+                    win: winAmount, 
+                    bal: users[bet.username].balance 
                 });
-                saveDatabase();
-                
-                setTimeout(() => {
-                    colorState.status = 'BETTING'; colorState.timeLeft = 20; colorState.bets = [];
-                    io.to('colorgame').emit('timer_update', 20);
-                    io.to('colorgame').emit('game_reset');
-                }, 5000);
-            }, 3000);
-        } else { io.to('colorgame').emit('timer_update', colorState.timeLeft); }
-    }
-}, 1000);
+                logHistory(bet.username, `WIN Roulette +${winAmount}`, users[bet.username].balance);
+            }
+        }
+    });
+    saveDatabase();
 
-// --- SOCKETS ---
+    // 5. SCHEDULE PHASES (Server orchestrates the delay)
+    // The client animation total duration is roughly 11 seconds.
+    // We wait on the server before resetting.
+    
+    setTimeout(() => {
+        // Send Payout Data (Triggers Coin Animation on Client)
+        roundWinners.forEach(w => {
+            io.to(w.socketId).emit('roulette_win_data', { amount: w.win, balance: w.bal, number: resultNum });
+        });
+        
+        // Broadcast History Update
+        io.to('roulette').emit('roulette_history', rouletteHistory);
+
+        // 6. RESET ROUND (After animations finish)
+        setTimeout(() => {
+            rState.phase = 'BETTING';
+            rState.timeLeft = 20;
+            rState.bets = [];
+            io.to('roulette').emit('roulette_reset'); // Clears chips
+        }, 4000); // Time for Payout Anim (2s) + Buffer
+
+    }, 7500); // Time for Spin (4s) + Hold (1.5s) + Reveal (2s)
+}
+
+// ==========================================
+//  SOCKET HANDLING
+// ==========================================
 io.on('connection', (socket) => {
-    io.emit('lobby_counts', playerCounts);
-
+    
+    // --- LOGIN ---
     socket.on('login', (data) => {
         if(users[data.username] && users[data.username].password === data.password) {
             joinRoom(socket, data.username, 'lobby');
             socket.emit('login_success', { username: data.username, balance: users[data.username].balance });
-            // Send initial history
-            socket.emit('roulette_history_update', rouletteHistory);
+            // Send current state immediately so they don't see blank
+            socket.emit('roulette_history', rouletteHistory);
+            socket.emit('roulette_state_update', { phase: rState.phase, time: rState.timeLeft });
         } else { socket.emit('login_error', "Invalid Credentials"); }
     });
 
@@ -177,43 +145,41 @@ io.on('connection', (socket) => {
         } else { socket.emit('login_error', "Username taken"); }
     });
 
+    // --- ROOMS ---
     socket.on('switch_room', (room) => {
         let u = activeSockets[socket.id];
         if(u) joinRoom(socket, u.username, room);
     });
 
+    // --- CHAT ---
     socket.on('chat_msg', (data) => {
         let u = activeSockets[socket.id];
         if(u && data.msg) {
-            let msgObj = { type: 'public', user: u.username, msg: data.msg, room: data.room };
-            if(chatHistory[data.room]) {
-                chatHistory[data.room].push(msgObj);
-                if(chatHistory[data.room].length > 20) chatHistory[data.room].shift();
-            }
+            let msgObj = { user: u.username, msg: data.msg };
             io.to(data.room).emit('chat_broadcast', msgObj);
         }
     });
 
-    socket.on('place_bet', (data) => { // Color Game
-        let u = activeSockets[socket.id];
-        if(!u || colorState.status !== 'BETTING') return;
-        if(users[u.username].balance >= data.amount) {
-            users[u.username].balance -= data.amount;
-            colorState.bets.push({ username: u.username, color: data.color, amount: data.amount, socketId: socket.id });
-        }
-    });
-
+    // --- BETTING (ROULETTE) ---
     socket.on('place_bet_roulette', (data) => {
         let u = activeSockets[socket.id];
-        // Only accept if betting phase
-        if(!u || rState.phase !== 'BETTING') return; 
+        // STRICT CHECK: Betting must be open
+        if(!u || rState.phase !== 'BETTING') return;
         
         if(users[u.username].balance >= data.amount) {
             users[u.username].balance -= data.amount;
-            rState.bets.push({ username: u.username, numbers: data.numbers, amount: data.amount, socketId: socket.id });
+            rState.bets.push({ 
+                username: u.username, 
+                numbers: data.numbers, 
+                amount: data.amount, 
+                socketId: socket.id 
+            });
+            // Ack balance update immediately for UI responsiveness
+            socket.emit('update_balance', users[u.username].balance);
         }
     });
 
+    // --- UNDO / CLEAR ---
     socket.on('roulette_clear', () => {
         let u = activeSockets[socket.id];
         if(!u || rState.phase !== 'BETTING') return;
@@ -230,17 +196,21 @@ io.on('connection', (socket) => {
     socket.on('roulette_undo', () => {
         let u = activeSockets[socket.id];
         if(!u || rState.phase !== 'BETTING') return;
+        // Find last bet from this user
         let myBets = rState.bets.filter(b => b.socketId === socket.id);
         if(myBets.length > 0) {
             let lastBet = myBets[myBets.length - 1];
             users[u.username].balance += lastBet.amount;
+            // Remove from main array (find index)
             let idx = rState.bets.lastIndexOf(lastBet);
             if(idx > -1) rState.bets.splice(idx, 1);
+            
             socket.emit('update_balance', users[u.username].balance);
             socket.emit('bet_undone');
         }
     });
 
+    // --- DISCONNECT ---
     socket.on('disconnect', () => {
         let u = activeSockets[socket.id];
         if(u) {
@@ -260,9 +230,7 @@ function joinRoom(socket, username, room) {
     activeSockets[socket.id] = { username: username, room: room };
     socket.join(room);
     if(playerCounts[room] !== undefined) playerCounts[room]++;
-    io.emit('lobby_counts', playerCounts);
-    if(chatHistory[room]) { socket.emit('chat_history', chatHistory[room]); }
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Casino running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Casino Running on Port ${PORT}`));
