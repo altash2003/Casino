@@ -3,907 +3,1212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CASINO</title>
+    <title>Roulette - Final Logic V5</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* GLOBAL RESET */
-        body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
-        .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; }
-        .view-section.active { display: flex; }
-        .global-back { position: fixed; top: 10px; left: 10px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
+        :root {
+            --bg-felt: #01431E; 
+            --grid-gold: #F3C620; /* Indian Yellow */
+            --cell-red: #d32f2f;
+            --cell-black: #222;
+            --btn-classic-bg: #263238;
+            --btn-classic-border: #455a64;
+        }
 
-        /* AUTH OVERLAY */
-        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-        .auth-box { background: #111; border: 1px solid #333; padding: 40px; border-radius: 12px; text-align: center; width: 300px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
-        .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        body {
+            background-color: #05140a;
+            background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%);
+            color: white;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            user-select: none;
+        }
 
-        /* UNIFIED PANEL POSITION */
-        .panel-position { position: fixed; bottom: 100px; right: 20px; width: 280px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .panel-position.active { display: flex; animation: slideUp 0.2s ease-out; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* SCROLLBAR */
+        .hover-scrollbar::-webkit-scrollbar { width: 6px; background: transparent; }
+        .hover-scrollbar::-webkit-scrollbar-thumb { background: transparent; border-radius: 4px; transition: background 0.3s; }
+        .hover-scrollbar:hover::-webkit-scrollbar-thumb { background: rgba(243, 198, 32, 0.5); }
 
-        /* CHAT SPECIFIC */
-        .chat-panel { height: 350px; }
-        .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 11px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
-        .chat-tabs { display: flex; border-bottom: 1px solid #333; }
-        .chat-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 12px; }
-        .chat-tab.active { background: #222; color: #FFD700; border-bottom: 2px solid #FFD700; }
-        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; scrollbar-width: thin; scrollbar-color: transparent transparent; }
-        .chat-content.active { display: block; }
-        .chat-content:hover { scrollbar-color: rgba(255,255,255,0.2) transparent; }
-        .chat-input-area { padding: 8px; border-top: 1px solid #333; display: flex; background: #1a1a1a; border-radius: 0 0 12px 12px; }
-        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; outline:none; }
-        .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; line-height: 1.4; }
+        #game-root {
+            width: 700px; height: 800px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transform-origin: center center; position: relative;
+        }
 
-        /* MUSIC SPECIFIC */
-        .music-player { height: auto; padding: 10px; }
-        .mp-title { font-size: 11px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
-        .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
-        .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
-        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
-        .mp-status { font-size: 10px; color: #00E5FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom:5px; }
-        .vol-slider { -webkit-appearance: none; width: 100%; height: 4px; background: #333; border-radius: 2px; outline: none; }
-        .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #FFD700; cursor: pointer; transition: 0.2s; }
+        /* --- HUD CONTAINER --- */
+        .hud-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 20px; 
+            margin-bottom: 25px; 
+            width: 100%; 
+            height: 90px; 
+        }
+
+        /* STANDARD HUD BOX (Balance & Bet) */
+        .hud-box {
+            background: linear-gradient(180deg, #111, #000);
+            border: 1px solid #444; border-radius: 12px;
+            width: 180px; 
+            height: 72px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.6);
+            position: relative; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            box-sizing: border-box;
+            transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s;
+        }
+        .hud-box.receiving { transform: scale(1.05); box-shadow: 0 0 25px #4caf50; border-color: #4caf50; }
         
-        /* CHIPS UI */
-        .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
-        .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
+        .hud-label { font-size: 11px; color: #888; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .hud-value { font-size: 22px; font-weight: 600; color: #fff; font-family: 'Courier New', monospace; letter-spacing: -1px; line-height: 1; }
+
+        /* --- TIMER BOX --- */
+        #timer-box {
+            background: linear-gradient(180deg, #111, #000);
+            border: 2px solid #F3C620; 
+            border-radius: 12px; 
+            width: 100px; 
+            height: 72px; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 20px rgba(243, 198, 32, 0.3);
+            opacity: 0; transform: scale(0.9);
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #timer-box.visible { opacity: 1; transform: scale(1); }
+        
+        #timer-box.urgent { 
+            border-color: #d32f2f; 
+            box-shadow: 0 0 40px rgba(211, 47, 47, 0.8); 
+            animation: pulseBox 0.5s infinite; 
+        }
+        #timer-box.urgent .timer-val { color: #ff3d3d; }
+
+        .timer-val { 
+            font-size: 42px; 
+            font-family: 'Oswald', sans-serif; 
+            font-weight: 700;
+            color: #fff; 
+            line-height: 1; 
+            text-align: center;
+            margin-top: 4px; 
+        }
+        
+        @keyframes pulseBox { 
+            0% { transform: scale(1); } 
+            50% { transform: scale(1.05); } 
+            100% { transform: scale(1); } 
+        }
+
+        /* --- TITLE OVERLAY --- */
+        #title-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: flex; justify-content: center; align-items: center;
+            pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
+            z-index: 3000; backdrop-filter: blur(4px);
+        }
+        #title-overlay.active { opacity: 1; }
+        .big-title-text {
+            font-size: 80px; font-weight: 900; color: #fff;
+            text-transform: uppercase; letter-spacing: 5px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            transform: scale(0.5); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+        }
+        #title-overlay.active .big-title-text { transform: scale(1); }
+
+        /* --- TABLE --- */
+        .table-wrapper {
+            position: relative;
+            background-color: var(--bg-felt);
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 10px);
+            padding: 30px 40px; border-radius: 25px;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.8), 0 0 0 8px #002b12, 0 0 0 10px #F3C620, 0 30px 80px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+            transition: opacity 0.3s;
+        }
+        .table-wrapper.disabled { filter: grayscale(0.6); pointer-events: none; opacity: 0.9; }
+
+        /* --- HISTORY --- */
+        .history-strip {
+            width: 705px; height: 50px;
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            display: flex; align-items: center; 
+            justify-content: center; gap: 6px; 
+            padding: 0; 
+            overflow: hidden; box-sizing: border-box; margin-bottom: 5px;
+        }
+        .history-ball {
+            width: 34px; height: 34px; border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center;
+            font-size: 14px; font-weight: 800; color: white; flex-shrink: 0; position: relative;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.6); border: 1px solid rgba(0,0,0,0.2); text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .hist-red { background: radial-gradient(circle at 35% 35%, #ff5252 0%, #d32f2f 40%, #8e0000 100%); }
+        .hist-black { background: radial-gradient(circle at 35% 35%, #555 0%, #222 40%, #000 100%); }
+        .hist-green { background: radial-gradient(circle at 35% 35%, #05a045 0%, #016D29 40%, #004d1a 100%); }
+        .history-ball::after { content: ''; position: absolute; top: 10%; left: 15%; width: 25%; height: 15%; border-radius: 50%; background: radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%); transform: rotate(-45deg); }
+        .history-ball.empty { color: transparent; opacity: 0.3; box-shadow: inset 0 0 5px rgba(0,0,0,0.5); }
+        .history-ball:first-child { border: 2px solid #F3C620; transform: scale(1.15); z-index: 2; box-shadow: 0 0 12px #F3C620; }
+
+        /* --- GRID --- */
+        .grid-frame {
+            width: 705px; display: grid;
+            grid-template-columns: 56px repeat(12, 46px) 38px;
+            grid-template-rows: repeat(3, 46px) 46px 46px;
+            gap: 3px; padding: 8px;
+            border: 2px solid var(--grid-gold); border-radius: 8px; position: relative;
+            background: rgba(0,0,0,0.2); height: 262px; box-sizing: border-box;
+        }
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 16px; color: #fff; cursor: pointer; border: 2px solid var(--grid-gold); box-sizing: border-box; text-shadow: 0 1px 2px rgba(0,0,0,0.5); transition: all 0.1s; }
+        .red-cell { background-color: var(--cell-red); } .black-cell { background-color: var(--cell-black); }
+        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; font-size: 24px; border-top-left-radius: 20px; border-bottom-left-radius: 20px; }
+        .zone-2to1 { grid-column: 14; background-color: var(--bg-felt); font-size: 11px; writing-mode: vertical-rl; color: #F3C620; }
+        .label-cell { background-color: var(--bg-felt); color: white; font-size: 13px; text-transform: uppercase; }
+        .zone-dozen { grid-row: 4; } .doz-1 { grid-column: 2 / 6; } .doz-2 { grid-column: 6 / 10; } .doz-3 { grid-column: 10 / 14; }
+        .zone-bottom { grid-row: 5; } .low { grid-column: 2 / 4; } .even { grid-column: 4 / 6; } .odd { grid-column: 10 / 12; } .high { grid-column: 12 / 14; }
+        .diamond-cell { grid-column: 6 / 8; grid-row: 5; background-color: var(--bg-felt); display: flex; align-items: center; justify-content: center; }
+        .diamond-cell.black-bg { grid-column: 8 / 10; }
+        .diamond { width: 26px; height: 26px; transform: rotate(45deg); pointer-events: none; }
+        .diamond.red { background-color: var(--cell-red); } .diamond.black { background-color: #111; }
+        
+        .cell.highlighted { background-blend-mode: overlay; box-shadow: inset 0 0 0 200px rgba(255, 255, 255, 0.1) !important; border-color: #F3C620 !important; z-index: 10; }
+        .cell.win-indicator { border-color: #fff; box-shadow: 0 0 10px #fff; z-index: 15; }
+        .cell.win-zoom { transform: scale(1.15); z-index: 20; box-shadow: 0 0 15px #F3C620; border-color: #F3C620; }
+
+        .ghost-overlay { position: absolute; top: 8px; left: 8px; width: calc(100% - 16px); height: calc(100% - 16px); pointer-events: none; z-index: 50; }
+        .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; transition: background 0.1s; }
+        .hotspot:hover { background: transparent; }
+
+        /* --- CONTROLS --- */
+        .controls-row-1 { width: 705px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .controls-row-2 { width: 705px; display: flex; justify-content: center; align-items: center; margin-top: 5px; }
+        .controls-disabled { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
+        .french-bar { display: flex; gap: 10px; }
+        .btn-french { width: 110px; height: 42px; background-color: var(--btn-classic-bg); border: 1px solid var(--btn-classic-border); border-radius: 8px; color: #cfd8dc; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; background: #263238; }
+        .btn-french:hover { background-color: #37474f; border-color: white; color: #fff; }
+        .action-bar { display: flex; gap: 12px; }
+        .circle-btn { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s ease; position: relative; color: rgba(255, 255, 255, 0.9); background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); }
+        .circle-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.1); border-color: rgba(255, 255, 255, 0.5); }
+        .icon-svg { width: 24px; height: 24px; fill: currentColor; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
+        .x2-text { font-family: 'Arial Black', sans-serif; font-weight: 900; font-size: 18px; text-shadow: 0 2px 3px rgba(0,0,0,0.5); line-height: 1; margin-top: 1px; }
+        
+        .chips-bar { display: flex; gap: 12px; padding: 8px 25px; background: rgba(0,0,0,0.2); border-radius: 60px; border: 1px solid rgba(255,255,255,0.05); }
+        .chip { width: 48px; height: 48px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 6px 10px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
         .chip:hover { transform: scale(1.1); }
-        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.6); }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
-        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
-        .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
+        .chip::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
+        .chip-label { position: relative; z-index: 10; width: 26px; height: 26px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; color: #333; }
         
-        /* BOARD CHIP */
-        .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; }
-        .chip.chip-board::after { inset: 4px; }
-        .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
-
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-100 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
-
-        /* LOBBY */
-        #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
-        .lobby-grid { display: flex; gap: 40px; }
-        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        .game-card:hover { border-color: #FFD700; transform: translateY(-10px); }
-        .gc-title { font-size: 32px; color: #FFD700; font-weight: 800; margin-bottom: 20px; }
-        .gc-icon { font-size: 60px; margin-bottom: 20px; }
-
-        /* COLOR GAME */
-        #view-colorgame { background: url('background.jpg') center/cover; justify-content: center; align-items: center; }
-        .cg-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 20px; box-sizing: border-box; }
-        .cg-top-bar { display:flex; justify-content:center; gap:40px; width:100%; padding:20px; background:rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-bottom: 1px solid #333; }
-        .hud-stat { text-align:center; }
-        .hud-stat label { font-size:10px; color:#888; font-weight:bold; letter-spacing:1px; display:block; }
-        .hud-stat div { font-size:24px; font-weight:bold; color:white; }
-        .cg-center { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
-        .cg-timer { font-size: 100px; font-weight: 800; text-shadow: 0 0 20px cyan; line-height: 1; }
-        .cg-status { font-size: 24px; letter-spacing: 5px; color: #aaa; margin-bottom: 20px; }
-        .cg-dice-row { display: flex; gap: 20px; justify-content: center; }
-        .die { width: 90px; height: 90px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 3px solid rgba(255,255,255,0.2); background: #222; }
-        .die.red { background: #d32f2f; } .die.green { background: #388e3c; } .die.blue { background: #1976d2; }
-        .die.pink { background: #e91e63; } .die.white { background: #eee; color:black; } .die.yellow { background: #fbc02d; color:black; }
-        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; width: 80%; max-width: 600px; margin-bottom: 20px; }
-        .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 15px; }
-        .cg-bet-card { height: 80px; border: 1px solid #555; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; transition: 0.2s; }
         
-        /* ROULETTE LAYOUT */
-        :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
-        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; overflow:hidden; }
-        .r-main-area { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-origin: center center; }
+        .marker-wrapper { position: absolute; transform: translate(-50%, -50%); pointer-events: none; z-index: 100; transition: top 0.8s ease-in, left 0.8s ease-in, opacity 0.8s; }
+        .marker-chip { width: 30px; height: 30px; font-size: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
+        .marker-chip .chip-label { width: 16px; height: 16px; font-size: 7px; }
+        .marker-chip::after { inset: 4px; }
         
-        .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
-        
-        .r-hud-container { width: 730px; display: flex; justify-content: space-between; margin-bottom: 10px; }
-        
-        .r-hud-box { 
-            background: #000; border-radius: 8px; padding: 10px 20px; 
-            width: 180px; text-align: center; display: flex; flex-direction: column; justify-content: center;
+        /* --- WINNER GATHERING STYLES --- */
+        #winner-stage { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; z-index: 3000; display: none; 
+            justify-content: center; align-items: center;
+            /* Overlay Effect */
+            background: rgba(0,0,0,0.7); 
+            backdrop-filter: blur(4px);
         }
-        .hud-bal { border: 2px solid #00E5FF; }
-        .hud-time { border: 2px solid #FFD700; transition: 0.2s; }
-        .hud-bet { border: 2px solid #444; }
+        #winner-stage.active { display: flex; }
         
-        .hud-time.urgent { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; animation: pulse 0.5s infinite alternate; }
-        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+        .winners-container { 
+            display: flex; gap: 15px; 
+            align-items: center; justify-content: center; 
+            flex-wrap: wrap; max-width: 80%; 
+            perspective: 1000px; 
+        }
 
-        .r-lbl { font-size: 10px; color: #888; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
-        .r-val { font-size: 28px; color: #fff; font-weight: 800; font-family: 'Oswald', sans-serif; line-height: 1; }
+        .clone-cell { width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 24px; color: white; border: 4px solid #F3C620; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative; transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: #222; }
+        .clone-red { background: #d32f2f; } .clone-black { background: #111; } .clone-green { background: #016D29; }
+        .clone-special { background: #016D29; font-size: 14px; text-transform: uppercase; text-align: center; line-height: 1.1; }
+        
+        /* MARIO WIN TEXT (NO BACKGROUND) */
+        .win-amt-label { 
+            position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            color: #FFD700; font-family: 'Arial Black', sans-serif; font-weight: 900; font-size: 20px;
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+            white-space: nowrap; z-index: 25; pointer-events: none;
+        }
 
-        .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
-        
-        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; box-sizing: border-box; }
-        .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; flex-shrink: 0; }
-        .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
-        .hist-empty { background: #333; opacity: 0.3; box-shadow: none; border: 1px solid #555; }
-        
-        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
-        
-        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--grid-gold); z-index: 5; position: relative; }
-        .red-cell { background-color: var(--cell-red); } .black-cell { background-color: var(--cell-black); }
-        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 10px 0 0 10px; }
-        .zone-2to1 { grid-column: 14; writing-mode: vertical-rl; color: #F3C620; font-size: 9px; }
-        .label-cell { font-size: 10px; text-transform: uppercase; }
-        .zone-dozen { grid-row: 4; } .doz-1 { grid-column: 2 / 6; } .doz-2 { grid-column: 6 / 10; } .doz-3 { grid-column: 10 / 14; }
-        .zone-bottom { grid-row: 5; } .low { grid-column: 2 / 4; } .even { grid-column: 4 / 6; } .odd { grid-column: 10 / 12; } .high { grid-column: 12 / 14; }
-        .diamond-cell { grid-column: 6 / 8; grid-row: 5; display:flex; justify-content:center; align-items:center; } .diamond-cell.blk { grid-column: 8 / 10; }
-        .diamond { width: 18px; height: 18px; transform: rotate(45deg); } .diamond.red { background: #d32f2f; } .diamond.black { background: #111; }
-        
-        .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
-        .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
-        
-        /* TABLE CONTROLS */
-        .table-controls { display: flex; gap: 10px; margin-bottom: 5px; width: 100%; justify-content: center; }
-        .t-btn { background: #111; border: 1px solid #444; color: #aaa; padding: 5px 12px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-        .t-btn:hover { background: #333; color: white; border-color: #FFD700; }
-        .t-btn i { font-size: 12px; }
+        .flying-obj { transition: top 0.6s ease-in, left 0.6s ease-in, opacity 0.3s, transform 0.6s; position: fixed !important; z-index: 4000; pointer-events: none; }
+        .fly-target { opacity: 0; transform: scale(0.4); }
 
-        /* BUTTONS (Floating Style) */
-        .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 20px; z-index: 5000; }
-        .icon-btn-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; opacity: 0.8; transition: 0.2s; }
-        .icon-btn-wrapper:hover { opacity: 1; transform: scale(1.1); }
-        .icon-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .icon-label { font-size: 10px; font-weight: bold; color: #ccc; letter-spacing: 1px; }
-        
-        .btn-music .icon-circle { background: linear-gradient(135deg, #7c4dff, #512da8); }
-        .btn-chat .icon-circle { background: linear-gradient(135deg, #42a5f5, #1565c0); }
-
-        #wheel-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.5s ease; }
+        /* --- WHEEL OVERLAY --- */
+        #wheel-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.5s ease; }
         #wheel-overlay.show { display: flex; animation: fadeIn 0.3s; opacity: 1; }
+        #wheel-overlay.fading { opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+
         .wheelPanel { width: 500px; max-width: 95vw; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-radius: 50%; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
         .stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         canvas { border-radius: 50%; width: 100%; height: 100%; object-fit: contain; }
-        .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 5005; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); pointer-events: none; transition: opacity 0.5s ease; opacity: 1; }
+        .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 20; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); pointer-events: none; transition: opacity 0.5s ease; opacity: 1; }
 
-        /* WINNING ANIMATION STAGE */
-        #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 6000; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s; }
-        #winner-stage.active { display:flex; opacity:1; }
+        /* --- CHAT & MUSIC --- */
+        .widget-bar { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 6000; align-items: flex-end; }
+        .icon-btn { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #1e88e5, #1565c0); box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2); cursor: pointer; display: flex; justify-content: center; align-items: center; color: white; transition: transform 0.2s; position: relative; }
+        .icon-btn:hover { transform: scale(1.05); }
         
-        .flying-cell { position: absolute; width: 42px; height: 42px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 20px #FFD700; z-index: 6001; transition: all 1s ease-in-out; }
-        .flying-cell.red { background: #d32f2f; }
-        .flying-cell.black { background: #222; }
-        .flying-cell.green { background: #016D29; }
+        /* Popup base */
+        .chat-popup, .music-popup { display: none; position: absolute; bottom: 70px; right: 0; width: 320px; background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); transform-origin: bottom right; animation: popIn 0.2s ease-out; }
+        .chat-popup { height: 420px; }
+        .music-popup { height: 420px; }
+        .chat-popup.open, .music-popup.open { display: flex; }
         
-        .win-label { position:absolute; top:-25px; left:50%; transform:translateX(-50%); color:#00E5FF; font-weight:900; font-size:14px; text-shadow:0 1px 2px black; white-space:nowrap; opacity:0; animation: fadeUp 0.5s forwards 1s; }
-        @keyframes fadeUp { to { top:-35px; opacity:1; } }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        /* Music Panel Specific */
+        .music-header { padding: 15px; background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        
+        /* NOW PLAYING WIDGET */
+        .now-playing-widget { display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden; }
+        .np-icon { width: 40px; height: 40px; background: rgba(229, 164, 67, 0.2); border-radius: 4px; display: flex; justify-content: center; align-items: center; font-size: 20px; color: #E5A443; flex-shrink: 0; }
+        .np-details { display: flex; flex-direction: column; overflow: hidden; }
+        .np-title { font-weight: bold; color: #E5A443; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; font-family: 'Oswald', sans-serif; letter-spacing: 0.5px; }
+        .np-artist { font-size: 11px; color: #aaa; text-transform: uppercase; font-family: 'Oswald', sans-serif; letter-spacing: 0.5px; }
+        
+        /* Volume in Header */
+        .vol-wrapper { width: 80px; display: flex; align-items: center; gap: 5px; }
+        .vol-icon { font-size: 14px; color: #ccc; }
+        .volume-slider { width: 100%; cursor: pointer; accent-color: #E5A443; height: 4px; }
 
-        /* MARIO COIN */
-        .mario-coin { position:absolute; width:30px; height:30px; background:url('https://cdn-icons-png.flaticon.com/512/1292/1292744.png') center/cover; z-index:6002; display:none; }
+        /* Chat internals */
+        .chat-tabs { display: flex; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .chat-tab { flex: 1; padding: 12px; text-align: center; font-size: 12px; font-weight: bold; text-transform: uppercase; cursor: pointer; color: #888; transition: color 0.2s; }
+        .chat-tab.active { color: #fff; background: rgba(255,255,255,0.05); border-bottom: 2px solid #1e88e5; }
         
+        .chat-content-area { flex: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-view { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+        .chat-view.active { display: flex; }
+        
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; overflow-x: hidden; }
+        .chat-msg { display: flex; align-items: flex-start; gap: 6px; line-height: 1.4; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; white-space: pre-wrap; max-width: 100%; }
+        .msg-prefix { font-weight: bold; flex-shrink: 0; } 
+        .msg-user { color: #F3C620; } .msg-support { color: #42a5f5; } .msg-system { color: #d32f2f; } .msg-admin { color: #42a5f5; } 
+        .msg-text { flex: 1; min-width: 0; }
+        
+        .chat-input-area { padding: 10px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; gap: 8px; flex-shrink: 0; }
+        .chat-input { flex: 1; background: rgba(255,255,255,0.1); border: none; border-radius: 4px; padding: 8px; color: white; outline: none; }
+        
+        /* Queue Item Style in Music Panel - NON CLICKABLE & STATIC CURSOR */
+        .queue-item { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: default; }
+        .queue-item:hover { background: rgba(255,255,255,0.1); }
+        
+        .q-img { width: 40px; height: 40px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #888; flex-shrink: 0; }
+        .q-info { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        
+        .q-title { 
+            font-family: 'Oswald', sans-serif; font-weight: 400; /* Regular weight */
+            color: white; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; 
+        }
+        .q-artist { 
+            font-family: 'Oswald', sans-serif; font-weight: 300; /* Light weight */
+            color: #bbb; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; 
+        }
+        
+        .queue-header { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 10px; padding-left: 5px; text-transform: uppercase; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+
+        /* MUSIC FORM - REQUEST TAB - SENTENCE CASE HEADER */
+        .music-form-area { padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; height: 100%; justify-content: center; }
+        .music-form-header { color:#ccc; font-size:12px; margin-bottom:5px; text-align:center; font-weight:bold; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* INPUT: UPPERCASE TEXT WHEN TYPING, BUT NORMAL PLACEHOLDERS */
+        .music-input { 
+            background: rgba(255,255,255,0.1); border: 1px solid #444; 
+            color: white; padding: 10px; border-radius: 6px; outline: none; 
+            font-family: 'Oswald', sans-serif; letter-spacing: 0.5px;
+            font-size: 13px; transition: border-color 0.2s; 
+            text-transform: uppercase; /* User input is uppercase */
+        }
+        .music-input:focus { border-color: #E5A443; }
+        .music-input::placeholder { text-transform: none; opacity: 0.7; font-family: 'Segoe UI', Arial, sans-serif; } /* Placeholders mixed case */
+
+        .music-btn { background: #E5A443; color: #000; font-weight: bold; border: none; padding: 10px; border-radius: 6px; cursor: pointer; text-transform: uppercase; font-size: 13px; transition: background 0.2s; margin-top: 5px; font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+        .music-btn:hover { background: #ffca28; }
+
+        /* FIXED BETS PANEL */
+        #bets-panel { position: fixed; left: 20px; top: 50%; transform: translateY(-50%); width: 220px; height: 450px; background: rgba(20, 20, 20, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 6000; }
+        .bets-header { padding: 12px; text-align: center; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 12px; font-weight: bold; text-transform: uppercase; color: #F3C620; letter-spacing: 1px; }
+        .bets-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .bet-item { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .bet-name { color: #ccc; font-weight: 600; font-size: 11px; text-transform: uppercase; }
+        .bet-amt { color: #E5A443; font-family: 'Courier New', monospace; font-weight: bold; }
+        .empty-bets { text-align: center; color: #555; font-style: italic; margin-top: 20px; font-size: 11px; }
+
+        /* MARIO COIN TEXT (For Balance) */
+        .balance-adder { position: absolute; top: -30px; left: 0; width: 100%; text-align: center; font-family: 'Arial Black', sans-serif; font-size: 24px; font-weight: 900; color: #4caf50; text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(76, 175, 80, 0.5); opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 210; }
+        .balance-adder.show { opacity: 1; transform: translateY(0); }
+        
+        .floating-coin-text { position: fixed; font-family: 'Arial Black', sans-serif; font-size: 24px; font-weight: 900; color: #FFD700; text-shadow: 2px 2px 0 #000, -1px -1px 0 #000; pointer-events: none; z-index: 9999; animation: floatUpFade 1s ease-out forwards; }
+        @keyframes floatUpFade { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-50px) scale(1.2); } }
+
     </style>
 </head>
 <body>
 
-    <div id="authOverlay">
-        <div class="auth-box">
-            <h1 style="color:#FFD700; margin-bottom:20px;">CASINO LOGIN</h1>
-            <input id="user" class="auth-input" placeholder="USERNAME">
-            <input id="pass" class="auth-input" type="password" placeholder="PASSWORD">
-            <button onclick="login()" class="auth-btn">ENTER</button>
-            <button onclick="register()" class="auth-btn" style="background:transparent; border:1px solid #555; color:#aaa; font-size:12px;">REGISTER</button>
-            <div id="loginErr" style="color:red; margin-top:5px;"></div>
-        </div>
-    </div>
-
-    <div class="chat-panel panel-position" id="chatPanel">
-        <div class="chat-header">
-            <span id="chatTitle">GLOBAL</span>
-            <span onclick="toggleChat()" style="cursor:pointer; font-size:16px;">&times;</span>
-        </div>
-        <div class="chat-tabs">
-            <div class="chat-tab active" onclick="tabChat('public')">PUBLIC</div>
-            <div class="chat-tab" onclick="tabChat('support')">SUPPORT</div>
-        </div>
-        <div id="tab-public" class="chat-content active">
-            <div id="chatList" style="height:100%;"></div>
-        </div>
-        <div id="tab-support" class="chat-content">
-            <div id="supportList" style="height:100%;"></div>
-        </div>
-        <div class="chat-input-area" id="input-public">
-            <input id="chatInput" class="chat-input" placeholder="Type here...">
-            <button onclick="sendChat()" style="background:#FFD700; border:none; padding:0 10px; cursor:pointer; font-weight:bold; border-radius:4px;">></button>
-        </div>
-        <div class="chat-input-area" id="input-support" style="display:none;">
-            <input id="supportInput" class="chat-input" placeholder="Message Admin...">
-            <button onclick="sendSupport()" style="background:#00E5FF; border:none; padding:0 10px; cursor:pointer; font-weight:bold; border-radius:4px;">></button>
-        </div>
-    </div>
-
-    <div class="music-player panel-position" id="globalMusicPlayer">
-        <div class="mp-title">
-            <span>CASINO DJ</span>
-            <span onclick="toggleMusicUI()" style="cursor:pointer;">x</span>
-        </div>
-        <div class="mp-controls">
-            <button class="mp-btn" onclick="toggleMusic()"><i class="fa fa-play"></i> / <i class="fa fa-pause"></i></button>
-            <button class="mp-btn" onclick="stopMusic()"><i class="fa fa-stop"></i></button>
-        </div>
-        <input class="mp-input" id="musicUrl" placeholder="MP3 URL here...">
-        <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
-        <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
-            <i class="fa fa-volume-down" style="font-size:10px; color:#aaa;"></i>
-            <input type="range" class="vol-slider" min="0" max="100" step="5" value="20" onchange="setVolume(this.value)">
-            <i class="fa fa-volume-up" style="font-size:10px; color:#aaa;"></i>
-        </div>
-        <div class="mp-status" id="mpStatus">Ready</div>
-        <audio id="audioEl" loop></audio>
-    </div>
-
-    <button class="global-back" id="backBtn" onclick="goToLobby()">← LOBBY</button>
-
-    <div id="view-lobby" class="view-section active">
-        <h1 style="font-size:60px; color:#FFD700; text-shadow:0 0 20px rgba(0,0,0,0.8); margin-bottom:10px;">GRAND CASINO</h1>
-        <div style="margin-bottom:20px; font-size:18px;">
-            PLAYER: <span id="lobbyUser" style="color:#FFD700; font-weight:bold;">Guest</span> | 
-            BALANCE: <span id="lobbyBal" style="color:#00E5FF; font-weight:bold;">0</span>
-        </div>
-        <div class="lobby-grid">
-            <div class="game-card" onclick="enterGame('colorgame')">
-                <div class="gc-title">COLOR GAME</div>
-                <div class="gc-icon">🎨</div>
-                <div class="gc-count" id="count-colorgame">0 Playing</div>
-            </div>
-            <div class="game-card" onclick="enterGame('roulette')">
-                <div class="gc-title">ROULETTE</div>
-                <div class="gc-icon">🎡</div>
-                <div class="gc-count" id="count-roulette">0 Playing</div>
+    <div id="wheel-overlay">
+        <div class="wheelPanel">
+            <div class="stage">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="800" height="800"></canvas>
             </div>
         </div>
     </div>
+    
+    <div id="winner-stage">
+        <div class="winners-container" id="winnersContainer"></div>
+    </div>
 
-    <div id="view-colorgame" class="view-section">
-        <div class="cg-main-area">
-            <div class="cg-top-bar">
-                <div class="hud-stat"><label>BALANCE</label><div id="cg-balance" style="color:#00E5FF">0</div></div>
-                <div class="hud-stat"><label>TIMER</label><div id="cg-timer" style="color:#FFD700">20</div></div>
-                <div class="hud-stat"><label>BET</label><div id="cg-bet-total">0</div></div>
+    <div id="title-overlay">
+        <div class="big-title-text" id="overlayTitle">NO MORE BETS</div>
+    </div>
+
+    <div id="bets-panel">
+        <div class="bets-header">Current Bets</div>
+        <div class="bets-list hover-scrollbar" id="betsList">
+            <div class="empty-bets">No bets placed</div>
+        </div>
+    </div>
+
+    <div id="game-root">
+        
+        <div class="hud-container">
+            <div class="hud-box" id="balanceBox">
+                <div class="hud-label">Balance</div>
+                <div class="hud-value" id="moneyDisplay">1,000,000</div>
+                <div class="balance-adder" id="balanceAdder"></div>
             </div>
-            <div class="cg-center">
-                <div class="cg-status" id="cg-status">BETS OPEN</div>
-                <div class="cg-dice-row">
-                    <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
+            
+            <div id="timer-box">
+                <div class="timer-val" id="timerCount">19</div>
+            </div>
+            
+            <div class="hud-box">
+                <div class="hud-label">Current Bet</div>
+                <div class="hud-value" id="betDisplay">0</div>
+            </div>
+        </div>
+
+        <div class="table-wrapper" id="tableWrapper">
+            <div class="history-strip" id="historyLog">
+                </div>
+            <div class="grid-frame" id="grid">
+                <div class="ghost-overlay" id="overlay"></div>
+                <div class="cell zone-0" id="cell-0">0</div>
+                <div class="cell zone-2to1" style="grid-row: 1" id="btn-row1">2 TO 1</div>
+                <div class="cell zone-2to1" style="grid-row: 2" id="btn-row2">2 TO 1</div>
+                <div class="cell zone-2to1" style="grid-row: 3" id="btn-row3">2 TO 1</div>
+                <div class="cell label-cell zone-dozen doz-1" id="btn-doz1">1st 12</div>
+                <div class="cell label-cell zone-dozen doz-2" id="btn-doz2">2nd 12</div>
+                <div class="cell label-cell zone-dozen doz-3" id="btn-doz3">3rd 12</div>
+                <div class="cell label-cell zone-bottom low" id="btn-low">1 TO 18</div>
+                <div class="cell label-cell zone-bottom even" id="btn-even">EVEN</div>
+                <div class="cell label-cell diamond-cell" id="btn-red"><div class="diamond red"></div></div>
+                <div class="cell label-cell diamond-cell black-bg" id="btn-black"><div class="diamond black"></div></div>
+                <div class="cell label-cell zone-bottom odd" id="btn-odd">ODD</div>
+                <div class="cell label-cell zone-bottom high" id="btn-high">19 TO 36</div>
+            </div>
+            <div class="controls-row-1" id="controlRow1">
+                <div class="french-bar">
+                    <button class="btn-french" onmouseenter="highlightPreset('voisins', true)" onmouseleave="highlightPreset('voisins', false)" onclick="preset('voisins')">Voisins</button>
+                    <button class="btn-french" onmouseenter="highlightPreset('tier', true)" onmouseleave="highlightPreset('tier', false)" onclick="preset('tier')">Tier</button>
+                    <button class="btn-french" onmouseenter="highlightPreset('orphelins', true)" onmouseleave="highlightPreset('orphelins', false)" onclick="preset('orphelins')">Orphelins</button>
+                </div>
+                <div class="action-bar">
+                    <button class="circle-btn" onclick="rebet()" title="Rebet"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+                    <button class="circle-btn" onclick="undoBet()" title="Undo"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button>
+                    <button class="circle-btn" onclick="clearBets()" title="Clear"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+                    <button class="circle-btn" onclick="doubleBet()" title="Double Bet"><div class="x2-text">x2</div></button>
                 </div>
             </div>
-            <div class="icon-controls">
-                <div class="icon-btn-wrapper btn-music" onclick="toggleMusicUI()">
-                    <div class="icon-circle"><i class="fa fa-music" style="color:white; font-size:20px;"></i></div>
-                    <span class="icon-label">MUSIC</span>
-                </div>
-                <div class="icon-btn-wrapper btn-chat" onclick="toggleChat()">
-                    <div class="icon-circle"><i class="fa fa-comment" style="color:white; font-size:20px;"></i></div>
-                    <span class="icon-label">CHAT</span>
-                </div>
-            </div>
-            <div class="cg-bet-panel">
+            <div class="controls-row-2" id="controlRow2">
                 <div class="chips-bar">
-                    <div class="chip chip-50 active" onclick="setCgChip(50, this)"><div class="chip-label">50</div></div>
-                    <div class="chip chip-100" onclick="setCgChip(100, this)"><div class="chip-label">100</div></div>
-                    <div class="chip chip-1k" onclick="setCgChip(1000, this)"><div class="chip-label">1K</div></div>
-                    <div class="chip chip-10k" onclick="setCgChip(10000, this)"><div class="chip-label">10K</div></div>
-                    <div class="chip chip-100k" onclick="setCgChip(100000, this)"><div class="chip-label">100K</div></div>
-                </div>
-                <div class="cg-bet-grid">
-                    <div class="cg-bet-card" style="background: #d32f2f;" onclick="placeCgBet('RED')"><b>RED</b><span id="cg-bet-RED">0</span></div>
-                    <div class="cg-bet-card" style="background: #388e3c;" onclick="placeCgBet('GREEN')"><b>GREEN</b><span id="cg-bet-GREEN">0</span></div>
-                    <div class="cg-bet-card" style="background: #1976d2;" onclick="placeCgBet('BLUE')"><b>BLUE</b><span id="cg-bet-BLUE">0</span></div>
-                    <div class="cg-bet-card" style="background: #fbc02d; color:black;" onclick="placeCgBet('YELLOW')"><b>YEL</b><span id="cg-bet-YELLOW">0</span></div>
-                    <div class="cg-bet-card" style="background: #e91e63;" onclick="placeCgBet('PINK')"><b>PINK</b><span id="cg-bet-PINK">0</span></div>
-                    <div class="cg-bet-card" style="background: #eee; color:black;" onclick="placeCgBet('WHITE')"><b>WHT</b><span id="cg-bet-WHITE">0</span></div>
+                    <div class="chip chip-50 active" onclick="setChip(50, this)"><div class="chip-label">50</div></div>
+                    <div class="chip chip-100" onclick="setChip(100, this)"><div class="chip-label">100</div></div>
+                    <div class="chip chip-1k" onclick="setChip(1000, this)"><div class="chip-label">1K</div></div>
+                    <div class="chip chip-10k" onclick="setChip(10000, this)"><div class="chip-label">10K</div></div>
+                    <div class="chip chip-100k" onclick="setChip(100000, this)"><div class="chip-label">100K</div></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="view-roulette" class="view-section">
-        <div id="wheel-overlay">
-            <div class="wheelPanel">
-                <div class="stage">
-                    <div class="pointer"></div>
-                    <canvas id="wheelCanvas" width="800" height="800"></canvas>
+    <div class="widget-bar">
+        <div style="position:relative;">
+            <div class="music-popup" id="musicPopup">
+                <div class="music-header">
+                    <div class="now-playing-widget">
+                        <div class="np-icon">🎵</div>
+                        <div class="np-details">
+                            <div class="np-title" id="npTitle">No Music Playing</div>
+                            <div class="np-artist" id="npArtist">--</div>
+                        </div>
+                    </div>
+                    <div class="vol-wrapper">
+                        <div class="vol-icon">🔊</div>
+                        <input type="range" class="volume-slider" min="0" max="100" value="50" oninput="setVolume(this.value)">
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <div id="winner-stage"></div>
-        <div id="mario-stage"></div>
-
-        <div class="r-main-area">
-            
-            <div class="r-table-scaler" id="rWrapper">
                 
-                <div class="r-hud-container">
-                    <div class="r-hud-box hud-bal"><div class="r-lbl">BALANCE</div><div class="r-val" id="r-balance">0</div></div>
-                    <div class="r-hud-box hud-time" id="rTimerBox"><div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">--</div></div>
-                    <div class="r-hud-box hud-bet"><div class="r-lbl">BET</div><div class="r-val" id="r-bet-display">0</div></div>
+                <div class="chat-tabs">
+                    <div class="chat-tab active" onclick="switchMusicTab('request', this)">PLAY</div>
+                    <div class="chat-tab" onclick="switchMusicTab('queue', this)">QUEUE</div>
                 </div>
 
-                <div class="r-table-wrapper">
-                    <div class="r-history" id="rHistory"></div>
-                    
-                    <div class="r-grid" id="grid">
-                        <div class="ghost-overlay" id="ghostOverlay"></div>
-                        <div style="position:absolute; inset:0; z-index:50; pointer-events:none;" id="rOverlay"></div>
-                        
-                        <div class="cell zone-0" id="cell-0">0</div>
-                        <div class="cell zone-2to1" style="grid-row:1" id="btn-row1">2to1</div>
-                        <div class="cell zone-2to1" style="grid-row:2" id="btn-row2">2to1</div>
-                        <div class="cell zone-2to1" style="grid-row:3" id="btn-row3">2to1</div>
-                        <div class="cell label-cell zone-dozen doz-1" id="btn-doz1">1st 12</div>
-                        <div class="cell label-cell zone-dozen doz-2" id="btn-doz2">2nd 12</div>
-                        <div class="cell label-cell zone-dozen doz-3" id="btn-doz3">3rd 12</div>
-                        <div class="cell label-cell zone-bottom low" id="btn-low">1-18</div>
-                        <div class="cell label-cell zone-bottom even" id="btn-even">EVEN</div>
-                        <div class="cell label-cell diamond-cell" id="btn-red"><div class="diamond red"></div></div>
-                        <div class="cell label-cell diamond-cell blk" id="btn-black"><div class="diamond black"></div></div>
-                        <div class="cell label-cell zone-bottom odd" id="btn-odd">ODD</div>
-                        <div class="cell label-cell zone-bottom high" id="btn-high">19-36</div>
-                    </div>
-                    
-                    <div class="table-controls">
-                        <div class="t-btn" onclick="sendUndo()"><i class="fa fa-undo"></i> UNDO</div>
-                        <div class="t-btn" onclick="sendClear()"><i class="fa fa-trash"></i> CLEAR</div>
-                        <div class="t-btn" onclick="sendRebet()"><i class="fa fa-refresh"></i> REBET</div>
-                        <div class="t-btn" onclick="sendX2()"><b>x2</b> DOUBLE</div>
+                <div class="chat-content-area">
+                    <div class="chat-view active" id="music-view-request">
+                        <div class="music-form-area">
+                            <div class="music-form-header">ENTER SONG DETAILS TO QUEUE</div>
+                            <input type="text" class="music-input" id="mTitle" placeholder="Song Title">
+                            <input type="text" class="music-input" id="mArtist" placeholder="Artist Name">
+                            <input type="text" class="music-input" id="mLink" placeholder="MP3 Link (mp3juice.monster)">
+                            <button class="music-btn" onclick="queueSong()">Add to Queue</button>
+                        </div>
                     </div>
 
-                    <div class="chips-bar">
-                        <div class="chip chip-50 active" onclick="setRChip(50, this)"><div class="chip-label">50</div></div>
-                        <div class="chip chip-100" onclick="setRChip(100, this)"><div class="chip-label">100</div></div>
-                        <div class="chip chip-1k" onclick="setRChip(1000, this)"><div class="chip-label">1K</div></div>
-                        <div class="chip chip-10k" onclick="setRChip(10000, this)"><div class="chip-label">10K</div></div>
-                        <div class="chip chip-100k" onclick="setRChip(100000, this)"><div class="chip-label">100K</div></div>
+                    <div class="chat-view" id="music-view-queue">
+                        <div class="chat-messages hover-scrollbar" id="musicQueueListContainer">
+                            <div class="queue-header">Next in Queue</div>
+                            <div class="queue-item">
+                                <div class="q-img">🎵</div>
+                                <div class="q-info">
+                                    <div class="q-title">The Only Exception</div>
+                                    <div class="q-artist">Paramore</div>
+                                </div>
+                            </div>
+                            <div class="queue-item">
+                                <div class="q-img">🎵</div>
+                                <div class="q-info">
+                                    <div class="q-title">You'll Be in My Heart</div>
+                                    <div class="q-artist">NIKI</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+            <button class="icon-btn" onclick="toggleMusic()">
+                <svg style="width:24px;height:24px;fill:white;" viewBox="0 0 24 24"><path d="M12 3v9.28c-.47-.17-.97-.28-1.5-.28C8.01 12 6 14.01 6 16.5S8.01 21 10.5 21c2.31 0 4.2-1.75 4.45-4H15V6h4V3h-7z"/></svg>
+            </button>
+        </div>
 
-            <div class="icon-controls">
-                <div class="icon-btn-wrapper btn-music" onclick="toggleMusicUI()">
-                    <div class="icon-circle"><i class="fa fa-music" style="color:white; font-size:20px;"></i></div>
-                    <span class="icon-label">MUSIC</span>
-                </div>
-                <div class="icon-btn-wrapper btn-chat" onclick="toggleChat()">
-                    <div class="icon-circle"><i class="fa fa-comment" style="color:white; font-size:20px;"></i></div>
-                    <span class="icon-label">CHAT</span>
+        <div style="position:relative;">
+            <div class="chat-popup" id="chatPopup">
+                <div class="chat-tabs"><div class="chat-tab active" onclick="switchChat('public', this)">Public Chat</div><div class="chat-tab" onclick="switchChat('support', this)">Support</div></div>
+                <div class="chat-content-area">
+                    <div class="chat-view active" id="view-public">
+                        <div class="chat-messages hover-scrollbar" id="chatListPublic">
+                            <div class="chat-msg"><span class="msg-prefix msg-system">System:</span><span class="msg-text">Welcome to High Stakes Roulette!</span></div>
+                            <div class="chat-msg"><span class="msg-prefix msg-admin">Admin:</span><span class="msg-text">Good luck everyone!</span></div>
+                        </div>
+                        <div class="chat-input-area"><input type="text" class="chat-input" id="inPublic" maxlength="100" placeholder="Say something..." onkeypress="handleKey(event, 'public')"></div>
+                    </div>
+                    <div class="chat-view" id="view-support">
+                        <div class="chat-messages hover-scrollbar" id="chatListSupport">
+                            <div class="chat-msg"><span class="msg-prefix msg-support">Agent:</span><span class="msg-text">How can I help you today?</span></div>
+                        </div>
+                        <div class="chat-input-area"><input type="text" class="chat-input" id="inSupport" maxlength="100" placeholder="Ask support..." onkeypress="handleKey(event, 'support')"></div>
+                    </div>
                 </div>
             </div>
+            <button class="icon-btn" onclick="toggleChat()">
+                <svg style="width:28px;height:28px;fill:white;" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+            </button>
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        let myUser = "Guest";
-        let myBal = 0;
-        let currentRoom = 'lobby';
-        let currentTableScale = 1;
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let sfxGainVal = 0.8;
+    
+    function setVolume(val) { /* Placeholder for BG Music logic */ }
+    function setSfxVolume(val) { sfxGainVal = val / 100; }
+    
+    function speak(text) {
+        if('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.1; utterance.pitch = 1.0;
+            utterance.volume = sfxGainVal;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+    let lastSoundTime = 0;
+    function playTick(isUrgent = false) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+      if (now - lastSoundTime < 0.015 && !isUrgent) return; 
+      lastSoundTime = now;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = isUrgent ? 'square' : 'triangle';
+      const freq = isUrgent ? 800 : (1500 + (Math.random()-0.5)*200);
+      osc.frequency.setValueAtTime(freq, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.015); 
+      gain.gain.setValueAtTime(isUrgent? (0.2 * sfxGainVal):(0.1 * sfxGainVal), now); 
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+      osc.start(); osc.stop(now + 0.015);
+    }
+    function playWinSound() {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, now); 
+      gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.3 * sfxGainVal, now + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5); 
+      osc.start(now); osc.stop(now + 1.5);
+    }
+    function playCoinSound() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(2000, now); 
+        osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
+        gain.gain.setValueAtTime(0.1 * sfxGainVal, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.start(now); osc.stop(now + 0.15);
+    }
+
+    const WHEEL = ["0","32","15","19","4","21","2","25","17","34","6","27","13","36","11","30","8","23","10","5","24","16","33","1","20","14","31","9","22","18","29","7","28","12","35","3","26"];
+    const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = 800, H = 800, CX = 400, CY = 400; 
+    const R_TRACK_OUTER = 380; const R_TRACK_INNER = 330; const R_POCKETS = 320; const R_NUMBERS = 250; const R_HUB = 90;
+    let spinning = false; let wheelAngle = 0; let spinTime = 0; let spinDuration = 0; 
+    let startWheelAngle = 0; let finalWheelAngle = 0; let lastTickIndex = -1; let winningIndex = -1;
+    const isRed = (n) => REDS.includes(parseInt(n));
+    const getLabelColor = (lbl) => { if(lbl === "0") return "#165b33"; return isRed(lbl) ? "#c03a35" : "#111"; };
+
+    function drawWheel() {
+      ctx.clearRect(0,0,W,H);
+      let grad = ctx.createRadialGradient(CX, CY, R_TRACK_INNER, CX, CY, R_TRACK_OUTER);
+      grad.addColorStop(0, "#3a1f12"); grad.addColorStop(0.4, "#63391f"); grad.addColorStop(0.9, "#211108"); grad.addColorStop(1, "#000");
+      ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_OUTER, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
+      ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_INNER, 0, Math.PI*2); ctx.fillStyle = "#0a2118"; ctx.fill();
+      ctx.save(); ctx.translate(CX, CY); ctx.rotate(wheelAngle);
+      WHEEL.forEach((lbl, i) => drawWedge(i, lbl, 1.0, false));
+      ctx.beginPath(); ctx.arc(0,0, R_HUB, 0, Math.PI*2);
+      let hGrad = ctx.createRadialGradient(0,0, 20, 0,0, R_HUB); hGrad.addColorStop(0, "#666"); hGrad.addColorStop(1, "#222");
+      ctx.fillStyle = hGrad; ctx.fill();
+      ctx.beginPath(); ctx.arc(0,0, R_HUB-5, 0, Math.PI*2); ctx.strokeStyle = "#c9a44c"; ctx.lineWidth = 4; ctx.stroke();
+      ctx.beginPath(); ctx.arc(0,0, 30, 0, Math.PI*2); ctx.fillStyle = "#444"; ctx.fill();
+      ctx.restore();
+    }
+
+    function drawWedge(i, lbl, scale = 1.0, glow = false) {
+        const ang = i * ((Math.PI*2)/WHEEL.length); const slice = (Math.PI*2)/WHEEL.length;
+        ctx.save();
+        if (scale !== 1.0) { const midAng = ang + slice/2; ctx.rotate(midAng); ctx.scale(scale, scale); ctx.rotate(-midAng); if (glow) { ctx.shadowColor = "#E5A443"; ctx.shadowBlur = 30; } }
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, R_POCKETS, ang, ang + slice); ctx.closePath(); 
+        ctx.fillStyle = getLabelColor(lbl); ctx.fill();
+        if (!glow) { let pGrad = ctx.createRadialGradient(0,0, R_NUMBERS, 0,0, R_POCKETS); pGrad.addColorStop(0, "rgba(0,0,0,0)"); pGrad.addColorStop(1, "rgba(0,0,0,0.5)"); ctx.fillStyle = pGrad; ctx.fill(); }
+        if (glow) { ctx.lineJoin = "round"; ctx.lineWidth = 5; ctx.strokeStyle = "#E5A443"; ctx.stroke(); }
+        if (!glow) { ctx.beginPath(); ctx.moveTo(Math.cos(ang)*R_HUB, Math.sin(ang)*R_HUB); ctx.lineTo(Math.cos(ang)*R_POCKETS, Math.sin(ang)*R_POCKETS); ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 2; ctx.stroke(); }
+        ctx.save(); ctx.rotate(ang + slice/2); ctx.translate(R_NUMBERS + 10, 0); ctx.rotate(Math.PI/2); 
+        ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(lbl, 0, 0); ctx.restore(); ctx.restore();
+    }
+    function easeInOutQuart(x) { return x < 0.5 ? 8 * x * x * x * x : 1 - Math.pow(-2 * x + 2, 4) / 2; }
+    function spinCanvas() {
+      if(spinning) return; winningIndex = -1;
+      document.querySelector('.pointer').style.opacity = '1';
+      spinning = true;
+      const winIdx = Math.floor(Math.random() * WHEEL.length); const val = WHEEL[winIdx];
+      const segAngle = (Math.PI*2) / WHEEL.length; const segCenter = winIdx * segAngle + segAngle/2;
+      let targetAngle = (Math.PI * 1.5) - segCenter; 
+      const spins = 8 + Math.floor(Math.random() * 3); 
+      finalWheelAngle = targetAngle + (spins * Math.PI * 2); startWheelAngle = wheelAngle;
+      lastTickIndex = -1; spinTime = 0; spinDuration = 5000; 
+      requestAnimationFrame(animateCanvas);
+      return val;
+    }
+    function animateCanvas(timestamp) {
+      if(!spinTime) spinTime = timestamp;
+      const elapsed = timestamp - spinTime; const progress = Math.min(elapsed / spinDuration, 1);
+      wheelAngle = startWheelAngle + (finalWheelAngle - startWheelAngle) * easeInOutQuart(progress);
+      const segArc = (Math.PI * 2) / WHEEL.length;
+      let effectiveAngle = (Math.PI * 1.5 - wheelAngle) % (Math.PI * 2); if (effectiveAngle < 0) effectiveAngle += Math.PI * 2;
+      const currentIndex = Math.floor(effectiveAngle / segArc);
+      if (currentIndex !== lastTickIndex) { playTick(); lastTickIndex = currentIndex; }
+      drawWheel();
+      if (progress < 1) { requestAnimationFrame(animateCanvas); } else { endSpinLogic(); }
+    }
+    function endSpinLogic() {
+        spinning = false; wheelAngle = wheelAngle % (Math.PI*2);
+        playWinSound();
+        endRound();
+    }
+
+    let money = 1000000; let currentBet = 0; let chipValue = 50; let currentScale = 1; let lastResult = null;
+    const STATES = { BETS_OPEN: 'BETS_OPEN', NO_BETS: 'NO_BETS', SPINNING: 'SPINNING', GATHER: 'GATHER', PAYOUT: 'PAYOUT' };
+    let currentState = STATES.PAYOUT; let stateTimer = 0;
+    const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 22, 25, 27, 30, 32, 34, 36];
+    let historyData = [];
+    const PRESETS = { 'voisins': [0, 2, 3, 4, 7, 12, 15, 18, 19, 21, 22, 25, 26, 28, 29, 32, 35], 'tier': [5, 8, 10, 11, 13, 16, 23, 24, 27, 30, 33, 36], 'orphelins': [1, 6, 9, 14, 17, 20, 31, 34] };
+    const GAP = 3; const ZERO_W = 56; const CELL_W = 46; const CELL_H = 46; const OFFSET_LEFT = ZERO_W + GAP; 
+    let activeChips = {}; let actionStack = []; let lastRoundBets = [];
+    
+    const gameRoot = document.getElementById('game-root'); const overlay = document.getElementById('overlay');
+    const historyContainer = document.getElementById('historyLog'); const betsListEl = document.getElementById('betsList');
+    const tableWrapper = document.getElementById('tableWrapper');
+    const controls1 = document.getElementById('controlRow1'); const controls2 = document.getElementById('controlRow2');
+    const wheelOverlay = document.getElementById('wheel-overlay'); const urgentOverlay = document.getElementById('urgent-overlay');
+    const titleOverlay = document.getElementById('title-overlay'); const overlayTitle = document.getElementById('overlayTitle');
+    const timerPanel = document.getElementById('timer-box'); const timerCount = document.getElementById('timerCount');
+    const winnerStage = document.getElementById('winner-stage'); const winnersContainer = document.getElementById('winnersContainer');
+
+    function init() {
+        drawWheel(); window.addEventListener('resize', handleResize); handleResize(); 
+        buildNumbers(); buildHotspots(); bindSideBets(); 
+        for(let i=0; i<6; i++) historyData.push(Math.floor(Math.random()*37)); renderHistory(); 
+        changeState(STATES.BETS_OPEN, 19); setInterval(gameLoop, 1000);
+    }
+
+    function gameLoop() {
+        stateTimer--;
         
-        let lastRoundBets = []; 
-        let currentRoundBets = []; 
-
-        // Beep Sound
-        const tickSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU");
-        const coinSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_2492742969.mp3");
-
-        // --- AUTH ---
-        const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
-        if(sU && sP) socket.emit('login', { username: sU, password: sP });
-
-        function login() { socket.emit('login', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
-        function register() { socket.emit('register', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
-        
-        socket.on('login_success', (data) => {
-            localStorage.setItem('u', data.username); localStorage.setItem('p', document.getElementById('pass').value || sP);
-            document.getElementById('authOverlay').style.display = 'none';
-            myUser = data.username; myBal = data.balance;
-            updateDisplay();
-        });
-        socket.on('login_error', (m) => document.getElementById('loginErr').innerText = m);
-        socket.on('update_balance', (b) => { myBal = b; updateDisplay(); });
-        function updateDisplay() {
-            document.getElementById('lobbyUser').innerText = myUser;
-            document.getElementById('lobbyBal').innerText = myBal;
-            document.getElementById('cg-balance').innerText = myBal;
-            document.getElementById('r-balance').innerText = myBal;
-        }
-
-        // --- CHAT ---
-        function toggleChat() {
-            let p = document.getElementById('chatPanel');
-            let m = document.getElementById('globalMusicPlayer');
-            if(p.classList.contains('active')) { p.classList.remove('active'); } 
-            else { p.classList.add('active'); m.classList.remove('active'); }
-        }
-        function tabChat(t) {
-            document.querySelectorAll('.chat-content').forEach(e=>e.classList.remove('active'));
-            document.querySelectorAll('.chat-tab').forEach(e=>e.classList.remove('active'));
-            document.querySelectorAll('.chat-input-area').forEach(e=>e.style.display='none');
-            document.getElementById('tab-'+t).classList.add('active');
-            document.getElementById('input-'+t).style.display='flex';
-            event.target.classList.add('active');
-        }
-        function sendChat() { 
-            let i = document.getElementById('chatInput'); 
-            if(i.value) { socket.emit('chat_msg', { msg: i.value, room: currentRoom }); i.value=''; } 
-        }
-        function sendSupport() { 
-            let i = document.getElementById('supportInput'); 
-            if(i.value) { socket.emit('support_msg', { msg: i.value, room: currentRoom }); i.value=''; } 
-        }
-        
-        socket.on('chat_broadcast', (d) => {
-            if(d.room && d.room !== currentRoom) return;
-            let box = (d.type === 'public' || d.type === 'public_admin') ? document.getElementById('chatList') : document.getElementById('supportList');
-            let col = d.type === 'public_admin' ? '#FF3D00' : '#FFD700';
-            if(d.type.includes('support')) col = '#00E5FF';
-            box.innerHTML += `<div class="chat-msg"><b style="color:${col}">${d.user}:</b> ${d.msg}</div>`;
-            box.scrollTop = box.scrollHeight;
-        });
-        socket.on('chat_history', (hist) => {
-            let box = document.getElementById('chatList'); box.innerHTML = '';
-            hist.forEach(d => {
-                box.innerHTML += `<div class="chat-msg"><b style="color:#FFD700">${d.user}:</b> ${d.msg}</div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-        });
-
-        // --- MUSIC ---
-        const audio = document.getElementById('audioEl');
-        const DEFAULT_MUSIC = "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; 
-        audio.volume = 0.2; 
-
-        function toggleMusicUI() {
-            let p = document.getElementById('globalMusicPlayer');
-            let c = document.getElementById('chatPanel');
-            if(p.classList.contains('active')) p.classList.remove('active');
-            else { p.classList.add('active'); c.classList.remove('active'); }
-        }
-        function toggleMusic() {
-            if(audio.paused) { 
-                if(!audio.src) audio.src = DEFAULT_MUSIC;
-                audio.play(); 
-                document.getElementById('mpStatus').innerText = "Playing: Standard Jazz";
-            } else { audio.pause(); }
-        }
-        function stopMusic() { audio.pause(); audio.currentTime=0; document.getElementById('mpStatus').innerText = "Stopped"; }
-        function playCustom() {
-            let url = document.getElementById('musicUrl').value;
-            if(url) { audio.src = url; audio.play(); document.getElementById('mpStatus').innerText = "Playing Custom"; }
-        }
-        function setVolume(v) { audio.volume = v / 100; }
-
-        // --- NAV ---
-        function enterGame(g) {
-            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
-            document.getElementById('view-'+g).classList.add('active');
-            document.getElementById('backBtn').style.display = 'block';
-            document.getElementById('chatTitle').innerText = g.toUpperCase() + " CHAT";
-            document.getElementById('chatList').innerHTML = '';
-            
-            if(g === 'roulette') {
-                scaleRoulette();
-                window.addEventListener('resize', scaleRoulette);
-                initRoulette();
+        // Timer Panel Logic
+        if (currentState === STATES.BETS_OPEN && stateTimer > 0) {
+            timerPanel.classList.add('visible');
+            timerCount.innerText = stateTimer;
+            if (stateTimer <= 3) { 
+                timerPanel.classList.add('urgent'); 
+                playTick(true); 
             } else {
-                window.removeEventListener('resize', scaleRoulette);
+                timerPanel.classList.remove('urgent');
             }
+        } else {
+            timerPanel.classList.remove('visible');
+        }
+
+        if (stateTimer <= 0) {
+            switch(currentState) {
+                case STATES.BETS_OPEN: 
+                    speak("No more bets"); 
+                    changeState(STATES.NO_BETS, 2); 
+                    break;
+                case STATES.NO_BETS: 
+                    changeState(STATES.SPINNING, 99); 
+                    break; 
+                case STATES.GATHER: 
+                    changeState(STATES.PAYOUT, 1); 
+                    break;
+                case STATES.PAYOUT: 
+                    changeState(STATES.BETS_OPEN, 19); 
+                    break;
+            }
+        }
+    }
+
+    function changeState(newState, duration) {
+        currentState = newState; stateTimer = duration;
+        tableWrapper.classList.remove('disabled');
+        controls1.classList.remove('controls-disabled'); controls2.classList.remove('controls-disabled');
+        
+        if(newState !== STATES.SPINNING && newState !== STATES.GATHER) { wheelOverlay.classList.remove('show'); }
+        
+        // Reset Overlays
+        titleOverlay.classList.remove('active');
+
+        switch(newState) {
+            case STATES.BETS_OPEN: 
+                speak("Please place your bets");
+                overlayTitle.innerText = "PLACE YOUR BETS";
+                titleOverlay.classList.add('active');
+                setTimeout(() => titleOverlay.classList.remove('active'), 1500);
+
+                winnersContainer.innerHTML = ''; winnerStage.classList.remove('active'); 
+                if(currentBet > 0 && lastRoundBets.length === 0) clearBets(true); 
+                break;
             
-            currentRoom = g;
-            socket.emit('switch_room', g);
-        }
-        
-        function scaleRoulette() {
-            let h = window.innerHeight;
-            let w = window.innerWidth;
-            let wrapper = document.getElementById('rWrapper');
-            let availH = h - 20; 
-            let availW = w - 20; 
-            let baseW = 760;
-            let baseH = 500; 
-            let scaleH = availH / baseH; 
-            let scaleW = availW / baseW; 
-            let scale = Math.min(scaleH, scaleW) * 0.95; 
-            if(scale < 0.5) scale = 0.5;
-            if(scale > 1.8) scale = 1.8;
-            currentTableScale = scale; 
-            wrapper.style.transform = `scale(${scale})`;
-        }
-
-        function goToLobby() {
-            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
-            document.getElementById('view-lobby').classList.add('active');
-            document.getElementById('backBtn').style.display = 'none';
-            document.getElementById('chatPanel').classList.remove('active');
-            document.getElementById('globalMusicPlayer').classList.remove('active');
-            currentRoom = 'lobby';
-            socket.emit('switch_room', 'lobby');
-            clearRoulette();
-        }
-        socket.on('lobby_counts', (c) => {
-            document.getElementById('count-colorgame').innerText = (c.colorgame||0) + " Playing";
-            document.getElementById('count-roulette').innerText = (c.roulette||0) + " Playing";
-        });
-        socket.on('notification', (d) => alert(d.msg));
-
-
-        // --- COLOR GAME ---
-        let cgChip = 50;
-        let cgBetTotal = 0;
-        function setCgChip(v, el) { 
-            cgChip = v; 
-            el.parentElement.querySelectorAll('.chip').forEach(e=>e.classList.remove('active')); 
-            el.classList.add('active'); 
-        }
-        function placeCgBet(c) {
-            if(myBal < cgChip) { alert("Insufficient funds"); return; }
-            myBal -= cgChip; updateDisplay();
-            cgBetTotal += cgChip; document.getElementById('cg-bet-total').innerText = cgBetTotal;
-            socket.emit('place_bet', { color: c, amount: cgChip });
-            let el = document.getElementById('cg-bet-'+c); el.innerText = parseInt(el.innerText)+cgChip;
-        }
-        socket.on('timer_update', (t) => { if(currentRoom==='colorgame') { document.getElementById('cg-timer').innerText = t; document.getElementById('cg-status').innerText = "BETS OPEN"; }});
-        socket.on('game_rolling', () => { if(currentRoom==='colorgame') { document.getElementById('cg-status').innerText = "ROLLING..."; document.getElementById('cg-timer').innerText="--"; cgRoll(); }});
-        function cgRoll() { 
-            let cols=['red','green','blue','yellow','pink','white'];
-            window.cgInt = setInterval(() => { ['d1','d2','d3'].forEach(id => document.getElementById(id).className=`die ${cols[Math.floor(Math.random()*6)]}`); }, 100);
-        }
-        socket.on('game_result', (r) => { 
-            clearInterval(window.cgInt); 
-            if(currentRoom==='colorgame') {
-                document.getElementById('cg-status').innerText="RESULT";
-                ['d1','d2','d3'].forEach((id,i) => document.getElementById(id).className=`die ${r[i].toLowerCase()}`);
-            }
-        });
-        socket.on('game_reset', () => { 
-            ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'].forEach(c=>document.getElementById('cg-bet-'+c).innerText='0');
-            cgBetTotal = 0; document.getElementById('cg-bet-total').innerText = '0';
-        });
-        socket.on('win_notification', (d) => alert(`WIN! +${d.amount}`));
-
-
-        // --- ROULETTE ---
-        const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-        let rChip = 50; let rBetTotal = 0;
-        function setRChip(v, el) { 
-            rChip = v; 
-            el.parentElement.querySelectorAll('.chip').forEach(e=>e.classList.remove('active')); 
-            el.classList.add('active'); 
-        }
-        
-        function initRoulette() {
-            let grid = document.getElementById('grid');
-            if(document.getElementById('cell-1')) return;
-            for(let i=1; i<=36; i++) {
-                let d = document.createElement('div');
-                d.className = `cell ${REDS.includes(i)?'red-cell':'black-cell'}`;
-                d.innerText = i; d.id = `cell-${i}`;
-                let row = (i%3===0)?1:(i%3===2?2:3); let col = Math.floor((i-1)/3)+2;
-                d.style.gridRow = row; d.style.gridColumn = col;
-                grid.appendChild(d);
-            }
-            initHistory();
-            buildHotspots();
-            drawWheel(0);
-        }
-
-        function initHistory() {
-            let h = document.getElementById('rHistory');
-            h.innerHTML = '';
-            for(let i=0; i<23; i++) {
-                let rand = Math.floor(Math.random()*37);
-                let b = document.createElement('div');
-                b.className = `hist-ball ${rand===0?'hist-green':(REDS.includes(rand)?'hist-red':'hist-black')}`;
-                b.innerText = rand;
-                h.appendChild(b);
-            }
-        }
-        
-        function buildHotspots() {
-            const overlay = document.getElementById('ghostOverlay');
-            overlay.innerHTML = ''; 
+            case STATES.NO_BETS: 
+                disableBetting(); 
+                overlayTitle.innerText = "NO MORE BETS";
+                titleOverlay.classList.add('active');
+                break;
             
-            const CELL_W = 42; const CELL_H = 42; const GAP = 2; 
-            const OFFSET_X = 50 + 5 + GAP; 
-            const OFFSET_Y = 5; 
-
-            function createZone(x, y, w, h, numbers) {
-                let el = document.createElement('div');
-                el.className = 'hotspot';
-                el.style.left = x + 'px'; el.style.top = y + 'px';
-                el.style.width = w + 'px'; el.style.height = h + 'px';
-                el.onclick = (e) => {
-                    let centerX = x + w/2; let centerY = y + h/2;
-                    placeRouletteBet(centerX, centerY, numbers);
-                };
-                overlay.appendChild(el);
-            }
-
-            for(let c=0; c<12; c++) {
-                let x = OFFSET_X + (c * (CELL_W + GAP));
-                let nTop = (c * 3) + 3; let nMid = (c * 3) + 2; let nBot = (c * 3) + 1; 
-                createZone(x+8, OFFSET_Y+8, CELL_W-16, CELL_H-16, [nTop]);
-                createZone(x+8, OFFSET_Y+CELL_H+GAP+8, CELL_W-16, CELL_H-16, [nMid]);
-                createZone(x+8, OFFSET_Y+(CELL_H+GAP)*2+8, CELL_W-16, CELL_H-16, [nBot]);
-                createZone(x, OFFSET_Y + CELL_H - 6, CELL_W, 12, [nTop, nMid]); 
-                createZone(x, OFFSET_Y + (CELL_H*2) + GAP - 6, CELL_W, 12, [nMid, nBot]);
-                createZone(x, OFFSET_Y - 10, CELL_W, 15, [nBot, nMid, nTop]); 
-                if(c < 11) {
-                    let nextTop = nTop + 3; let nextMid = nMid + 3; let nextBot = nBot + 3;
-                    let borderX = x + CELL_W - 6;
-                    createZone(borderX, OFFSET_Y, 12, CELL_H, [nTop, nextTop]); 
-                    createZone(borderX, OFFSET_Y+CELL_H+GAP, 12, CELL_H, [nMid, nextMid]);
-                    createZone(borderX, OFFSET_Y+(CELL_H+GAP)*2, 12, CELL_H, [nBot, nextBot]);
-                    createZone(borderX, OFFSET_Y + CELL_H - 6, 12, 12, [nTop, nMid, nextTop, nextMid]);
-                    createZone(borderX, OFFSET_Y + (CELL_H*2) + GAP - 6, 12, 12, [nMid, nBot, nextMid, nextBot]);
-                    createZone(borderX, OFFSET_Y - 10, 12, 15, [nBot, nMid, nTop, nextBot, nextMid, nextTop]);
-                }
-            }
-            createZone(5, 5, 50, (CELL_H+GAP)*3, [0]);
+            case STATES.SPINNING: 
+                titleOverlay.classList.remove('active'); 
+                wheelOverlay.classList.add('show'); 
+                disableBetting(); 
+                lastResult = spinCanvas(); 
+                break;
             
-            bindButton('btn-red', REDS);
-            bindButton('btn-black', range(1,36).filter(x=>!REDS.includes(x)));
-            bindButton('btn-even', range(1,36).filter(x=>x%2===0));
-            bindButton('btn-odd', range(1,36).filter(x=>x%2!==0));
-            bindButton('btn-low', range(1,18));
-            bindButton('btn-high', range(19,36));
-            bindButton('btn-doz1', range(1,12));
-            bindButton('btn-doz2', range(13,24));
-            bindButton('btn-doz3', range(25,36));
-            bindButton('btn-row1', range(1,36).filter(x=>x%3===0));
-            bindButton('btn-row2', range(1,36).filter(x=>x%3===2));
-            bindButton('btn-row3', range(1,36).filter(x=>x%3===1));
-        }
-        
-        function bindButton(id, nums) {
-            let el = document.getElementById(id);
-            if(el) el.onclick = () => {
-                let x = el.offsetLeft + el.offsetWidth / 2;
-                let y = el.offsetTop + el.offsetHeight / 2;
-                placeRouletteBet(x, y, nums);
-            };
-        }
-
-        function range(s,e) { return Array.from({length:e-s+1},(_,i)=>s+i); }
-
-        function placeRouletteBet(x, y, nums) {
-            if(myBal < rChip) { alert("Insufficient funds"); return; }
-            myBal -= rChip; updateDisplay();
-            rBetTotal += rChip; document.getElementById('r-bet-display').innerText = rBetTotal;
+            case STATES.GATHER: 
+                wheelOverlay.classList.remove('show'); 
+                disableBetting(); 
+                gatherWinners(); 
+                break;
             
-            currentRoundBets.push({ nums: nums, amount: rChip, x: x, y: y });
-
-            let chipStyle = 'chip-50';
-            if(rChip===100) chipStyle='chip-100';
-            if(rChip===1000) chipStyle='chip-1k';
-            if(rChip===10000) chipStyle='chip-10k';
-            if(rChip===100000) chipStyle='chip-100k';
-
-            let mk = document.createElement('div');
-            mk.className = `chip chip-board ${chipStyle}`;
-            mk.innerHTML = `<div class="chip-label">${formatChip(rChip)}</div>`;
-            mk.style.position = 'absolute';
-            mk.style.left = x + 'px'; 
-            mk.style.top = y + 'px';
-            mk.style.transform = 'translate(-50%, -50%)';
-            
-            document.getElementById('rOverlay').appendChild(mk);
-
-            socket.emit('place_bet_roulette', { numbers: nums, amount: rChip });
+            case STATES.PAYOUT: 
+                disableBetting(); 
+                collectToBalance(); 
+                break;
         }
-        
-        function sendClear() { socket.emit('roulette_clear'); }
-        function sendUndo() { socket.emit('roulette_undo'); }
-        function sendRebet() { if(lastRoundBets.length === 0) return; lastRoundBets.forEach(b => { setTimeout(() => { placeRouletteBet(b.x, b.y, b.nums); }, 50); }); }
-        function sendX2() { let betsToDouble = [...currentRoundBets]; betsToDouble.forEach(b => { placeRouletteBet(b.x, b.y, b.nums); }); }
+    }
 
-        socket.on('bets_cleared', () => { currentRoundBets = []; document.getElementById('rOverlay').innerHTML = ''; rBetTotal = 0; document.getElementById('r-bet-display').innerText = '0'; });
-        socket.on('bet_undone', () => { let chips = document.getElementById('rOverlay').children; if(chips.length > 0) chips[chips.length-1].remove(); let undone = currentRoundBets.pop(); if(undone) { rBetTotal -= undone.amount; document.getElementById('r-bet-display').innerText = rBetTotal; } });
+    function endRound() {
+        historyData.unshift(parseInt(lastResult)); if(historyData.length > 15) historyData.pop(); renderHistory();
+        changeState(STATES.GATHER, 3);
+    }
 
-        function formatChip(v) { if(v >= 1000) return (v/1000) + 'k'; return v; }
-
-        function clearRoulette() {
-            if(currentRoundBets.length > 0) lastRoundBets = [...currentRoundBets];
-            currentRoundBets = [];
-            rBetTotal=0; document.getElementById('r-bet-display').innerText='0';
-            document.getElementById('rOverlay').innerHTML='';
-            document.getElementById('winner-stage').classList.remove('active');
-        }
-
-        socket.on('roulette_timer', (t) => { 
-            if(currentRoom==='roulette') { 
-                let tb = document.getElementById('rTimerBox');
-                document.getElementById('r-timer').innerText = t; 
-                document.getElementById('wheel-overlay').classList.remove('show');
-                if(t <= 3 && t > 0) { tb.classList.add('urgent'); try { tickSound.play().catch(e=>{}); } catch(e){} } else { tb.classList.remove('urgent'); }
+    function disableBetting() { tableWrapper.classList.add('disabled'); controls1.classList.add('controls-disabled'); controls2.classList.add('controls-disabled'); }
+    function handleResize() {
+        const targetW = 700; const targetH = 800; const winW = window.innerWidth; const winH = window.innerHeight;
+        currentScale = Math.min(winW / targetW, winH / targetH);
+        if (currentScale > 2.0) currentScale = 2.0; if (currentScale < 0.4) currentScale = 0.4;
+        gameRoot.style.transform = `scale(${currentScale})`;
+    }
+    
+    function renderHistory() {
+        while(historyContainer.firstChild) { historyContainer.removeChild(historyContainer.firstChild); }
+        // Removed label logic
+        for(let i=0; i<15; i++) {
+            let item = document.createElement('div'); item.className = 'history-ball';
+            if (i < historyData.length) {
+                let num = historyData[i];
+                if (num === 0) item.classList.add('hist-green'); else if (redNumbers.includes(num)) item.classList.add('hist-red'); else item.classList.add('hist-black');
+                item.innerText = num;
+            } else {
+                item.classList.add('empty'); let rand = Math.random();
+                if(rand < 0.05) item.classList.add('hist-green'); else if(rand < 0.5) item.classList.add('hist-red'); else item.classList.add('hist-black');
             }
-        });
+            historyContainer.appendChild(item);
+        }
+    }
+
+    function showFloatingText(amount, x, y) {
+        let el = document.createElement('div');
+        el.className = 'floating-coin-text';
+        el.innerText = "+" + amount.toLocaleString();
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 1000);
+    }
+
+    function gatherWinners() {
+        const winNum = parseInt(lastResult);
+        let winIds = [];
         
-        socket.on('roulette_spin_start', (wNum) => { if(currentRoom==='roulette') { document.getElementById('wheel-overlay').classList.add('show'); spinWheel(wNum); } });
+        winIds.push('cell-' + winNum);
+        if(isRed(winNum)) winIds.push('btn-red'); else if(winNum!==0) winIds.push('btn-black');
+        if(winNum !== 0) {
+            if(winNum % 2 === 0) winIds.push('btn-even'); else winIds.push('btn-odd');
+            if(winNum <= 18) winIds.push('btn-low'); else winIds.push('btn-high');
+            if(winNum <= 12) winIds.push('btn-doz1'); else if(winNum <= 24) winIds.push('btn-doz2'); else winIds.push('btn-doz3');
+            if(winNum % 3 === 1) winIds.push('btn-row3'); else if(winNum % 3 === 2) winIds.push('btn-row2'); else winIds.push('btn-row1');
+        }
+
+        winnerStage.classList.add('active'); 
+
+        let createdClones = {}; 
         
-        socket.on('roulette_result_log', (n) => {
-             let h = document.getElementById('rHistory');
-             // Remove random filled balls if any
-             // Actually, just pushing new ones will eventually cycle them out
-             
-             let b = document.createElement('div');
-             b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
-             b.innerText = n;
-             h.prepend(b);
-             
-             if(h.children.length > 23) h.lastChild.remove();
+        winIds.forEach(id => {
+            const original = document.getElementById(id);
+            if(!original) return;
+            const clone = document.createElement('div');
+            
+            if(id.startsWith('cell-')) {
+                clone.className = `clone-cell ${redNumbers.includes(winNum) ? 'clone-red' : (winNum===0 ? 'clone-green' : 'clone-black')}`;
+                clone.innerText = winNum;
+                createdClones['number'] = clone; 
+            } else {
+                clone.className = 'clone-cell clone-special';
+                if(id === 'btn-red') clone.classList.add('clone-red');
+                else if(id === 'btn-black') clone.classList.add('clone-black');
+                else clone.classList.add('clone-green'); 
+                clone.innerHTML = original.innerHTML; 
+                if(!clone.querySelector('.diamond')) clone.innerText = original.innerText;
+                createdClones[id] = clone;
+            }
+            winnersContainer.appendChild(clone);
         });
 
-        // ================= WINNER GATHER ANIMATION =================
-        function triggerWinAnim(winnerNum, totalWin) {
-            const stage = document.getElementById('winner-stage');
-            stage.classList.add('active');
-            stage.innerHTML = ''; // Clear old
+        for(let key in activeChips) {
+            let chip = activeChips[key];
+            if(chip.numbers.includes(winNum)) {
+                let mult = 35; 
+                if(chip.numbers.length === 2) mult = 17;
+                else if(chip.numbers.length === 3) mult = 11;
+                else if(chip.numbers.length === 4) mult = 8;
+                else if(chip.numbers.length === 6) mult = 5;
+                else if(chip.numbers.length === 12) mult = 2;
+                else if(chip.numbers.length === 18) mult = 1;
 
-            // 1. Identify winning elements
-            let winningIds = [`cell-${winnerNum}`];
-            if(winnerNum !== 0) {
-                if(REDS.includes(winnerNum)) winningIds.push('btn-red'); else winningIds.push('btn-black');
-                if(winnerNum % 2 === 0) winningIds.push('btn-even'); else winningIds.push('btn-odd');
-                if(winnerNum <= 18) winningIds.push('btn-low'); else winningIds.push('btn-high');
-                if(winnerNum <= 12) winningIds.push('btn-doz1'); else if(winnerNum <= 24) winningIds.push('btn-doz2'); else winningIds.push('btn-doz3');
-                if(winnerNum % 3 === 1) winningIds.push('btn-row3'); else if(winnerNum % 3 === 2) winningIds.push('btn-row2'); else winningIds.push('btn-row1');
-            }
-
-            // 2. Clone and animate them
-            winningIds.forEach(id => {
-                let el = document.getElementById(id);
-                if(el) {
-                    let rect = el.getBoundingClientRect();
-                    let clone = el.cloneNode(true);
-                    clone.className = 'flying-cell';
-                    // Match visual style
-                    if(id.includes('red') || (id.includes('cell') && REDS.includes(winnerNum))) clone.classList.add('red');
-                    else if(id.includes('black') || (id.includes('cell') && !REDS.includes(winnerNum) && winnerNum!==0)) clone.classList.add('black');
-                    else if(winnerNum===0) clone.classList.add('green');
-                    
-                    // Set initial pos
-                    clone.style.left = rect.left + 'px';
-                    clone.style.top = rect.top + 'px';
-                    clone.style.width = rect.width + 'px';
-                    clone.style.height = rect.height + 'px';
-                    clone.style.margin = '0';
-                    
-                    stage.appendChild(clone);
-
-                    // Add Win Label if bet placed (simulation: just show label if it's the number)
-                    if(id === `cell-${winnerNum}`) {
-                        let lbl = document.createElement('div');
-                        lbl.className = 'win-label';
-                        lbl.innerText = `+${totalWin}`;
-                        clone.appendChild(lbl);
-                    }
-
-                    // Animate to center
-                    setTimeout(() => {
-                        clone.style.left = (window.innerWidth/2 - 30) + 'px';
-                        clone.style.top = (window.innerHeight/2 - 30) + 'px';
-                        clone.style.width = '60px';
-                        clone.style.height = '60px';
-                        clone.style.opacity = '0'; // Fade out at end
-                    }, 100);
-                }
-            });
-
-            // 3. Mario Coin Effect
-            setTimeout(() => {
-                let coin = document.createElement('div');
-                coin.className = 'mario-coin';
-                coin.style.left = (window.innerWidth/2 - 15) + 'px';
-                coin.style.top = (window.innerHeight/2 - 15) + 'px';
-                coin.style.display = 'block';
-                stage.appendChild(coin);
+                let winAmt = chip.amount + (chip.amount * mult);
                 
-                // Animate to Balance
-                let dest = document.getElementById('r-balance').getBoundingClientRect();
-                coin.style.transition = 'all 0.8s ease-in-out';
-                setTimeout(() => {
-                    coin.style.left = (dest.left + 20) + 'px';
-                    coin.style.top = (dest.top + 10) + 'px';
-                    coin.style.opacity = '0';
-                    try { coinSound.play().catch(e=>{}); } catch(e){}
-                }, 50);
-            }, 1000);
+                if(chip.wrapper) chip.wrapper.style.opacity = '0';
 
-            // Cleanup
-            setTimeout(() => {
-                stage.classList.remove('active');
-                stage.innerHTML = '';
-            }, 2500);
-        }
+                let targetClone = null;
+                if(createdClones[chip.domId]) {
+                    targetClone = createdClones[chip.domId];
+                } else {
+                    targetClone = createdClones['number'];
+                }
 
-        socket.on('roulette_win', (d) => {
-            // Wait for spin to finish (spin takes 1.5s visual hold after result)
-            // Server sends this immediately after spin result logic.
-            // Client Wheel stops. 
-            // We delay this animation to match the "Pop Down" of wheel.
-            setTimeout(() => {
-                triggerWinAnim(d.number, d.amount);
-            }, 1000); 
-        });
-        
-        socket.on('roulette_new_round', clearRoulette);
+                if(targetClone) {
+                    let chipDiv = document.createElement('div');
+                    let sClass = chip.amount >= 1000 ? 'chip-1k' : 'chip-100'; 
+                    chipDiv.className = `chip marker-chip ${sClass}`;
+                    chipDiv.innerHTML = `<div class="chip-label">${formatText(chip.amount)}</div>`;
+                    chipDiv.style.position = 'absolute'; chipDiv.style.zIndex = 10;
+                    
+                    targetClone.appendChild(chipDiv);
 
-        const cvs = document.getElementById('wheelCanvas'); const ctx = cvs.getContext('2d');
-        const W = 800, H = 800, CX = 400, CY = 400;
-        const R_TRACK_OUTER = 380, R_TRACK_INNER = 330, R_POCKETS = 320, R_NUMBERS = 250, R_HUB = 90;
-        const WHEEL = ["0","32","15","19","4","21","2","25","17","34","6","27","13","36","11","30","8","23","10","5","24","16","33","1","20","14","31","9","22","18","29","7","28","12","35","3","26"];
-        
-        function getLabelColor(lbl) { if(lbl==="0") return "#165b33"; return REDS.includes(parseInt(lbl)) ? "#c03a35" : "#111"; }
-
-        function drawWheel(angle = 0) {
-            ctx.clearRect(0,0,W,H);
-            let grad = ctx.createRadialGradient(CX, CY, R_TRACK_INNER, CX, CY, R_TRACK_OUTER);
-            grad.addColorStop(0, "#3a1f12"); grad.addColorStop(0.4, "#63391f"); grad.addColorStop(0.9, "#211108"); grad.addColorStop(1, "#000");
-            ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_OUTER, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
-            ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_INNER, 0, Math.PI*2); ctx.fillStyle = "#0a2118"; ctx.fill();
-            ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
-            WHEEL.forEach((lbl, i) => drawWedge(i, lbl, 1.0, false));
-            ctx.beginPath(); ctx.arc(0,0, R_HUB, 0, Math.PI*2);
-            let hGrad = ctx.createRadialGradient(0,0, 20, 0,0, R_HUB); hGrad.addColorStop(0, "#666"); hGrad.addColorStop(1, "#222");
-            ctx.fillStyle = hGrad; ctx.fill();
-            ctx.beginPath(); ctx.arc(0,0, R_HUB-5, 0, Math.PI*2); ctx.strokeStyle = "#c9a44c"; ctx.lineWidth = 4; ctx.stroke();
-            ctx.beginPath(); ctx.arc(0,0, 30, 0, Math.PI*2); ctx.fillStyle = "#444"; ctx.fill();
-            ctx.restore();
-        }
-
-        function drawWedge(i, lbl, scale = 1.0, glow = false) {
-            const ang = i * ((Math.PI*2)/WHEEL.length); const slice = (Math.PI*2)/WHEEL.length;
-            ctx.save();
-            if (scale !== 1.0) { const mid = ang+slice/2; ctx.rotate(mid); ctx.scale(scale, scale); ctx.rotate(-mid); if(glow){ctx.shadowColor="#FFF"; ctx.shadowBlur=30;} }
-            ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, R_POCKETS, ang, ang+slice); ctx.closePath();
-            ctx.fillStyle = getLabelColor(lbl); ctx.fill();
-            if(!glow) {
-                let pGrad = ctx.createRadialGradient(0,0, R_NUMBERS, 0,0, R_POCKETS);
-                pGrad.addColorStop(0, "rgba(0,0,0,0)"); pGrad.addColorStop(1, "rgba(0,0,0,0.5)");
-                ctx.fillStyle = pGrad; ctx.fill();
-            } else { ctx.lineWidth = 5; ctx.strokeStyle = "#FFF"; ctx.stroke(); }
-            if(!glow) {
-                ctx.beginPath(); ctx.moveTo(Math.cos(ang)*R_HUB, Math.sin(ang)*R_HUB); ctx.lineTo(Math.cos(ang)*R_POCKETS, Math.sin(ang)*R_POCKETS);
-                ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 2; ctx.stroke();
-            }
-            ctx.save(); ctx.rotate(ang + slice/2); ctx.translate(R_NUMBERS+10, 0); ctx.rotate(Math.PI/2);
-            ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText(lbl, 0, 0); ctx.restore();
-            ctx.restore();
-        }
-
-        function spinWheel(targetNum) {
-            let idx = WHEEL.indexOf(targetNum.toString());
-            let slice = (Math.PI*2)/WHEEL.length;
-            let targetAngle = (Math.PI*1.5) - (idx*slice) - (slice/2);
-            let final = targetAngle + (Math.PI*2 * 5);
-            let start = null;
-            function winAnim(ts) {
-                if(!start) start=ts; let el = ts-start;
-                // Just hold for 1.5s
-                drawWheel(final); 
-                if(el < 1500) requestAnimationFrame(winAnim);
-                else {
-                    document.getElementById('wheel-overlay').classList.remove('show');
+                    let currentWin = parseFloat(targetClone.dataset.winAmount || 0);
+                    targetClone.dataset.winAmount = currentWin + winAmt;
+                    
+                    // Mario Text Logic (No Background) - Persistent
+                    let lbl = targetClone.querySelector('.win-amt-label');
+                    if(!lbl) {
+                        lbl = document.createElement('div');
+                        lbl.className = 'win-amt-label';
+                        targetClone.appendChild(lbl);
+                    }
+                    lbl.innerText = "+" + (currentWin + winAmt).toLocaleString();
                 }
             }
-            function anim(ts) {
-                if(!start) start=ts; let p=(ts-start)/5000;
-                if(p>1) p=1; let ease = 1 - Math.pow(1-p, 3);
-                drawWheel(final*ease);
-                if(p<1) requestAnimationFrame(anim);
-                else { start=null; requestAnimationFrame(winAnim); }
-            }
-            requestAnimationFrame(anim);
         }
-    </script>
+    }
+
+    function collectToBalance() {
+        const items = document.querySelectorAll('.clone-cell');
+        const balanceBox = document.getElementById('balanceBox').getBoundingClientRect();
+        let totalWin = 0;
+        let chipsToFly = [];
+
+        items.forEach(clone => {
+            const amt = parseFloat(clone.dataset.winAmount || 0);
+            totalWin += amt;
+            if(amt > 0) chipsToFly.push(clone);
+        });
+
+        let delay = 0;
+        chipsToFly.forEach(clone => {
+            const chip = clone.querySelector('.chip');
+            if(chip) animateToBalance(chip, balanceBox, delay);
+            delay += 100;
+        });
+
+        // Hide clones *after* animation finishes - Fixed: Wait for money to visually arrive
+        setTimeout(() => {
+            items.forEach(c => { c.style.opacity = '0'; c.style.transform = 'scale(0)'; });
+        }, 1500 + delay); // Extended wait time
+
+        if(totalWin > 0) {
+            // Trigger Mario-style coin text
+            setTimeout(() => {
+                showFloatingText(totalWin, balanceBox.left + 50, balanceBox.top);
+                playCoinSound();
+                pulseBalanceBox();
+            }, 600 + delay);
+
+            setTimeout(() => {
+                animateMoneyCount(totalWin);
+            }, 1000 + delay);
+        }
+
+        setTimeout(() => {
+            currentBet = 0; lastRoundBets = []; activeChips = {}; actionStack = []; 
+            updateUI();
+            overlay.innerHTML = ''; 
+            buildHotspots(); 
+            winnersContainer.innerHTML = ''; winnerStage.classList.remove('active');
+        }, 2500 + delay);
+    }
+
+    function animateToBalance(el, targetRect, delay) {
+        const rect = el.getBoundingClientRect();
+        const flying = el.cloneNode(true);
+        flying.className = el.className + ' flying-obj';
+        flying.style.left = rect.left + 'px'; flying.style.top = rect.top + 'px';
+        flying.style.width = rect.width + 'px'; flying.style.height = rect.height + 'px';
+        flying.style.margin = 0;
+        document.body.appendChild(flying);
+        // Do NOT hide original 'el' here; let it stay until the very end
+
+        setTimeout(() => {
+            flying.style.left = (targetRect.left + targetRect.width/2) + 'px';
+            flying.style.top = (targetRect.top + targetRect.height/2) + 'px';
+            flying.classList.add('fly-target');
+        }, 50 + delay);
+
+        setTimeout(() => { flying.remove(); }, 600 + delay);
+    }
+
+    function pulseBalanceBox() {
+        const box = document.getElementById('balanceBox');
+        box.classList.add('receiving');
+        setTimeout(() => box.classList.remove('receiving'), 150);
+    }
+
+    function animateMoneyCount(addAmount) {
+        const start = money;
+        money += addAmount;
+        const end = money;
+        const duration = 500;
+        const startTime = performance.now();
+        function step(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const currentVal = Math.floor(start + (end - start) * progress);
+            document.getElementById('moneyDisplay').innerText = currentVal.toLocaleString();
+            if(progress < 1) requestAnimationFrame(step);
+            else document.getElementById('moneyDisplay').innerText = end.toLocaleString();
+        }
+        requestAnimationFrame(step);
+    }
+
+    function buildNumbers() { bindAction(document.getElementById('cell-0'), [0]); for (let i = 1; i <= 36; i++) { let el = document.createElement('div'); el.className = `cell ${redNumbers.includes(i) ? 'red-cell' : 'black-cell'}`; el.innerText = i; el.id = `cell-${i}`; let row = (i % 3 === 0) ? 1 : (i % 3 === 2 ? 2 : 3); let col = Math.floor((i-1)/3) + 2; el.style.gridRow = row; el.style.gridColumn = col; bindAction(el, [i]); document.getElementById('grid').appendChild(el); } }
+    
+    function buildHotspots() {
+        let border0 = OFFSET_LEFT - 10; 
+        let wideZone = 24; 
+        
+        createZone(border0, 0, wideZone, CELL_H, [0, 3]); 
+        createZone(border0, CELL_H + GAP, wideZone, CELL_H, [0, 2]); 
+        createZone(border0, (CELL_H * 2) + (GAP * 2), wideZone, CELL_H, [0, 1]); 
+        
+        createZone(border0, CELL_H + (GAP/2) + 20, 24, 24, [0, 1, 2, 3]); 
+
+        for (let c = 0; c < 12; c++) { 
+            let x = OFFSET_LEFT + (c * (CELL_W + GAP)); 
+            let nTop = (c * 3) + 3; let nMid = (c * 3) + 2; let nBot = (c * 3) + 1; 
+            
+            createZone(x, CELL_H - 10, CELL_W, 24, [nTop, nMid]); 
+            createZone(x, (CELL_H * 2) + GAP - 10, CELL_W, 24, [nMid, nBot]); 
+            
+            createZone(x, -12, CELL_W, 24, [nBot, nMid, nTop]); 
+
+            if (c < 11) { 
+                let borderX = x + CELL_W - 10; 
+                let nextTop = nTop + 3; let nextMid = nMid + 3; let nextBot = nBot + 3; 
+                
+                createZone(borderX, 0, 24, CELL_H, [nTop, nextTop]); 
+                createZone(borderX, CELL_H + GAP, 24, CELL_H, [nMid, nextMid]); 
+                createZone(borderX, (CELL_H * 2) + (GAP * 2), 24, CELL_H, [nBot, nextBot]); 
+                
+                createZone(borderX, CELL_H - 10, 24, 24, [nTop, nMid, nextTop, nextMid]); 
+                createZone(borderX, (CELL_H * 2) + GAP - 10, 24, 24, [nMid, nBot, nextMid, nextBot]); 
+                
+                createZone(borderX, -12, 24, 24, [nBot, nMid, nTop, nextBot, nextMid, nextTop]); 
+            } 
+        } 
+    }
+
+    function createZone(left, top, w, h, numbers) { let el = document.createElement('div'); el.className = 'hotspot'; el.style.left = left + 'px'; el.style.top = top + 'px'; el.style.width = w + 'px'; el.style.height = h + 'px'; bindAction(el, numbers); overlay.appendChild(el); }
+    function bindSideBets() { const range = (s, e) => Array.from({length: e-s+1}, (_, i) => s + i); bindAction(document.getElementById('btn-doz1'), range(1, 12)); bindAction(document.getElementById('btn-doz2'), range(13, 24)); bindAction(document.getElementById('btn-doz3'), range(25, 36)); bindAction(document.getElementById('btn-low'), range(1, 18)); bindAction(document.getElementById('btn-high'), range(19, 36)); bindAction(document.getElementById('btn-even'), range(1, 36).filter(n => n % 2 === 0)); bindAction(document.getElementById('btn-odd'), range(1, 36).filter(n => n % 2 !== 0)); bindAction(document.getElementById('btn-red'), redNumbers); bindAction(document.getElementById('btn-black'), range(1, 36).filter(n => !redNumbers.includes(n))); bindAction(document.getElementById('btn-row1'), range(1, 36).filter(n => n % 3 === 0)); bindAction(document.getElementById('btn-row2'), range(1, 36).filter(n => n % 3 === 2)); bindAction(document.getElementById('btn-row3'), range(1, 36).filter(n => n % 3 === 1)); }
+    
+    function bindAction(el, numbers) { 
+        if (!el) return; 
+        el.onmouseenter = () => { if(currentState === STATES.BETS_OPEN) { el.classList.add('highlighted'); toggleHighlight(numbers, true); } }; 
+        el.onmouseleave = () => { el.classList.remove('highlighted'); toggleHighlight(numbers, false); }; 
+        el.onclick = (e) => { 
+            if(currentState !== STATES.BETS_OPEN) return; 
+            let rect = el.getBoundingClientRect(); 
+            let oRect = overlay.getBoundingClientRect(); 
+            let x = ((rect.left + rect.width/2) - oRect.left) / currentScale; 
+            let y = ((rect.top + rect.height/2) - oRect.top) / currentScale; 
+            placeBetLogic(x, y, chipValue, numbers, resolveName(el.id, numbers), el.id); 
+        }; 
+    }
+    
+    function resolveName(id, numbers) { 
+        if(id && id.startsWith('cell-')) return "Number " + numbers[0]; 
+        const map = { 'btn-red': 'Red', 'btn-black': 'Black', 'btn-even': 'Even', 'btn-odd': 'Odd', 'btn-low': '1-18', 'btn-high': '19-36', 'btn-doz1': '1st 12', 'btn-doz2': '2nd 12', 'btn-doz3': '3rd 12', 'btn-row1': 'Top Row', 'btn-row2': 'Mid Row', 'btn-row3': 'Bot Row' }; 
+        if(map[id]) return map[id]; 
+        if(numbers.length === 2) return `Split ${numbers[0]}/${numbers[1]}`;
+        if(numbers.length === 3) return `Street ${numbers[0]}-${numbers[2]}`;
+        if(numbers.length === 4) return `Corner ${numbers[0]}-${numbers[3]}`; 
+        if(numbers.length === 6) return `Six Line ${numbers[0]}-${numbers[5]}`;
+        return "Number " + numbers[0]; 
+    }
+
+    function highlightPreset(type, active) {
+        if (PRESETS[type]) {
+            toggleHighlight(PRESETS[type], active);
+        }
+    }
+
+    function toggleHighlight(numbers, active) { numbers.forEach(n => { let cell = document.getElementById(`cell-${n}`); if (cell) active ? cell.classList.add('highlighted') : cell.classList.remove('highlighted'); }); }
+    function setChip(val, el) { chipValue = val; document.querySelectorAll('.chips-bar .chip').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
+    
+    function placeBetLogic(x, y, val, numbers, betName, domId, isRebet = false) { 
+        if (money < val) { alert("Insufficient funds"); return; } 
+        money -= val; currentBet += val; 
+        let key = Math.round(x) + "_" + Math.round(y); 
+        let timestamp = Date.now(); 
+        if(!isRebet) actionStack.push({ key: key, val: val, x: x, y: y, name: betName, numbers: numbers, domId: domId }); 
+        if (!activeChips[key]) activeChips[key] = { amount: 0, element: null, label: null, wrapper: null, name: betName, ts: timestamp, numbers: numbers, domId: domId }; 
+        else activeChips[key].ts = timestamp; 
+        activeChips[key].amount += val; 
+        renderChip(key, x, y); updateUI(); 
+    }
+    
+    function renderChip(key, x, y) { let total = activeChips[key].amount; let styleClass = total >= 100000 ? 'chip-100k' : total >= 10000 ? 'chip-10k' : total >= 1000 ? 'chip-1k' : total >= 100 ? 'chip-100' : 'chip-50'; if (!activeChips[key].element) { let wrapper = document.createElement('div'); wrapper.className = 'marker-wrapper'; wrapper.id = key; wrapper.style.left = x + 'px'; wrapper.style.top = y + 'px'; let chip = document.createElement('div'); chip.className = `chip marker-chip ${styleClass}`; let ov = document.createElement('div'); ov.className = 'chip-overlay'; let lb = document.createElement('div'); lb.className = 'chip-label'; lb.innerText = formatText(total); chip.appendChild(ov); chip.appendChild(lb); wrapper.appendChild(chip); overlay.appendChild(wrapper); activeChips[key].element = chip; activeChips[key].label = lb; activeChips[key].wrapper = wrapper; } else { activeChips[key].element.className = `chip marker-chip ${styleClass}`; activeChips[key].label.innerText = formatText(total); activeChips[key].element.style.transform = 'scale(1.3)'; setTimeout(() => activeChips[key].element.style.transform = 'scale(1)', 100); } }
+    
+    function undoBet() { if(currentState !== STATES.BETS_OPEN) return; if (actionStack.length === 0) return; let lastAction = actionStack.pop(); money += lastAction.val; currentBet -= lastAction.val; let key = lastAction.key; activeChips[key].amount -= lastAction.val; if (activeChips[key].amount <= 0) { activeChips[key].wrapper.remove(); delete activeChips[key]; } else { renderChip(key, lastAction.x, lastAction.y); } updateUI(); }
+    
+    function doubleBet() { if(currentState !== STATES.BETS_OPEN) return; if (currentBet === 0) return; if (money < currentBet) { alert("Insufficient funds to double!"); return; } let currentChips = Object.entries(activeChips); currentChips.forEach(([key, data]) => { let x = parseFloat(data.wrapper.style.left); let y = parseFloat(data.wrapper.style.top); placeBetLogic(x, y, data.amount, data.numbers, data.name, data.domId, false); }); }
+    
+    function clearBets(isSave = true) { 
+        if(isSave && currentState !== STATES.BETS_OPEN) return; 
+        if (isSave && currentBet > 0) { 
+            lastRoundBets = []; 
+            for (let key in activeChips) { 
+                let wrap = activeChips[key].wrapper; 
+                lastRoundBets.push({ x: parseFloat(wrap.style.left), y: parseFloat(wrap.style.top), amount: activeChips[key].amount, name: activeChips[key].name, numbers: activeChips[key].numbers, domId: activeChips[key].domId }); 
+            } 
+        } 
+        if(!isSave) { money += currentBet; }
+        currentBet = 0; updateUI(); overlay.innerHTML = ''; activeChips = {}; actionStack = []; 
+        buildHotspots();
+    }
+    
+    function rebet() { if(currentState !== STATES.BETS_OPEN) return; if (lastRoundBets.length === 0) return; if (currentBet > 0) clearBets(false); lastRoundBets.forEach(bet => { if(money >= bet.amount) placeBetLogic(bet.x, bet.y, bet.amount, bet.numbers, bet.name, bet.domId, true); }); }
+    
+    function toggleChat() { document.getElementById('chatPopup').classList.toggle('open'); document.getElementById('musicPopup').classList.remove('open'); }
+    function toggleMusic() { document.getElementById('musicPopup').classList.toggle('open'); document.getElementById('chatPopup').classList.remove('open'); }
+    function switchChat(type, tab) { document.querySelectorAll('.chat-tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.chat-view').forEach(v => v.classList.remove('active')); tab.classList.add('active'); document.getElementById(`view-${type}`).classList.add('active'); }
+    
+    function switchMusicTab(type, tab) { 
+        document.querySelectorAll('#musicPopup .chat-tab').forEach(t => t.classList.remove('active')); 
+        document.querySelectorAll('#musicPopup .chat-view').forEach(v => v.classList.remove('active')); 
+        tab.classList.add('active'); 
+        document.getElementById(`music-view-${type}`).classList.add('active'); 
+    }
+
+    function handleKey(e, type) { if(e.key === 'Enter') sendMsg(type); }
+    function sendMsg(type) { 
+        let inputId = type === 'public' ? 'inPublic' : 'inSupport'; 
+        let listId = type === 'public' ? 'chatListPublic' : 'chatListSupport'; 
+        let userColor = type === 'public' ? 'msg-user' : 'msg-user'; 
+        let prefix = type === 'public' ? 'You' : 'You'; 
+        let inp = document.getElementById(inputId); 
+        let txt = inp.value.trim(); 
+        if(!txt) return; 
+        
+        let div = document.createElement('div'); div.className = 'chat-msg'; 
+        div.innerHTML = `<span class="msg-prefix ${userColor}">${prefix}:</span><span class="msg-text">${txt}</span>`; 
+        let list = document.getElementById(listId); list.appendChild(div); list.scrollTop = list.scrollHeight; 
+        
+        if(type === 'support') {
+            setTimeout(() => {
+                let rDiv = document.createElement('div'); rDiv.className = 'chat-msg';
+                rDiv.innerHTML = `<span class="msg-prefix msg-support">Agent:</span><span class="msg-text">Thanks for your message. An agent will be with you shortly.</span>`;
+                list.appendChild(rDiv); list.scrollTop = list.scrollHeight;
+            }, 1000);
+        }
+        
+        inp.value = ''; 
+    }
+    
+    let queueCount = 0;
+    function queueSong() {
+        let titleIn = document.getElementById('mTitle');
+        let artistIn = document.getElementById('mArtist');
+        let linkIn = document.getElementById('mLink');
+        let title = titleIn.value.trim();
+        let artist = artistIn.value.trim();
+        let link = linkIn.value.trim();
+        
+        if(!title || !artist || !link) {
+            alert("Please fill Title, Artist, and Link.");
+            return;
+        }
+
+        // Update Metadata
+        document.getElementById('npTitle').innerText = title;
+        document.getElementById('npArtist').innerText = artist;
+
+        queueCount++;
+        
+        // Remove empty message if exists
+        let emptyMsg = document.querySelector('#musicQueueListContainer .empty-queue-msg');
+        if(emptyMsg) emptyMsg.remove();
+
+        // Add to Queue View (New Style - No Play Button)
+        let div = document.createElement('div'); div.className = 'queue-item';
+        // Removed onClick functionality completely
+        
+        div.innerHTML = `
+            <div class="q-img">🎵</div>
+            <div class="q-info">
+                <div class="q-title">${title}</div>
+                <div class="q-artist">${artist}</div>
+            </div>
+        `;
+        document.getElementById('musicQueueListContainer').appendChild(div);
+
+        // Clear Form
+        titleIn.value = ''; artistIn.value = ''; linkIn.value = '';
+        
+        // Auto Switch to Queue Tab to see result
+        switchMusicTab('queue', document.querySelectorAll('#musicPopup .chat-tab')[1]);
+    }
+
+    function formatText(val) { return val >= 1000 ? (val / 1000) + 'K' : val; }
+    
+    function preset(type) { 
+        if(currentState !== STATES.BETS_OPEN) return; 
+        let nums = PRESETS[type] || []; 
+        let displayName = type.charAt(0).toUpperCase() + type.slice(1); 
+        nums.forEach(n => { 
+            let cell = document.getElementById(`cell-${n}`); 
+            if(cell) { 
+                let rect = cell.getBoundingClientRect(); 
+                let oRect = overlay.getBoundingClientRect(); 
+                let x = ((rect.left + rect.width/2) - oRect.left) / currentScale; 
+                let y = ((rect.top + rect.height/2) - oRect.top) / currentScale; 
+                placeBetLogic(x, y, chipValue, [n], displayName, `cell-${n}`); 
+            } 
+        }); 
+    }
+    
+    function updateUI() { document.getElementById('moneyDisplay').innerText = money.toLocaleString(); document.getElementById('betDisplay').innerText = currentBet.toLocaleString(); renderBetList(); }
+    
+    function renderBetList() { 
+        betsListEl.innerHTML = ''; 
+        const keys = Object.keys(activeChips); 
+        if(keys.length === 0) { betsListEl.innerHTML = '<div class="empty-bets">No bets placed</div>'; return; } 
+        let groups = {}; 
+        keys.forEach(key => { 
+            let chip = activeChips[key]; 
+            if(chip.amount > 0) { 
+                if(!groups[chip.name]) groups[chip.name] = { amount: 0, ts: 0 }; 
+                groups[chip.name].amount += chip.amount; 
+                if(chip.ts > groups[chip.name].ts) groups[chip.name].ts = chip.ts; 
+            } 
+        }); 
+        let sortedGroups = Object.entries(groups).sort((a, b) => b[1].ts - a[1].ts); 
+        sortedGroups.forEach(([name, data]) => { let row = document.createElement('div'); row.className = 'bet-item'; row.innerHTML = `<span class="bet-name">${name}</span><span class="bet-amt">${data.amount.toLocaleString()}</span>`; betsListEl.appendChild(row); }); 
+    }
+    
+    init();
+</script>
 </body>
 </html>
