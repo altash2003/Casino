@@ -32,17 +32,9 @@
         .chat-tabs { display: flex; border-bottom: 1px solid #333; }
         .chat-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 12px; }
         .chat-tab.active { background: #222; color: #FFD700; border-bottom: 2px solid #FFD700; }
-        
-        /* HOVER SCROLLBAR */
         .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; scrollbar-width: thin; scrollbar-color: transparent transparent; }
         .chat-content.active { display: block; }
-        .chat-content::-webkit-scrollbar { width: 6px; }
-        .chat-content::-webkit-scrollbar-track { background: transparent; }
-        .chat-content::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
-        /* Show on hover */
         .chat-content:hover { scrollbar-color: rgba(255,255,255,0.2) transparent; }
-        .chat-content:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
-
         .chat-input-area { padding: 8px; border-top: 1px solid #333; display: flex; background: #1a1a1a; border-radius: 0 0 12px 12px; }
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; outline:none; }
         .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; line-height: 1.4; }
@@ -61,7 +53,7 @@
         .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
         .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
         .chip:hover { transform: scale(1.1); }
-        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
@@ -110,6 +102,7 @@
         
         .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
         
+        /* HUD WIDTH FIXED TO TABLE WIDTH (~730px) */
         .r-hud-container { width: 730px; display: flex; justify-content: space-between; margin-bottom: 10px; }
         
         .r-hud-box { 
@@ -120,7 +113,6 @@
         .hud-time { border: 2px solid #FFD700; transition: 0.2s; }
         .hud-bet { border: 2px solid #444; }
         
-        /* URGENT TIMER STYLE */
         .hud-time.urgent { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; animation: pulse 0.5s infinite alternate; }
         @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
 
@@ -129,10 +121,11 @@
 
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
         
-        /* HISTORY WIDTH */
-        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; }
+        /* FULL WIDTH HISTORY */
+        .r-history { width: 100%; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; box-sizing: border-box; }
         .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
+        .hist-empty { background: #333; opacity: 0.3; box-shadow: none; border: 1px solid #555; }
         
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
         
@@ -598,7 +591,7 @@
         function initHistory() {
             let h = document.getElementById('rHistory');
             h.innerHTML = '';
-            for(let i=0; i<12; i++) {
+            for(let i=0; i<23; i++) {
                 // Generate random dummy data on init
                 let rand = Math.floor(Math.random()*37);
                 let b = document.createElement('div');
@@ -608,6 +601,7 @@
             }
         }
         
+        // --- PRECISION BETTING ZONES ---
         function buildHotspots() {
             const overlay = document.getElementById('ghostOverlay');
             overlay.innerHTML = ''; 
@@ -732,11 +726,18 @@
         
         socket.on('roulette_result_log', (n) => {
              let h = document.getElementById('rHistory');
+             
+             // Remove placeholder if exists
+             let empty = h.querySelector('.hist-empty');
+             if(empty) empty.remove();
+             
              let b = document.createElement('div');
              b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
              b.innerText = n;
              h.prepend(b);
-             if(h.children.length > 12) h.lastChild.remove();
+             
+             // Keep length 23
+             if(h.children.length > 23) h.lastChild.remove();
         });
 
         socket.on('roulette_win', (d) => {
