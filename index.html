@@ -102,7 +102,6 @@
         
         .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
         
-        /* HUD WIDTH FIXED TO TABLE WIDTH (~730px) */
         .r-hud-container { width: 730px; display: flex; justify-content: space-between; margin-bottom: 10px; }
         
         .r-hud-box { 
@@ -121,8 +120,7 @@
 
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
         
-        /* FULL WIDTH HISTORY */
-        .r-history { width: 100%; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; box-sizing: border-box; }
+        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; box-sizing: border-box; }
         .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
         .hist-empty { background: #333; opacity: 0.3; box-shadow: none; border: 1px solid #555; }
@@ -165,13 +163,21 @@
         canvas { border-radius: 50%; width: 100%; height: 100%; object-fit: contain; }
         .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 5005; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); pointer-events: none; transition: opacity 0.5s ease; opacity: 1; }
 
-        #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 4000; display:none; justify-content:center; align-items:center; }
-        #winner-stage.active { display:flex; }
-        .win-box { background: #222; border: 4px solid #FFD700; padding: 20px; border-radius: 10px; text-align: center; animation: popIn 0.3s; }
-        .win-num { font-size: 60px; font-weight: 800; }
-        .win-amt { font-size: 30px; color: #FFD700; }
-        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        /* WINNING ANIMATION STAGE */
+        #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 6000; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s; }
+        #winner-stage.active { display:flex; opacity:1; }
+        
+        .flying-cell { position: absolute; width: 42px; height: 42px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 20px #FFD700; z-index: 6001; transition: all 1s ease-in-out; }
+        .flying-cell.red { background: #d32f2f; }
+        .flying-cell.black { background: #222; }
+        .flying-cell.green { background: #016D29; }
+        
+        .win-label { position:absolute; top:-25px; left:50%; transform:translateX(-50%); color:#00E5FF; font-weight:900; font-size:14px; text-shadow:0 1px 2px black; white-space:nowrap; opacity:0; animation: fadeUp 0.5s forwards 1s; }
+        @keyframes fadeUp { to { top:-35px; opacity:1; } }
+
+        /* MARIO COIN */
+        .mario-coin { position:absolute; width:30px; height:30px; background:url('https://cdn-icons-png.flaticon.com/512/1292/1292744.png') center/cover; z-index:6002; display:none; }
+        
     </style>
 </head>
 <body>
@@ -307,9 +313,8 @@
             </div>
         </div>
         
-        <div id="winner-stage">
-            <div class="win-box"><div class="win-num" id="win-num-display">0</div><div class="win-amt" id="win-amt-display">+0</div></div>
-        </div>
+        <div id="winner-stage"></div>
+        <div id="mario-stage"></div>
 
         <div class="r-main-area">
             
@@ -386,6 +391,7 @@
 
         // Beep Sound
         const tickSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU");
+        const coinSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_2492742969.mp3");
 
         // --- AUTH ---
         const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
@@ -592,7 +598,6 @@
             let h = document.getElementById('rHistory');
             h.innerHTML = '';
             for(let i=0; i<23; i++) {
-                // Generate random dummy data on init
                 let rand = Math.floor(Math.random()*37);
                 let b = document.createElement('div');
                 b.className = `hist-ball ${rand===0?'hist-green':(REDS.includes(rand)?'hist-red':'hist-black')}`;
@@ -601,7 +606,6 @@
             }
         }
         
-        // --- PRECISION BETTING ZONES ---
         function buildHotspots() {
             const overlay = document.getElementById('ghostOverlay');
             overlay.innerHTML = ''; 
@@ -726,27 +730,108 @@
         
         socket.on('roulette_result_log', (n) => {
              let h = document.getElementById('rHistory');
-             
-             // Remove placeholder if exists
-             let empty = h.querySelector('.hist-empty');
-             if(empty) empty.remove();
+             // Remove random filled balls if any
+             // Actually, just pushing new ones will eventually cycle them out
              
              let b = document.createElement('div');
              b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
              b.innerText = n;
              h.prepend(b);
              
-             // Keep length 23
              if(h.children.length > 23) h.lastChild.remove();
         });
 
-        socket.on('roulette_win', (d) => {
-            let stage = document.getElementById('winner-stage');
+        // ================= WINNER GATHER ANIMATION =================
+        function triggerWinAnim(winnerNum, totalWin) {
+            const stage = document.getElementById('winner-stage');
             stage.classList.add('active');
-            document.getElementById('win-num-display').innerText = d.number;
-            document.getElementById('win-num-display').style.color = d.number===0?'green':(REDS.includes(d.number)?'red':'white');
-            document.getElementById('win-amt-display').innerText = '+' + d.amount;
-            setTimeout(() => stage.classList.remove('active'), 4000);
+            stage.innerHTML = ''; // Clear old
+
+            // 1. Identify winning elements
+            let winningIds = [`cell-${winnerNum}`];
+            if(winnerNum !== 0) {
+                if(REDS.includes(winnerNum)) winningIds.push('btn-red'); else winningIds.push('btn-black');
+                if(winnerNum % 2 === 0) winningIds.push('btn-even'); else winningIds.push('btn-odd');
+                if(winnerNum <= 18) winningIds.push('btn-low'); else winningIds.push('btn-high');
+                if(winnerNum <= 12) winningIds.push('btn-doz1'); else if(winnerNum <= 24) winningIds.push('btn-doz2'); else winningIds.push('btn-doz3');
+                if(winnerNum % 3 === 1) winningIds.push('btn-row3'); else if(winnerNum % 3 === 2) winningIds.push('btn-row2'); else winningIds.push('btn-row1');
+            }
+
+            // 2. Clone and animate them
+            winningIds.forEach(id => {
+                let el = document.getElementById(id);
+                if(el) {
+                    let rect = el.getBoundingClientRect();
+                    let clone = el.cloneNode(true);
+                    clone.className = 'flying-cell';
+                    // Match visual style
+                    if(id.includes('red') || (id.includes('cell') && REDS.includes(winnerNum))) clone.classList.add('red');
+                    else if(id.includes('black') || (id.includes('cell') && !REDS.includes(winnerNum) && winnerNum!==0)) clone.classList.add('black');
+                    else if(winnerNum===0) clone.classList.add('green');
+                    
+                    // Set initial pos
+                    clone.style.left = rect.left + 'px';
+                    clone.style.top = rect.top + 'px';
+                    clone.style.width = rect.width + 'px';
+                    clone.style.height = rect.height + 'px';
+                    clone.style.margin = '0';
+                    
+                    stage.appendChild(clone);
+
+                    // Add Win Label if bet placed (simulation: just show label if it's the number)
+                    if(id === `cell-${winnerNum}`) {
+                        let lbl = document.createElement('div');
+                        lbl.className = 'win-label';
+                        lbl.innerText = `+${totalWin}`;
+                        clone.appendChild(lbl);
+                    }
+
+                    // Animate to center
+                    setTimeout(() => {
+                        clone.style.left = (window.innerWidth/2 - 30) + 'px';
+                        clone.style.top = (window.innerHeight/2 - 30) + 'px';
+                        clone.style.width = '60px';
+                        clone.style.height = '60px';
+                        clone.style.opacity = '0'; // Fade out at end
+                    }, 100);
+                }
+            });
+
+            // 3. Mario Coin Effect
+            setTimeout(() => {
+                let coin = document.createElement('div');
+                coin.className = 'mario-coin';
+                coin.style.left = (window.innerWidth/2 - 15) + 'px';
+                coin.style.top = (window.innerHeight/2 - 15) + 'px';
+                coin.style.display = 'block';
+                stage.appendChild(coin);
+                
+                // Animate to Balance
+                let dest = document.getElementById('r-balance').getBoundingClientRect();
+                coin.style.transition = 'all 0.8s ease-in-out';
+                setTimeout(() => {
+                    coin.style.left = (dest.left + 20) + 'px';
+                    coin.style.top = (dest.top + 10) + 'px';
+                    coin.style.opacity = '0';
+                    try { coinSound.play().catch(e=>{}); } catch(e){}
+                }, 50);
+            }, 1000);
+
+            // Cleanup
+            setTimeout(() => {
+                stage.classList.remove('active');
+                stage.innerHTML = '';
+            }, 2500);
+        }
+
+        socket.on('roulette_win', (d) => {
+            // Wait for spin to finish (spin takes 1.5s visual hold after result)
+            // Server sends this immediately after spin result logic.
+            // Client Wheel stops. 
+            // We delay this animation to match the "Pop Down" of wheel.
+            setTimeout(() => {
+                triggerWinAnim(d.number, d.amount);
+            }, 1000); 
         });
         
         socket.on('roulette_new_round', clearRoulette);
@@ -803,16 +888,12 @@
             let start = null;
             function winAnim(ts) {
                 if(!start) start=ts; let el = ts-start;
-                drawWheel(final); ctx.save(); ctx.translate(CX, CY); ctx.rotate(final);
-                const scale = 1.12 + Math.sin(el * 0.005) * 0.03; 
-                drawWedge(idx, WHEEL[idx], scale, true);
-                ctx.beginPath(); ctx.arc(0,0, R_HUB, 0, Math.PI*2);
-                let hGrad = ctx.createRadialGradient(0,0, 20, 0,0, R_HUB); hGrad.addColorStop(0, "#666"); hGrad.addColorStop(1, "#222");
-                ctx.fillStyle = hGrad; ctx.fill();
-                ctx.beginPath(); ctx.arc(0,0, R_HUB-5, 0, Math.PI*2); ctx.strokeStyle = "#c9a44c"; ctx.lineWidth = 4; ctx.stroke();
-                ctx.beginPath(); ctx.arc(0,0, 30, 0, Math.PI*2); ctx.fillStyle = "#444"; ctx.fill();
-                ctx.restore();
-                if(document.getElementById('wheel-overlay').classList.contains('show')) requestAnimationFrame(winAnim);
+                // Just hold for 1.5s
+                drawWheel(final); 
+                if(el < 1500) requestAnimationFrame(winAnim);
+                else {
+                    document.getElementById('wheel-overlay').classList.remove('show');
+                }
             }
             function anim(ts) {
                 if(!start) start=ts; let p=(ts-start)/5000;
