@@ -4,45 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CASINO</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* GLOBAL RESET */
         body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
         .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; }
         .view-section.active { display: flex; }
         .global-back { position: fixed; top: 10px; left: 10px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
 
-        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 20000; display: flex; justify-content: center; align-items: center; }
+        /* AUTH OVERLAY */
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
         .auth-box { background: #111; border: 1px solid #333; padding: 40px; border-radius: 12px; text-align: center; width: 300px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; user-select: text; cursor: text; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-        /* ROULETTE STYLES */
-        :root { --bg-felt: #01431E; --grid-gold: #F3C620; }
-        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; overflow:hidden; }
-        .r-main-area { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: filter 0.5s; }
-        .r-main-area.blurred { filter: blur(5px) brightness(0.5); pointer-events: none; }
+        /* UNIFIED PANEL POSITION */
+        .panel-position { position: fixed; bottom: 100px; right: 20px; width: 280px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .panel-position.active { display: flex; animation: slideUp 0.2s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
+        /* CHAT SPECIFIC */
+        .chat-panel { height: 350px; }
+        .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 11px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
+        .chat-tabs { display: flex; border-bottom: 1px solid #333; }
+        .chat-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 12px; }
+        .chat-tab.active { background: #222; color: #FFD700; border-bottom: 2px solid #FFD700; }
+        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; scrollbar-width: thin; scrollbar-color: transparent transparent; }
+        .chat-content.active { display: block; }
+        .chat-content:hover { scrollbar-color: rgba(255,255,255,0.2) transparent; }
+        .chat-input-area { padding: 8px; border-top: 1px solid #333; display: flex; background: #1a1a1a; border-radius: 0 0 12px 12px; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; outline:none; }
+        .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; line-height: 1.4; color: #eee; }
+
+        /* MUSIC SPECIFIC */
+        .music-player { height: auto; padding: 10px; }
+        .mp-title { font-size: 11px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
+        .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
+        .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
+        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
+        .mp-status { font-size: 10px; color: #00E5FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom:5px; }
+        .vol-slider { -webkit-appearance: none; width: 100%; height: 4px; background: #333; border-radius: 2px; outline: none; }
+        .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #FFD700; cursor: pointer; transition: 0.2s; }
+        
+        /* CHIPS UI */
+        .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
+        .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
+        .chip:hover { transform: scale(1.1); }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; }
+        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
+        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
+        .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
+        
+        /* BOARD CHIP */
+        .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; }
+        .chip.chip-board::after { inset: 4px; }
+        .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
+
+        .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
+        .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; } /* RED IS 200 */
+        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
+        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
+        .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
+
+        /* LOBBY */
+        #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
+        .lobby-grid { display: flex; gap: 40px; }
+        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .game-card:hover { border-color: #FFD700; transform: translateY(-10px); }
+        .gc-title { font-size: 32px; color: #FFD700; font-weight: 800; margin-bottom: 20px; }
+        .gc-icon { font-size: 60px; margin-bottom: 20px; }
+
+        /* COLOR GAME */
+        #view-colorgame { background: url('background.jpg') center/cover; justify-content: center; align-items: center; }
+        .cg-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 20px; box-sizing: border-box; }
+        .cg-top-bar { display:flex; justify-content:center; gap:40px; width:100%; padding:20px; background:rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-bottom: 1px solid #333; }
+        .hud-stat { text-align:center; }
+        .hud-stat label { font-size:10px; color:#888; font-weight:bold; letter-spacing:1px; display:block; }
+        .hud-stat div { font-size:24px; font-weight:bold; color:white; }
+        .cg-center { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; }
+        .cg-timer { font-size: 100px; font-weight: 800; text-shadow: 0 0 20px cyan; line-height: 1; }
+        .cg-status { font-size: 24px; letter-spacing: 5px; color: #aaa; margin-bottom: 20px; }
+        .cg-dice-row { display: flex; gap: 20px; justify-content: center; }
+        .die { width: 90px; height: 90px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 3px solid rgba(255,255,255,0.2); background: #222; }
+        .die.red { background: #d32f2f; } .die.green { background: #388e3c; } .die.blue { background: #1976d2; }
+        .die.pink { background: #e91e63; } .die.white { background: #eee; color:black; } .die.yellow { background: #fbc02d; color:black; }
+        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; width: 80%; max-width: 600px; margin-bottom: 20px; }
+        .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 15px; }
+        .cg-bet-card { height: 80px; border: 1px solid #555; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; transition: 0.2s; }
+        
+        /* ROULETTE LAYOUT */
+        :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
+        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; overflow:hidden; }
+        .r-main-area { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-origin: center center; }
+        
         .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
+        
         .r-hud-container { width: 730px; display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .r-hud-box { background: #000; border-radius: 8px; padding: 10px 20px; width: 180px; text-align: center; }
+        
+        .r-hud-box { 
+            background: #000; border-radius: 8px; padding: 10px 20px; 
+            width: 180px; text-align: center; display: flex; flex-direction: column; justify-content: center;
+        }
+        .hud-bal { border: 2px solid #00E5FF; }
         .hud-time { border: 2px solid #FFD700; transition: 0.2s; }
+        .hud-bet { border: 2px solid #444; }
+        
+        /* URGENT TIMER STYLE - 3 Ticks */
         .hud-time.urgent { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; background:#300; transform: scale(1.05); }
-        .r-lbl { font-size: 10px; color: #888; font-weight: bold; letter-spacing: 1px; }
-        .r-val { font-size: 28px; color: #fff; font-weight: 800; font-family: 'Oswald', sans-serif; }
         .urgent-text { color:#ff3d00; font-size:18px; letter-spacing:2px; font-weight:bold; }
 
+        .r-lbl { font-size: 10px; color: #888; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
+        .r-val { font-size: 28px; color: #fff; font-weight: 800; font-family: 'Oswald', sans-serif; line-height: 1; }
+
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
+        
+        /* HISTORY - 23 Balls */
         .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; margin-bottom: 5px; box-sizing: border-box; }
         .hist-ball { width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 9px; box-shadow: 0 2px 4px black; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
-        .hist-empty { background: transparent; }
-        .hist-blank-circle { width:100%; height:100%; border-radius:50%; opacity:0.3; }
-
+        .hist-empty { background: transparent; box-shadow: none; } /* BLANK BALLS */
+        .hist-blank-circle { width:100%; height:100%; border-radius:50%; opacity:0.3; } /* Colored circle inside blank */
+        
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
-        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--grid-gold); position: relative; z-index:5; }
-        .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
+        
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--grid-gold); z-index: 5; position: relative; }
+        .red-cell { background-color: var(--cell-red); } .black-cell { background-color: var(--cell-black); }
         .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 10px 0 0 10px; }
         .zone-2to1 { grid-column: 14; writing-mode: vertical-rl; color: #F3C620; font-size: 9px; }
         .label-cell { font-size: 10px; text-transform: uppercase; }
@@ -50,71 +139,195 @@
         .zone-bottom { grid-row: 5; } .low { grid-column: 2 / 4; } .even { grid-column: 4 / 6; } .odd { grid-column: 10 / 12; } .high { grid-column: 12 / 14; }
         .diamond-cell { grid-column: 6 / 8; grid-row: 5; display:flex; justify-content:center; align-items:center; } .diamond-cell.blk { grid-column: 8 / 10; }
         .diamond { width: 18px; height: 18px; transform: rotate(45deg); } .diamond.red { background: #d32f2f; } .diamond.black { background: #111; }
-
+        
         .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
         .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
         
-        /* CHIPS */
-        .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; }
-        .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
-        .chip:hover { transform: scale(1.1); }
-        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); }
-        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
-        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
-        .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
+        /* TABLE CONTROLS */
+        .table-controls { display: flex; gap: 10px; margin-bottom: 5px; width: 100%; justify-content: center; }
+        .t-btn { background: #111; border: 1px solid #444; color: #aaa; padding: 5px 12px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .t-btn:hover { background: #333; color: white; border-color: #FFD700; }
+        .t-btn i { font-size: 12px; }
+
+        /* BUTTONS (Floating Style) */
+        .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 20px; z-index: 5000; }
+        .icon-btn-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; opacity: 0.8; transition: 0.2s; }
+        .icon-btn-wrapper:hover { opacity: 1; transform: scale(1.1); }
+        .icon-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .icon-label { font-size: 10px; font-weight: bold; color: #ccc; letter-spacing: 1px; }
         
-        .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
-        .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
-        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
-        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
-        .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
-        
-        /* BOARD CHIP */
-        .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; }
-        .chip.chip-board::after { inset: 4px; }
-        .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
+        .btn-music .icon-circle { background: linear-gradient(135deg, #7c4dff, #512da8); }
+        .btn-chat .icon-circle { background: linear-gradient(135deg, #42a5f5, #1565c0); }
+
+        #wheel-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.5s ease; }
+        #wheel-overlay.show { display: flex; animation: fadeIn 0.3s; opacity: 1; }
+        .wheelPanel { width: 500px; max-width: 95vw; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-radius: 50%; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
+        .stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        canvas { border-radius: 50%; width: 100%; height: 100%; object-fit: contain; }
+        .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 5005; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); pointer-events: none; transition: opacity 0.5s ease; opacity: 1; }
 
         /* WINNING ANIMATION STAGE */
-        #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 6000; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s; backdrop-filter: blur(5px); }
+        #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 6000; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s; backdrop-filter: blur(5px); }
         #winner-stage.active { display:flex; opacity:1; }
         
-        .flying-cell { position: absolute; width: auto; min-width: 60px; padding: 0 10px; height: 60px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 30px #FFD700; z-index: 6001; transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size:20px; white-space:nowrap; }
-        .flying-cell.red { background: #d32f2f; } .flying-cell.black { background: #222; } .flying-cell.green { background: #016D29; }
+        .flying-cell { position: absolute; width: auto; min-width: 60px; padding: 0 10px; height: 60px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 20px #FFD700; z-index: 6001; transition: all 1s ease-in-out; font-size:20px; white-space:nowrap; }
+        .flying-cell.red { background: #d32f2f; }
+        .flying-cell.black { background: #222; }
+        .flying-cell.green { background: #016D29; }
         
         .win-label { position:absolute; top:-35px; left:50%; transform:translateX(-50%); color:#00E5FF; font-weight:900; font-size:18px; text-shadow:0 1px 2px black; white-space:nowrap; opacity:0; animation: fadeUp 0.5s forwards 1s; }
         @keyframes fadeUp { to { top:-45px; opacity:1; } }
 
+        /* MARIO COIN */
         .mario-coin { position:absolute; width:40px; height:40px; background:url('https://cdn-icons-png.flaticon.com/512/1292/1292744.png') center/cover; z-index:6002; display:none; }
-
-        /* WHEEL */
-        #wheel-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.5s ease; }
-        #wheel-overlay.show { display: flex; animation: fadeIn 0.3s; opacity: 1; }
-        canvas { border-radius: 50%; width: 100%; height: 100%; object-fit: contain; }
-        .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 5005; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); }
-
-        /* CONTROLS */
-        .table-controls { display: flex; gap: 10px; margin-bottom: 5px; width: 100%; justify-content: center; }
-        .t-btn { background: #111; border: 1px solid #444; color: #aaa; padding: 5px 12px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-        .t-btn:hover { background: #333; color: white; border-color: #FFD700; }
+        
+        /* SOUND TOGGLE */
+        .sound-toggle { position:absolute; top:20px; right:20px; color:#aaa; font-size:20px; cursor:pointer; z-index:9000; transition:0.2s; }
+        .sound-toggle:hover { color:white; }
+        
     </style>
 </head>
 <body>
+
     <div id="authOverlay">
         <div class="auth-box">
-            <h1 style="color:#FFD700;">CASINO LOGIN</h1>
+            <h1 style="color:#FFD700; margin-bottom:20px;">CASINO LOGIN</h1>
             <input id="user" class="auth-input" placeholder="USERNAME">
             <input id="pass" class="auth-input" type="password" placeholder="PASSWORD">
             <button onclick="login()" class="auth-btn">ENTER</button>
             <button onclick="register()" class="auth-btn" style="background:transparent; border:1px solid #555; color:#aaa; font-size:12px;">REGISTER</button>
+            <div id="loginErr" style="color:red; margin-top:5px;"></div>
         </div>
     </div>
 
-    <div id="view-roulette" class="view-section active">
-        <div id="wheel-overlay"><div style="position:relative; width:400px; height:400px;"><div class="pointer"></div><canvas id="wheelCanvas" width="800" height="800"></canvas></div></div>
+    <div class="sound-toggle" onclick="toggleSound()"><i class="fa fa-volume-up" id="sIcon"></i></div>
+
+    <div class="chat-panel panel-position" id="chatPanel">
+        <div class="chat-header">
+            <span id="chatTitle">GLOBAL</span>
+            <span onclick="toggleChat()" style="cursor:pointer; font-size:16px;">&times;</span>
+        </div>
+        <div class="chat-tabs">
+            <div class="chat-tab active" onclick="tabChat('public')">PUBLIC</div>
+            <div class="chat-tab" onclick="tabChat('support')">SUPPORT</div>
+        </div>
+        <div id="tab-public" class="chat-content active">
+            <div id="chatList"></div>
+        </div>
+        <div id="tab-support" class="chat-content">
+            <div id="supportList"></div>
+        </div>
+        <div class="chat-input-area" id="input-public">
+            <input id="chatInput" class="chat-input" placeholder="Type here...">
+            <button onclick="sendChat()" style="background:#FFD700; border:none; padding:0 10px; cursor:pointer; font-weight:bold; border-radius:4px;">></button>
+        </div>
+        <div class="chat-input-area" id="input-support" style="display:none;">
+            <input id="supportInput" class="chat-input" placeholder="Message Admin...">
+            <button onclick="sendSupport()" style="background:#00E5FF; border:none; padding:0 10px; cursor:pointer; font-weight:bold; border-radius:4px;">></button>
+        </div>
+    </div>
+
+    <div class="music-player panel-position" id="globalMusicPlayer">
+        <div class="mp-title">
+            <span>CASINO DJ</span>
+            <span onclick="toggleMusicUI()" style="cursor:pointer;">x</span>
+        </div>
+        <div class="mp-controls">
+            <button class="mp-btn" onclick="toggleMusic()"><i class="fa fa-play"></i> / <i class="fa fa-pause"></i></button>
+            <button class="mp-btn" onclick="stopMusic()"><i class="fa fa-stop"></i></button>
+        </div>
+        <input class="mp-input" id="musicUrl" placeholder="MP3 URL here...">
+        <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
+        <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
+            <i class="fa fa-volume-down" style="font-size:10px; color:#aaa;"></i>
+            <input type="range" class="vol-slider" min="0" max="100" step="5" value="20" onchange="setVolume(this.value)">
+            <i class="fa fa-volume-up" style="font-size:10px; color:#aaa;"></i>
+        </div>
+        <div class="mp-status" id="mpStatus">Ready</div>
+        <audio id="audioEl" loop></audio>
+    </div>
+
+    <button class="global-back" id="backBtn" onclick="goToLobby()">← LOBBY</button>
+
+    <div id="view-lobby" class="view-section active">
+        <h1 style="font-size:60px; color:#FFD700; text-shadow:0 0 20px rgba(0,0,0,0.8); margin-bottom:10px;">GRAND CASINO</h1>
+        <div style="margin-bottom:20px; font-size:18px;">
+            PLAYER: <span id="lobbyUser" style="color:#FFD700; font-weight:bold;">Guest</span> | 
+            BALANCE: <span id="lobbyBal" style="color:#00E5FF; font-weight:bold;">0</span>
+        </div>
+        <div class="lobby-grid">
+            <div class="game-card" onclick="enterGame('colorgame')">
+                <div class="gc-title">COLOR GAME</div>
+                <div class="gc-icon">🎨</div>
+                <div class="gc-count" id="count-colorgame">0 Playing</div>
+            </div>
+            <div class="game-card" onclick="enterGame('roulette')">
+                <div class="gc-title">ROULETTE</div>
+                <div class="gc-icon">🎡</div>
+                <div class="gc-count" id="count-roulette">0 Playing</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-colorgame" class="view-section">
+        <div class="cg-main-area">
+            <div class="cg-top-bar">
+                <div class="hud-stat"><label>BALANCE</label><div id="cg-balance" style="color:#00E5FF">0</div></div>
+                <div class="hud-stat"><label>TIMER</label><div id="cg-timer" style="color:#FFD700">20</div></div>
+                <div class="hud-stat"><label>BET</label><div id="cg-bet-total">0</div></div>
+            </div>
+            <div class="cg-center">
+                <div class="cg-status" id="cg-status">BETS OPEN</div>
+                <div class="cg-dice-row">
+                    <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
+                </div>
+            </div>
+            <div class="icon-controls">
+                <div class="icon-btn-wrapper btn-music" onclick="toggleMusicUI()">
+                    <div class="icon-circle"><i class="fa fa-music" style="color:white; font-size:20px;"></i></div>
+                    <span class="icon-label">MUSIC</span>
+                </div>
+                <div class="icon-btn-wrapper btn-chat" onclick="toggleChat()">
+                    <div class="icon-circle"><i class="fa fa-comment" style="color:white; font-size:20px;"></i></div>
+                    <span class="icon-label">CHAT</span>
+                </div>
+            </div>
+            <div class="cg-bet-panel">
+                <div class="chips-bar">
+                    <div class="chip chip-50 active" onclick="setCgChip(50, this)"><div class="chip-label">50</div></div>
+                    <div class="chip chip-100" onclick="setCgChip(100, this)"><div class="chip-label">100</div></div>
+                    <div class="chip chip-1k" onclick="setCgChip(1000, this)"><div class="chip-label">1K</div></div>
+                    <div class="chip chip-10k" onclick="setCgChip(10000, this)"><div class="chip-label">10K</div></div>
+                    <div class="chip chip-100k" onclick="setCgChip(100000, this)"><div class="chip-label">100K</div></div>
+                </div>
+                <div class="cg-bet-grid">
+                    <div class="cg-bet-card" style="background: #d32f2f;" onclick="placeCgBet('RED')"><b>RED</b><span id="cg-bet-RED">0</span></div>
+                    <div class="cg-bet-card" style="background: #388e3c;" onclick="placeCgBet('GREEN')"><b>GREEN</b><span id="cg-bet-GREEN">0</span></div>
+                    <div class="cg-bet-card" style="background: #1976d2;" onclick="placeCgBet('BLUE')"><b>BLUE</b><span id="cg-bet-BLUE">0</span></div>
+                    <div class="cg-bet-card" style="background: #fbc02d; color:black;" onclick="placeCgBet('YELLOW')"><b>YEL</b><span id="cg-bet-YELLOW">0</span></div>
+                    <div class="cg-bet-card" style="background: #e91e63;" onclick="placeCgBet('PINK')"><b>PINK</b><span id="cg-bet-PINK">0</span></div>
+                    <div class="cg-bet-card" style="background: #eee; color:black;" onclick="placeCgBet('WHITE')"><b>WHT</b><span id="cg-bet-WHITE">0</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-roulette" class="view-section">
+        <div id="wheel-overlay">
+            <div class="wheelPanel">
+                <div class="stage">
+                    <div class="pointer"></div>
+                    <canvas id="wheelCanvas" width="800" height="800"></canvas>
+                </div>
+            </div>
+        </div>
+        
         <div id="winner-stage"></div>
 
         <div class="r-main-area">
+            
             <div class="r-table-scaler" id="rWrapper">
+                
                 <div class="r-hud-container">
                     <div class="r-hud-box hud-bal"><div class="r-lbl">BALANCE</div><div class="r-val" id="r-balance">0</div></div>
                     <div class="r-hud-box hud-time" id="rTimerBox"><div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">--</div></div>
@@ -123,9 +336,11 @@
 
                 <div class="r-table-wrapper">
                     <div class="r-history" id="rHistory"></div>
+                    
                     <div class="r-grid" id="grid">
                         <div class="ghost-overlay" id="ghostOverlay"></div>
                         <div style="position:absolute; inset:0; z-index:50; pointer-events:none;" id="rOverlay"></div>
+                        
                         <div class="cell zone-0" id="cell-0">0</div>
                         <div class="cell zone-2to1" style="grid-row:1" id="btn-row1">2to1</div>
                         <div class="cell zone-2to1" style="grid-row:2" id="btn-row2">2to1</div>
@@ -142,10 +357,10 @@
                     </div>
                     
                     <div class="table-controls">
-                        <div class="t-btn" onclick="sendUndo()">UNDO</div>
-                        <div class="t-btn" onclick="sendClear()">CLEAR</div>
-                        <div class="t-btn" onclick="sendRebet()">REBET</div>
-                        <div class="t-btn" onclick="sendX2()">x2</div>
+                        <div class="t-btn" onclick="sendUndo()"><i class="fa fa-undo"></i> UNDO</div>
+                        <div class="t-btn" onclick="sendClear()"><i class="fa fa-trash"></i> CLEAR</div>
+                        <div class="t-btn" onclick="sendRebet()"><i class="fa fa-refresh"></i> REBET</div>
+                        <div class="t-btn" onclick="sendX2()"><b>x2</b> DOUBLE</div>
                     </div>
 
                     <div class="chips-bar">
@@ -157,184 +372,392 @@
                     </div>
                 </div>
             </div>
+
+            <div class="icon-controls">
+                <div class="icon-btn-wrapper btn-music" onclick="toggleMusicUI()">
+                    <div class="icon-circle"><i class="fa fa-music" style="color:white; font-size:20px;"></i></div>
+                    <span class="icon-label">MUSIC</span>
+                </div>
+                <div class="icon-btn-wrapper btn-chat" onclick="toggleChat()">
+                    <div class="icon-circle"><i class="fa fa-comment" style="color:white; font-size:20px;"></i></div>
+                    <span class="icon-label">CHAT</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let myUser="Guest", myBal=0, rChip=50, isBettingLocked=false, currentTableScale=1;
-        let lastRoundBets=[], currentRoundBets=[], rBetTotal=0;
+        let myUser = "Guest";
+        let myBal = 0;
+        let currentRoom = 'lobby';
+        let currentTableScale = 1;
+        let isSoundOn = true;
+        
+        let lastRoundBets = []; 
+        let currentRoundBets = []; 
+
+        // Beep Sound
         const tickSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU");
         const coinSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_2492742969.mp3");
 
-        function login() { let u=document.getElementById('user').value, p=document.getElementById('pass').value; if(u&&p) socket.emit('login', {username:u, password:p}); }
-        function register() { let u=document.getElementById('user').value, p=document.getElementById('pass').value; if(u&&p) socket.emit('register', {username:u, password:p}); }
-        
-        socket.on('login_success', (d) => { localStorage.setItem('u',d.username); document.getElementById('authOverlay').style.display='none'; myUser=d.username; myBal=d.balance; updateDisplay(); });
-        socket.on('login_error', (m) => alert(m));
-        if(localStorage.getItem('u')) document.getElementById('user').value = localStorage.getItem('u');
+        function toggleSound() {
+            isSoundOn = !isSoundOn;
+            document.getElementById('sIcon').className = isSoundOn ? 'fa fa-volume-up' : 'fa fa-volume-mute';
+        }
+        function playSfx(s) { if(isSoundOn) { s.currentTime=0; s.play().catch(e=>{}); } }
 
-        socket.on('update_balance', (b) => { myBal = b; if(!document.querySelector('.mario-coin')) updateDisplay(); });
-        function updateDisplay() { document.getElementById('r-balance').innerText = myBal; document.getElementById('r-bet-display').innerText = rBetTotal; }
+        // --- AUTH ---
+        const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
+        if(sU && sP) socket.emit('login', { username: sU, password: sP });
 
-        function setRChip(v, el) { rChip = v; document.querySelectorAll('.chips-bar .chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); }
+        function login() { socket.emit('login', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
+        function register() { socket.emit('register', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
         
-        // --- GAME LOGIC ---
+        socket.on('login_success', (data) => {
+            localStorage.setItem('u', data.username); localStorage.setItem('p', document.getElementById('pass').value || sP);
+            document.getElementById('authOverlay').style.display = 'none';
+            myUser = data.username; myBal = data.balance;
+            updateDisplay();
+        });
+        socket.on('login_error', (m) => document.getElementById('loginErr').innerText = m);
+        socket.on('update_balance', (b) => { 
+            myBal = b; 
+            if(document.querySelector('.mario-coin')) {
+                // Delayed by anim
+            } else {
+                updateDisplay(); 
+            }
+        });
+        function updateDisplay() {
+            document.getElementById('lobbyUser').innerText = myUser;
+            document.getElementById('lobbyBal').innerText = myBal;
+            document.getElementById('cg-balance').innerText = myBal;
+            document.getElementById('r-balance').innerText = myBal;
+        }
+
+        // --- CHAT ---
+        function toggleChat() {
+            let p = document.getElementById('chatPanel');
+            let m = document.getElementById('globalMusicPlayer');
+            if(p.classList.contains('active')) { p.classList.remove('active'); } 
+            else { p.classList.add('active'); m.classList.remove('active'); }
+        }
+        function tabChat(t) {
+            document.querySelectorAll('.chat-content').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.chat-tab').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.chat-input-area').forEach(e=>e.style.display='none');
+            document.getElementById('tab-'+t).classList.add('active');
+            document.getElementById('input-'+t).style.display='flex';
+            event.target.classList.add('active');
+        }
+        function sendChat() { 
+            let i = document.getElementById('chatInput'); 
+            if(i.value) { socket.emit('chat_msg', { msg: i.value, room: currentRoom }); i.value=''; } 
+        }
+        function sendSupport() { 
+            let i = document.getElementById('supportInput'); 
+            if(i.value) { socket.emit('support_msg', { msg: i.value, room: currentRoom }); i.value=''; } 
+        }
+        
+        socket.on('chat_broadcast', (d) => {
+            if(d.room && d.room !== currentRoom) return;
+            let box = (d.type === 'public' || d.type === 'public_admin') ? document.getElementById('chatList') : document.getElementById('supportList');
+            let col = d.type === 'public_admin' ? '#FF3D00' : '#FFD700';
+            if(d.type.includes('support')) col = '#00E5FF';
+            
+            box.innerHTML += `<div class="chat-msg"><b style="color:${col}">${d.user}:</b> ${d.msg}</div>`;
+            box.scrollTop = box.scrollHeight;
+        });
+        socket.on('chat_history', (hist) => {
+            let box = document.getElementById('chatList'); box.innerHTML = '';
+            hist.forEach(d => {
+                box.innerHTML += `<div class="chat-msg"><b style="color:#FFD700">${d.user}:</b> ${d.msg}</div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+
+        // --- MUSIC ---
+        const audio = document.getElementById('audioEl');
+        const DEFAULT_MUSIC = "https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; 
+        audio.volume = 0.2; 
+
+        function toggleMusicUI() {
+            let p = document.getElementById('globalMusicPlayer');
+            let c = document.getElementById('chatPanel');
+            if(p.classList.contains('active')) p.classList.remove('active');
+            else { p.classList.add('active'); c.classList.remove('active'); }
+        }
+        function toggleMusic() {
+            if(audio.paused) { 
+                if(!audio.src) audio.src = DEFAULT_MUSIC;
+                audio.play(); 
+                document.getElementById('mpStatus').innerText = "Playing: Standard Jazz";
+            } else { audio.pause(); }
+        }
+        function stopMusic() { audio.pause(); audio.currentTime=0; document.getElementById('mpStatus').innerText = "Stopped"; }
+        function playCustom() {
+            let url = document.getElementById('musicUrl').value;
+            if(url) { audio.src = url; audio.play(); document.getElementById('mpStatus').innerText = "Playing Custom"; }
+        }
+        function setVolume(v) { audio.volume = v / 100; }
+
+        // --- NAV ---
+        function enterGame(g) {
+            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+            document.getElementById('view-'+g).classList.add('active');
+            document.getElementById('backBtn').style.display = 'block';
+            document.getElementById('chatTitle').innerText = g.toUpperCase() + " CHAT";
+            document.getElementById('chatList').innerHTML = '';
+            
+            if(g === 'roulette') {
+                scaleRoulette();
+                window.addEventListener('resize', scaleRoulette);
+                initRoulette();
+            } else {
+                window.removeEventListener('resize', scaleRoulette);
+            }
+            
+            currentRoom = g;
+            socket.emit('switch_room', g);
+        }
+        
+        function scaleRoulette() {
+            let h = window.innerHeight;
+            let w = window.innerWidth;
+            let wrapper = document.getElementById('rWrapper');
+            let availH = h - 20; 
+            let availW = w - 20; 
+            let baseW = 760;
+            let baseH = 500; 
+            let scaleH = availH / baseH; 
+            let scaleW = availW / baseW; 
+            let scale = Math.min(scaleH, scaleW) * 0.95; 
+            if(scale < 0.5) scale = 0.5;
+            if(scale > 1.8) scale = 1.8;
+            currentTableScale = scale; 
+            wrapper.style.transform = `scale(${scale})`;
+        }
+
+        function goToLobby() {
+            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+            document.getElementById('view-lobby').classList.add('active');
+            document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('chatPanel').classList.remove('active');
+            document.getElementById('globalMusicPlayer').classList.remove('active');
+            currentRoom = 'lobby';
+            socket.emit('switch_room', 'lobby');
+            clearRoulette();
+        }
+        socket.on('lobby_counts', (c) => {
+            document.getElementById('count-colorgame').innerText = (c.colorgame||0) + " Playing";
+            document.getElementById('count-roulette').innerText = (c.roulette||0) + " Playing";
+        });
+        socket.on('notification', (d) => alert(d.msg));
+
+
+        // --- COLOR GAME ---
+        let cgChip = 50;
+        let cgBetTotal = 0;
+        function setCgChip(v, el) { 
+            cgChip = v; 
+            el.parentElement.querySelectorAll('.chip').forEach(e=>e.classList.remove('active')); 
+            el.classList.add('active'); 
+        }
+        function placeCgBet(c) {
+            if(myBal < cgChip) { alert("Insufficient funds"); return; }
+            myBal -= cgChip; updateDisplay();
+            cgBetTotal += cgChip; document.getElementById('cg-bet-total').innerText = cgBetTotal;
+            socket.emit('place_bet', { color: c, amount: cgChip });
+            let el = document.getElementById('cg-bet-'+c); el.innerText = parseInt(el.innerText)+cgChip;
+        }
+        socket.on('timer_update', (t) => { if(currentRoom==='colorgame') { document.getElementById('cg-timer').innerText = t; document.getElementById('cg-status').innerText = "BETS OPEN"; }});
+        socket.on('game_rolling', () => { if(currentRoom==='colorgame') { document.getElementById('cg-status').innerText = "ROLLING..."; document.getElementById('cg-timer').innerText="--"; cgRoll(); }});
+        function cgRoll() { 
+            let cols=['red','green','blue','yellow','pink','white'];
+            window.cgInt = setInterval(() => { ['d1','d2','d3'].forEach(id => document.getElementById(id).className=`die ${cols[Math.floor(Math.random()*6)]}`); }, 100);
+        }
+        socket.on('game_result', (r) => { 
+            clearInterval(window.cgInt); 
+            if(currentRoom==='colorgame') {
+                document.getElementById('cg-status').innerText="RESULT";
+                ['d1','d2','d3'].forEach((id,i) => document.getElementById(id).className=`die ${r[i].toLowerCase()}`);
+            }
+        });
+        socket.on('game_reset', () => { 
+            ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'].forEach(c=>document.getElementById('cg-bet-'+c).innerText='0');
+            cgBetTotal = 0; document.getElementById('cg-bet-total').innerText = '0';
+        });
+        socket.on('win_notification', (d) => alert(`WIN! +${d.amount}`));
+
+
+        // --- ROULETTE ---
         const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+        let rChip = 50; let rBetTotal = 0;
+        function setRChip(v, el) { 
+            rChip = v; 
+            el.parentElement.querySelectorAll('.chip').forEach(e=>e.classList.remove('active')); 
+            el.classList.add('active'); 
+        }
+        
         function initRoulette() {
             let grid = document.getElementById('grid');
             if(document.getElementById('cell-1')) return;
             for(let i=1; i<=36; i++) {
                 let d = document.createElement('div');
-                d.className = `cell ${REDS.includes(i)?'red-cell':'black-cell'}`; d.innerText=i; d.id=`cell-${i}`;
+                d.className = `cell ${REDS.includes(i)?'red-cell':'black-cell'}`;
+                d.innerText = i; d.id = `cell-${i}`;
                 let row = (i%3===0)?1:(i%3===2?2:3); let col = Math.floor((i-1)/3)+2;
-                d.style.gridRow=row; d.style.gridColumn=col; grid.appendChild(d);
+                d.style.gridRow = row; d.style.gridColumn = col;
+                grid.appendChild(d);
             }
-            initHistory(); buildHotspots(); drawWheel(0); scaleRoulette();
-            window.addEventListener('resize', scaleRoulette);
+            initHistory();
+            buildHotspots();
+            drawWheel(0);
         }
+
         function initHistory() {
-            let h = document.getElementById('rHistory'); h.innerHTML='';
+            let h = document.getElementById('rHistory');
+            h.innerHTML = '';
             for(let i=0; i<23; i++) {
-                let b = document.createElement('div'); b.className='hist-ball hist-empty';
-                let inner = document.createElement('div'); let rc = Math.floor(Math.random()*37);
-                inner.className = `hist-blank-circle ${rc===0?'hist-green':(REDS.includes(rc)?'hist-red':'hist-black')}`;
-                b.appendChild(inner); h.appendChild(b);
+                let b = document.createElement('div');
+                b.className = 'hist-ball hist-empty';
+                let inner = document.createElement('div');
+                // RANDOM BLANK COLORS
+                let rand = Math.floor(Math.random()*37);
+                inner.className = `hist-blank-circle ${rand===0?'hist-green':(REDS.includes(rand)?'hist-red':'hist-black')}`;
+                b.appendChild(inner);
+                h.appendChild(b);
             }
         }
+        
         function buildHotspots() {
-            const overlay = document.getElementById('ghostOverlay'); overlay.innerHTML='';
-            const CW=42, CH=42, GAP=2, OFFX=50+5+GAP, OFFY=5; 
-            function addZone(x,y,w,h,n) {
-                let el = document.createElement('div'); el.className='hotspot';
-                el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=w+'px'; el.style.height=h+'px';
-                el.onclick = () => placeBet(x+w/2, y+h/2, n);
+            const overlay = document.getElementById('ghostOverlay');
+            overlay.innerHTML = ''; 
+            const CELL_W = 42; const CELL_H = 42; const GAP = 2; const OFFSET_X = 50 + 5 + GAP; const OFFSET_Y = 5; 
+            function createZone(x, y, w, h, numbers) {
+                let el = document.createElement('div'); el.className = 'hotspot';
+                el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.width = w + 'px'; el.style.height = h + 'px';
+                el.onclick = (e) => { placeRouletteBet(x + w/2, y + h/2, numbers); };
                 overlay.appendChild(el);
             }
             for(let c=0; c<12; c++) {
-                let x = OFFX+(c*(CW+GAP)); let nT=c*3+3, nM=c*3+2, nB=c*3+1;
-                addZone(x+8, OFFY+8, CW-16, CH-16, [nT]); addZone(x+8, OFFY+CH+GAP+8, CW-16, CH-16, [nM]); addZone(x+8, OFFY+(CH+GAP)*2+8, CW-16, CH-16, [nB]);
-                addZone(x, OFFY+CH-6, CW, 12, [nT, nM]); addZone(x, OFFY+(CH*2)+GAP-6, CW, 12, [nM, nB]); addZone(x, OFFY-10, CW, 15, [nB, nM, nT]);
-                if(c<11) {
-                    let bX = x+CW-6;
-                    addZone(bX, OFFY, 12, CH, [nT, nT+3]); addZone(bX, OFFY+CH+GAP, 12, CH, [nM, nM+3]); addZone(bX, OFFY+(CH+GAP)*2, 12, CH, [nB, nB+3]);
-                    addZone(bX, OFFY+CH-6, 12, 12, [nT, nM, nT+3, nM+3]); addZone(bX, OFFY+(CH*2)+GAP-6, 12, 12, [nM, nB, nM+3, nB+3]);
-                    addZone(bX, OFFY-10, 12, 15, [nB, nM, nT, nB+3, nM+3, nT+3]);
+                let x = OFFSET_X + (c * (CELL_W + GAP));
+                let nTop = (c * 3) + 3; let nMid = (c * 3) + 2; let nBot = (c * 3) + 1; 
+                createZone(x+8, OFFSET_Y+8, CELL_W-16, CELL_H-16, [nTop]);
+                createZone(x+8, OFFSET_Y+CELL_H+GAP+8, CELL_W-16, CELL_H-16, [nMid]);
+                createZone(x+8, OFFSET_Y+(CELL_H+GAP)*2+8, CELL_W-16, CELL_H-16, [nBot]);
+                createZone(x, OFFSET_Y + CELL_H - 6, CELL_W, 12, [nTop, nMid]); 
+                createZone(x, OFFSET_Y + (CELL_H*2) + GAP - 6, CELL_W, 12, [nMid, nBot]);
+                createZone(x, OFFSET_Y - 10, CELL_W, 15, [nBot, nMid, nTop]); 
+                if(c < 11) {
+                    let nextTop = nTop + 3; let nextMid = nMid + 3; let nextBot = nBot + 3;
+                    let borderX = x + CELL_W - 6;
+                    createZone(borderX, OFFSET_Y, 12, CELL_H, [nTop, nextTop]); 
+                    createZone(borderX, OFFSET_Y+CELL_H+GAP, 12, CELL_H, [nMid, nextMid]);
+                    createZone(borderX, OFFSET_Y+(CELL_H+GAP)*2, 12, CELL_H, [nBot, nextBot]);
+                    createZone(borderX, OFFSET_Y + CELL_H - 6, 12, 12, [nTop, nMid, nextTop, nextMid]);
+                    createZone(borderX, OFFSET_Y + (CELL_H*2) + GAP - 6, 12, 12, [nMid, nBot, nextMid, nextBot]);
+                    createZone(borderX, OFFSET_Y - 10, 12, 15, [nBot, nMid, nTop, nextBot, nextMid, nextTop]);
                 }
             }
-            addZone(5, 5, 50, (CH+GAP)*3, [0]);
-            bindBtn('btn-red', REDS); bindBtn('btn-black', range(1,36).filter(x=>!REDS.includes(x)));
-            bindBtn('btn-even', range(1,36).filter(x=>x%2===0)); bindBtn('btn-odd', range(1,36).filter(x=>x%2!==0));
-            bindBtn('btn-low', range(1,18)); bindBtn('btn-high', range(19,36));
-            bindBtn('btn-doz1', range(1,12)); bindBtn('btn-doz2', range(13,24)); bindBtn('btn-doz3', range(25,36));
-            bindBtn('btn-row1', range(1,36).filter(x=>x%3===0)); bindBtn('btn-row2', range(1,36).filter(x=>x%3===2)); bindBtn('btn-row3', range(1,36).filter(x=>x%3===1));
+            createZone(5, 5, 50, (CELL_H+GAP)*3, [0]);
+            bindButton('btn-red', REDS); bindButton('btn-black', range(1,36).filter(x=>!REDS.includes(x)));
+            bindButton('btn-even', range(1,36).filter(x=>x%2===0)); bindButton('btn-odd', range(1,36).filter(x=>x%2!==0));
+            bindButton('btn-low', range(1,18)); bindButton('btn-high', range(19,36));
+            bindButton('btn-doz1', range(1,12)); bindButton('btn-doz2', range(13,24)); bindButton('btn-doz3', range(25,36));
+            bindButton('btn-row1', range(1,36).filter(x=>x%3===0)); bindButton('btn-row2', range(1,36).filter(x=>x%3===2)); bindButton('btn-row3', range(1,36).filter(x=>x%3===1));
         }
-        function bindBtn(id, nums) { let el=document.getElementById(id); if(el) el.onclick = () => placeBet(el.offsetLeft+el.offsetWidth/2, el.offsetTop+el.offsetHeight/2, nums); }
+        
+        function bindButton(id, nums) {
+            let el = document.getElementById(id);
+            if(el) el.onclick = () => { placeRouletteBet(el.offsetLeft + el.offsetWidth / 2, el.offsetTop + el.offsetHeight / 2, nums); };
+        }
+
         function range(s,e) { return Array.from({length:e-s+1},(_,i)=>s+i); }
 
-        function placeBet(x,y,nums) {
-            if(isBettingLocked || myBal < rChip) return;
-            myBal -= rChip; rBetTotal += rChip; updateDisplay();
+        function placeRouletteBet(x, y, nums) {
+            if(myBal < rChip) { alert("Insufficient funds"); return; }
+            myBal -= rChip; updateDisplay();
+            rBetTotal += rChip; document.getElementById('r-bet-display').innerText = rBetTotal;
             currentRoundBets.push({ nums: nums, amount: rChip, x: x, y: y });
-            let sty = 'chip-50'; if(rChip===200) sty='chip-200'; if(rChip===1000) sty='chip-1k'; if(rChip===10000) sty='chip-10k'; if(rChip===100000) sty='chip-100k';
-            let mk = document.createElement('div'); mk.className=`chip chip-board ${sty}`;
-            mk.innerHTML=`<div class="chip-label">${fmt(rChip)}</div>`;
-            mk.style.left=x+'px'; mk.style.top=y+'px'; mk.style.transform='translate(-50%,-50%)';
+            let chipStyle = 'chip-50'; if(rChip===200) chipStyle='chip-200'; if(rChip===1000) chipStyle='chip-1k'; if(rChip===10000) chipStyle='chip-10k'; if(rChip===100000) chipStyle='chip-100k';
+            let mk = document.createElement('div'); mk.className = `chip chip-board ${chipStyle}`; mk.innerHTML = `<div class="chip-label">${formatChip(rChip)}</div>`;
+            mk.style.position = 'absolute'; mk.style.left = x + 'px'; mk.style.top = y + 'px'; mk.style.transform = 'translate(-50%, -50%)';
             document.getElementById('rOverlay').appendChild(mk);
             socket.emit('place_bet_roulette', { numbers: nums, amount: rChip });
         }
-        function fmt(v){ return v>=1000 ? (v/1000)+'k' : v; }
         
-        function sendUndo() { if(!isBettingLocked) socket.emit('roulette_undo'); }
-        function sendClear() { if(!isBettingLocked) socket.emit('roulette_clear'); }
-        function sendRebet() { if(!isBettingLocked && lastRoundBets.length) lastRoundBets.forEach(b => setTimeout(()=>placeBet(b.x,b.y,b.nums),50)); }
-        function sendX2() { if(!isBettingLocked) { let d=[...currentRoundBets]; d.forEach(b=>placeBet(b.x,b.y,b.nums)); } }
+        function sendClear() { socket.emit('roulette_clear'); }
+        function sendUndo() { socket.emit('roulette_undo'); }
+        function sendRebet() { if(lastRoundBets.length === 0) return; lastRoundBets.forEach(b => { setTimeout(() => { placeRouletteBet(b.x, b.y, b.nums); }, 50); }); }
+        function sendX2() { let betsToDouble = [...currentRoundBets]; betsToDouble.forEach(b => { placeRouletteBet(b.x, b.y, b.nums); }); }
 
-        socket.on('bets_cleared', () => { currentRoundBets=[]; document.getElementById('rOverlay').innerHTML=''; rBetTotal=0; updateDisplay(); });
-        socket.on('bet_undone', () => { 
-            let c=document.getElementById('rOverlay'); if(c.lastChild) c.lastChild.remove(); 
-            let p=currentRoundBets.pop(); if(p){ rBetTotal-=p.amount; updateDisplay(); } 
-        });
+        socket.on('bets_cleared', () => { currentRoundBets = []; document.getElementById('rOverlay').innerHTML = ''; rBetTotal = 0; document.getElementById('r-bet-display').innerText = '0'; });
+        socket.on('bet_undone', () => { let chips = document.getElementById('rOverlay').children; if(chips.length > 0) chips[chips.length-1].remove(); let undone = currentRoundBets.pop(); if(undone) { rBetTotal -= undone.amount; document.getElementById('r-bet-display').innerText = rBetTotal; } });
 
-        // STATE SYNC
-        socket.on('roulette_state_update', (d) => {
-            let tb = document.getElementById('rTimerBox');
-            if(d.phase === 'BETTING') {
-                isBettingLocked = false;
-                document.getElementById('r-timer').innerText = d.time;
-                document.getElementById('r-timer').style.display='block';
-                document.querySelector('.urgent-text')?.remove();
-                document.querySelector('.r-main-area').classList.remove('blurred');
+        function formatChip(v) { if(v >= 1000) return (v/1000) + 'k'; return v; }
+
+        function clearRoulette() {
+            if(currentRoundBets.length > 0) lastRoundBets = [...currentRoundBets];
+            currentRoundBets = [];
+            rBetTotal=0; document.getElementById('r-bet-display').innerText='0';
+            document.getElementById('rOverlay').innerHTML='';
+            document.getElementById('winner-stage').classList.remove('active');
+        }
+
+        socket.on('roulette_timer', (t) => { 
+            if(currentRoom==='roulette') { 
+                let tb = document.getElementById('rTimerBox');
+                document.getElementById('r-timer').innerText = t; 
+                document.getElementById('r-timer').style.display = 'block';
+                document.getElementById('wheel-overlay').classList.remove('show');
                 
-                if(d.time <= 3) { tb.classList.add('urgent'); tickSound.play().catch(e=>{}); } 
-                else { tb.classList.remove('urgent'); }
-            } else {
-                isBettingLocked = true;
-                tb.classList.remove('urgent');
-                tb.innerHTML = '<div class="r-lbl">STATUS</div><div class="r-val urgent-text">SPINNING</div>';
+                if(t <= 3 && t > 0) { 
+                    tb.classList.add('urgent'); 
+                    playSfx(tickSound);
+                } else if (t <= 0) {
+                    // Show STATUS SPINNING
+                    tb.classList.remove('urgent');
+                    tb.innerHTML = '<div class="r-lbl">STATUS</div><div class="r-val urgent-text">SPINNING</div>';
+                } else {
+                    tb.classList.remove('urgent');
+                    tb.innerHTML = '<div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">'+t+'</div>';
+                }
             }
         });
-
-        socket.on('roulette_spin_start', (n) => {
-            document.querySelector('.r-main-area').classList.add('blurred');
-            document.getElementById('wheel-overlay').classList.add('show');
-            spinWheel(n);
+        
+        socket.on('roulette_spin_start', (wNum) => { if(currentRoom==='roulette') { document.getElementById('wheel-overlay').classList.add('show'); spinWheel(wNum); } });
+        
+        socket.on('roulette_result_log', (n) => {
+             let h = document.getElementById('rHistory');
+             // Remove placeholder
+             let empty = h.querySelector('.hist-empty');
+             if(empty) empty.remove();
+             
+             let b = document.createElement('div');
+             b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
+             b.innerText = n;
+             h.prepend(b);
+             
+             if(h.children.length > 23) h.lastChild.remove();
         });
 
-        socket.on('roulette_win_data', (d) => {
-            document.getElementById('wheel-overlay').classList.remove('show');
-            document.querySelector('.r-main-area').classList.remove('blurred');
-            
-            // DELAY 1.5s to see table, then GATHER
-            setTimeout(() => {
-                triggerWinAnim(d.number, d.amount, d.balance);
-            }, 1500);
-        });
-
-        socket.on('roulette_history', (hist) => {
-            let h = document.getElementById('rHistory');
-            // Only update real numbers
-            if(hist.length === 0) return;
-            // Clear blanks first time
-            if(h.querySelector('.hist-empty')) h.innerHTML = '';
-            
-            // Just prepend new ones logic
-            // Simple rebuild for robustness
-            h.innerHTML = '';
-            hist.forEach(n => {
-                let b = document.createElement('div');
-                b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
-                b.innerText = n;
-                h.appendChild(b);
-            });
-        });
-
-        socket.on('roulette_reset', () => {
-            if(currentRoundBets.length) lastRoundBets = [...currentRoundBets];
-            currentRoundBets=[]; rBetTotal=0; document.getElementById('rOverlay').innerHTML='';
-            updateDisplay();
-            document.getElementById('winner-stage').classList.remove('active');
-            document.querySelector('.r-main-area').classList.remove('blurred');
-        });
-
-        function triggerWinAnim(winnerNum, totalWin, finalBal) {
+        // ANIMATION
+        function triggerWinAnim(winnerNum, totalWin) {
             const stage = document.getElementById('winner-stage');
-            stage.classList.add('active'); stage.innerHTML='';
-            document.querySelector('.r-main-area').classList.add('blurred');
+            stage.classList.add('active');
+            stage.innerHTML = ''; 
 
             let winningIds = [`cell-${winnerNum}`];
             if(winnerNum !== 0) {
                 if(REDS.includes(winnerNum)) winningIds.push('btn-red'); else winningIds.push('btn-black');
-                if(winnerNum%2===0) winningIds.push('btn-even'); else winningIds.push('btn-odd');
-                if(winnerNum<=18) winningIds.push('btn-low'); else winningIds.push('btn-high');
-                if(winnerNum<=12) winningIds.push('btn-doz1'); else if(winnerNum<=24) winningIds.push('btn-doz2'); else winningIds.push('btn-doz3');
-                if(winnerNum%3===1) winningIds.push('btn-row3'); else if(winnerNum%3===2) winningIds.push('btn-row2'); else winningIds.push('btn-row1');
+                if(winnerNum % 2 === 0) winningIds.push('btn-even'); else winningIds.push('btn-odd');
+                if(winnerNum <= 18) winningIds.push('btn-low'); else winningIds.push('btn-high');
+                if(winnerNum <= 12) winningIds.push('btn-doz1'); else if(winnerNum <= 24) winningIds.push('btn-doz2'); else winningIds.push('btn-doz3');
+                if(winnerNum % 3 === 1) winningIds.push('btn-row3'); else if(winnerNum % 3 === 2) winningIds.push('btn-row2'); else winningIds.push('btn-row1');
             }
-
-            // GATHER
-            let gap = 15; let w = 60; let totalW = winningIds.length * (w+gap);
-            let startX = (window.innerWidth - totalW) / 2;
 
             winningIds.forEach((id, i) => {
                 let el = document.getElementById(id);
@@ -346,79 +769,121 @@
                     else if(id.includes('black') || (id.includes('cell') && !REDS.includes(winnerNum) && winnerNum!==0)) clone.classList.add('black');
                     else if(winnerNum===0) clone.classList.add('green');
                     
-                    clone.style.left=rect.left+'px'; clone.style.top=rect.top+'px'; 
-                    clone.style.width=rect.width+'px'; clone.style.height=rect.height+'px';
+                    clone.style.left = rect.left + 'px';
+                    clone.style.top = rect.top + 'px';
+                    clone.style.width = rect.width + 'px';
+                    clone.style.height = rect.height + 'px';
+                    clone.style.margin = '0';
                     stage.appendChild(clone);
 
-                    if(id === `cell-${winnerNum}` && totalWin > 0) {
-                        let lbl = document.createElement('div'); lbl.className='win-label'; lbl.innerText=`+${totalWin}`;
+                    if(id === `cell-${winnerNum}`) {
+                        let lbl = document.createElement('div');
+                        lbl.className = 'win-label';
+                        lbl.innerText = `+${totalWin}`;
                         clone.appendChild(lbl);
                     }
 
+                    // Horizontal Lineup Logic
+                    let totalW = winningIds.length * 70; 
+                    let startX = (window.innerWidth - totalW) / 2;
+                    
                     setTimeout(() => {
-                        clone.style.left = (startX + (i*(w+gap))) + 'px';
+                        clone.style.left = (startX + (i * 70)) + 'px';
                         clone.style.top = (window.innerHeight/2 - 30) + 'px';
-                        clone.style.width = '60px'; clone.style.minWidth='60px'; clone.style.height='60px';
+                        clone.style.width = 'auto'; // allow text expansion
+                        clone.style.minWidth = '60px';
+                        clone.style.height = '60px';
                     }, 100);
                 }
             });
 
-            // COIN (After 2s)
+            // Coin Anim
             setTimeout(() => {
-                let coin = document.createElement('div'); coin.className='mario-coin';
-                coin.style.left = (window.innerWidth/2 - 20)+'px'; coin.style.top = (window.innerHeight/2 - 20)+'px';
-                coin.style.display = 'block'; stage.appendChild(coin);
+                let coin = document.createElement('div');
+                coin.className = 'mario-coin';
+                coin.style.left = (window.innerWidth/2 - 20) + 'px';
+                coin.style.top = (window.innerHeight/2 - 20) + 'px';
+                coin.style.display = 'block';
+                stage.appendChild(coin);
+                
                 let dest = document.getElementById('r-balance').getBoundingClientRect();
                 coin.style.transition = 'all 0.8s ease-in-out';
                 setTimeout(() => {
-                    coin.style.left = (dest.left+20)+'px'; coin.style.top = (dest.top+10)+'px'; coin.style.opacity='0';
-                    playSfx(coinSound); myBal = finalBal; updateDisplay();
+                    coin.style.left = (dest.left + 20) + 'px';
+                    coin.style.top = (dest.top + 10) + 'px';
+                    coin.style.opacity = '0';
+                    playSfx(coinSound);
+                    updateDisplay(); // Visual Update when coin hits
                 }, 50);
             }, 2000);
 
-            // END
-            setTimeout(() => { 
-                stage.classList.remove('active'); stage.innerHTML=''; 
-                document.querySelector('.r-main-area').classList.remove('blurred');
-            }, 3500);
+            setTimeout(() => { stage.classList.remove('active'); stage.innerHTML = ''; }, 3000);
         }
 
-        function scaleRoulette() {
-            let h = window.innerHeight; let w = window.innerWidth;
-            let scale = Math.min((h-20)/500, (w-20)/760) * 0.95;
-            if(scale < 0.5) scale=0.5; if(scale > 1.8) scale=1.8;
-            currentTableScale=scale; document.getElementById('rWrapper').style.transform=`scale(${scale})`;
-        }
+        socket.on('roulette_win', (d) => {
+            setTimeout(() => { triggerWinAnim(d.number, d.amount); }, 1500); 
+        });
+        
+        socket.on('roulette_new_round', clearRoulette);
 
-        // --- WHEEL ---
         const cvs = document.getElementById('wheelCanvas'); const ctx = cvs.getContext('2d');
+        const W = 800, H = 800, CX = 400, CY = 400;
+        const R_TRACK_OUTER = 380, R_TRACK_INNER = 330, R_POCKETS = 320, R_NUMBERS = 250, R_HUB = 90;
         const WHEEL = ["0","32","15","19","4","21","2","25","17","34","6","27","13","36","11","30","8","23","10","5","24","16","33","1","20","14","31","9","22","18","29","7","28","12","35","3","26"];
+        
         function getLabelColor(lbl) { if(lbl==="0") return "#165b33"; return REDS.includes(parseInt(lbl)) ? "#c03a35" : "#111"; }
+
         function drawWheel(angle = 0) {
-            ctx.clearRect(0,0,800,800);
-            let grad = ctx.createRadialGradient(400, 400, 330, 400, 400, 380); grad.addColorStop(0, "#3a1f12"); grad.addColorStop(1, "#000");
-            ctx.beginPath(); ctx.arc(400, 400, 380, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
-            ctx.beginPath(); ctx.arc(400, 400, 330, 0, Math.PI*2); ctx.fillStyle = "#0a2118"; ctx.fill();
-            ctx.save(); ctx.translate(400, 400); ctx.rotate(angle);
-            WHEEL.forEach((lbl, i) => {
-                const ang = i * ((Math.PI*2)/37); const slice = (Math.PI*2)/37;
-                ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, 320, ang, ang+slice); ctx.closePath();
-                ctx.fillStyle = getLabelColor(lbl); ctx.fill();
-                ctx.save(); ctx.rotate(ang + slice/2); ctx.translate(260, 0); ctx.rotate(Math.PI/2);
-                ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-                ctx.fillText(lbl, 0, 0); ctx.restore();
-            });
-            ctx.beginPath(); ctx.arc(0,0, 90, 0, Math.PI*2); ctx.fillStyle="#222"; ctx.fill(); ctx.restore();
+            ctx.clearRect(0,0,W,H);
+            let grad = ctx.createRadialGradient(CX, CY, R_TRACK_INNER, CX, CY, R_TRACK_OUTER);
+            grad.addColorStop(0, "#3a1f12"); grad.addColorStop(0.4, "#63391f"); grad.addColorStop(0.9, "#211108"); grad.addColorStop(1, "#000");
+            ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_OUTER, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
+            ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_INNER, 0, Math.PI*2); ctx.fillStyle = "#0a2118"; ctx.fill();
+            ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
+            WHEEL.forEach((lbl, i) => drawWedge(i, lbl, 1.0, false));
+            ctx.beginPath(); ctx.arc(0,0, R_HUB, 0, Math.PI*2);
+            let hGrad = ctx.createRadialGradient(0,0, 20, 0,0, R_HUB); hGrad.addColorStop(0, "#666"); hGrad.addColorStop(1, "#222");
+            ctx.fillStyle = hGrad; ctx.fill();
+            ctx.beginPath(); ctx.arc(0,0, R_HUB-5, 0, Math.PI*2); ctx.strokeStyle = "#c9a44c"; ctx.lineWidth = 4; ctx.stroke();
+            ctx.beginPath(); ctx.arc(0,0, 30, 0, Math.PI*2); ctx.fillStyle = "#444"; ctx.fill();
+            ctx.restore();
         }
+
+        function drawWedge(i, lbl, scale = 1.0, glow = false) {
+            const ang = i * ((Math.PI*2)/WHEEL.length); const slice = (Math.PI*2)/WHEEL.length;
+            ctx.save();
+            if (scale !== 1.0) { const mid = ang+slice/2; ctx.rotate(mid); ctx.scale(scale, scale); ctx.rotate(-mid); }
+            ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, R_POCKETS, ang, ang+slice); ctx.closePath();
+            ctx.fillStyle = getLabelColor(lbl); ctx.fill();
+            if(!glow) {
+                let pGrad = ctx.createRadialGradient(0,0, R_NUMBERS, 0,0, R_POCKETS);
+                pGrad.addColorStop(0, "rgba(0,0,0,0)"); pGrad.addColorStop(1, "rgba(0,0,0,0.5)");
+                ctx.fillStyle = pGrad; ctx.fill();
+            } else { ctx.lineWidth = 5; ctx.strokeStyle = "#FFF"; ctx.stroke(); }
+            if(!glow) {
+                ctx.beginPath(); ctx.moveTo(Math.cos(ang)*R_HUB, Math.sin(ang)*R_HUB); ctx.lineTo(Math.cos(ang)*R_POCKETS, Math.sin(ang)*R_POCKETS);
+                ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 2; ctx.stroke();
+            }
+            ctx.save(); ctx.rotate(ang + slice/2); ctx.translate(R_NUMBERS+10, 0); ctx.rotate(Math.PI/2);
+            ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(lbl, 0, 0); ctx.restore();
+            ctx.restore();
+        }
+
         function spinWheel(targetNum) {
             let idx = WHEEL.indexOf(targetNum.toString());
-            let slice = (Math.PI*2)/37;
+            let slice = (Math.PI*2)/WHEEL.length;
             let targetAngle = (Math.PI*1.5) - (idx*slice) - (slice/2);
             let final = targetAngle + (Math.PI*2 * 5);
             let start = null;
-            function winAnim(ts) { if(!start) start=ts; let el = ts-start; drawWheel(final); if(el < 1500) requestAnimationFrame(winAnim); }
+            function winAnim(ts) {
+                if(!start) start=ts; let el = ts-start;
+                drawWheel(final); 
+                if(el < 1500) requestAnimationFrame(winAnim);
+                else { document.getElementById('wheel-overlay').classList.remove('show'); }
+            }
             function anim(ts) {
-                if(!start) start=ts; let p=(ts-start)/4000;
+                if(!start) start=ts; let p=(ts-start)/5000;
                 if(p>1) p=1; let ease = 1 - Math.pow(1-p, 3);
                 drawWheel(final*ease);
                 if(p<1) requestAnimationFrame(anim);
@@ -426,8 +891,6 @@
             }
             requestAnimationFrame(anim);
         }
-
-        window.onload = () => { initRoulette(); }
     </script>
 </body>
 </html>
