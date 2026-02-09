@@ -65,7 +65,7 @@
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
 
-        /* LOBBY & COLOR GAME */
+        /* LOBBY */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
         .lobby-grid { display: flex; gap: 40px; }
         .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
@@ -73,6 +73,7 @@
         .gc-title { font-size: 32px; color: #FFD700; font-weight: 800; margin-bottom: 20px; }
         .gc-icon { font-size: 60px; margin-bottom: 20px; }
 
+        /* COLOR GAME */
         #view-colorgame { background: url('background.jpg') center/cover; justify-content: center; align-items: center; }
         .cg-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 20px; box-sizing: border-box; }
         .cg-top-bar { display:flex; justify-content:center; gap:40px; width:100%; padding:20px; background:rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-bottom: 1px solid #333; }
@@ -94,6 +95,7 @@
         :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
         #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; overflow:hidden; }
         .r-main-area { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-origin: center center; transition: filter 0.5s; }
+        
         .r-main-area.blurred { filter: blur(5px) brightness(0.6); pointer-events: none; }
 
         .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
@@ -155,7 +157,7 @@
         #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 6000; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s; backdrop-filter: blur(5px); }
         #winner-stage.active { display:flex; opacity:1; }
         
-        .flying-cell { position: absolute; width: auto; min-width: 60px; padding: 0 10px; height: 60px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 20px #FFD700; z-index: 6001; transition: all 1s ease-in-out; font-size:20px; white-space:nowrap; }
+        .flying-cell { position: absolute; width: 60px; height: 60px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 20px #FFD700; z-index: 6001; transition: all 1s ease-in-out; font-size:18px; white-space:nowrap; overflow:hidden; }
         .flying-cell.red { background: #d32f2f; }
         .flying-cell.black { background: #222; }
         .flying-cell.green { background: #016D29; }
@@ -606,7 +608,6 @@
                 let b = document.createElement('div');
                 b.className = 'hist-ball hist-empty';
                 let inner = document.createElement('div');
-                // RANDOM BLANK COLORS
                 let randCol = Math.floor(Math.random()*37);
                 inner.className = `hist-blank-circle ${randCol===0?'hist-green':(REDS.includes(randCol)?'hist-red':'hist-black')}`;
                 b.appendChild(inner);
@@ -655,11 +656,8 @@
         function bindButton(id, nums) {
             let el = document.getElementById(id);
             if(el) el.onclick = () => {
-                // Get offset within scaled table
-                let rect = el.getBoundingClientRect();
-                let wrap = document.getElementById('grid').getBoundingClientRect(); 
-                let x = ((rect.left + rect.width/2) - wrap.left) / currentTableScale;
-                let y = ((rect.top + rect.height/2) - wrap.top) / currentTableScale;
+                let x = el.offsetLeft + el.offsetWidth / 2;
+                let y = el.offsetTop + el.offsetHeight / 2;
                 placeRouletteBet(x, y, nums);
             };
         }
@@ -708,10 +706,12 @@
                 document.getElementById('r-timer').style.display = 'block';
                 document.getElementById('wheel-overlay').classList.remove('show');
                 
-                if(t <= 3 && t > 0) { 
-                    tb.classList.add('urgent'); 
+                // 3, 2, 1 Sequence
+                if(t <= 3 && t > 0) {
+                    tb.classList.add('urgent');
                     playSfx(tickSound);
                 } else if (t <= 0) {
+                    // 0
                     tb.classList.remove('urgent');
                     tb.innerHTML = '<div class="r-lbl">STATUS</div><div class="r-val urgent-text">SPINNING</div>';
                 } else {
@@ -774,7 +774,7 @@
                     stage.appendChild(clone);
 
                     // If user won here, show badge
-                    if(id === `cell-${winnerNum}`) { // Simplification
+                    if(id === `cell-${winnerNum}`) { 
                         let lbl = document.createElement('div');
                         lbl.className = 'win-label';
                         lbl.innerText = `+${totalWin}`;
@@ -782,7 +782,7 @@
                     }
 
                     // Horizontal Lineup with Gaps
-                    let gap = 10;
+                    let gap = 15;
                     let width = 60; 
                     let totalW = winningIds.length * (width + gap); 
                     let startX = (window.innerWidth - totalW) / 2;
@@ -790,7 +790,7 @@
                     setTimeout(() => {
                         clone.style.left = (startX + (i * (width+gap))) + 'px';
                         clone.style.top = (window.innerHeight/2 - 30) + 'px';
-                        clone.style.width = 'auto'; 
+                        clone.style.width = '60px'; 
                         clone.style.minWidth = '60px';
                         clone.style.height = '60px';
                     }, 100);
@@ -825,13 +825,15 @@
         }
 
         socket.on('roulette_win', (d) => {
-            // Wait 1.5s after result shown on wheel
+            // Wait 1.5s after result shown on wheel (Wheel stays for 1.5s)
             setTimeout(() => { 
                 document.getElementById('wheel-overlay').classList.remove('show');
-                document.querySelector('.r-main-area').classList.remove('blurred'); // Brief unblur
+                document.querySelector('.r-main-area').classList.remove('blurred'); // Brief unblur to see table
+                
+                // Wait another 1.5s (See table phase) then start gather
                 setTimeout(() => {
                     triggerWinAnim(d.number, d.amount);
-                }, 100);
+                }, 1500);
             }, 1500); 
         });
         
@@ -890,10 +892,8 @@
             function winAnim(ts) {
                 if(!start) start=ts; let el = ts-start;
                 drawWheel(final); 
-                if(el < 1500) requestAnimationFrame(winAnim); // Hold 1.5s
-                else { 
-                    // Animation handled by socket.on('roulette_win')
-                }
+                if(el < 1500) requestAnimationFrame(winAnim);
+                // Handled by socket listener
             }
             function anim(ts) {
                 if(!start) start=ts; let p=(ts-start)/5000;
