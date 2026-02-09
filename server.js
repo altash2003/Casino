@@ -61,31 +61,26 @@ setInterval(() => {
             rouletteState.status = 'SPINNING';
             let resultNum = Math.floor(Math.random() * 37);
             
-            // 1. Start Spin (Client locks bets, shows wheel)
+            // 1. Start Spin 
             io.to('roulette').emit('roulette_spin_start', resultNum);
             
-            // 2. TIMING CALCULATION:
-            // Spin Duration (Client): ~4s
-            // Hold Result on Wheel: 1s
-            // Table Reveal: 1.5s
-            // Winner Gather Anim: 2.0s
-            // Coin Anim: 1.5s
-            // TOTAL: ~10 Seconds
+            // 2. TIMING CALCULATION (Extended for new flow):
+            // Spin (4s) + Wheel Hold (1.5s) + Table View (1.5s) + Gather (2s) + Coin (1.5s) = ~10.5s
             
             setTimeout(() => {
                 // Send Win Data
                 processRouletteWinners(resultNum);
                 io.to('roulette').emit('roulette_result_log', resultNum);
                 
-                // Restart Round
+                // Restart Round after animations
                 setTimeout(() => {
                     rouletteState.status = 'BETTING'; 
-                    rouletteState.timeLeft = 20; // 19s Countdown
+                    rouletteState.timeLeft = 20; 
                     rouletteState.bets = [];
                     io.to('roulette').emit('roulette_new_round');
-                }, 5000); // Buffer for animations to finish
+                }, 7000); // 7s buffer after spin result
                 
-            }, 5000); // Time until result is technically "processed" server side, client handles visuals
+            }, 5000); // Wait for spin to technically end
         }
     }
 }, 1000);
