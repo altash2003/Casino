@@ -112,20 +112,20 @@
         .hud-time { border: 2px solid #FFD700; transition: 0.2s; }
         .hud-bet { border: 2px solid #444; }
         
-        /* URGENT TIMER STYLE */
-        .hud-time.urgent { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; animation: pulse 0.3s infinite alternate; background:#300; }
-        .urgent-text { color:#ff3d00; font-size:18px; animation: flash 0.2s infinite; }
-        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
-        @keyframes flash { 0% { opacity:1; } 50% { opacity:0.5; } 100% { opacity:1; } }
+        /* URGENT TIMER STYLE - 3 Ticks */
+        .hud-time.urgent { border-color: #ff0000; box-shadow: 0 0 20px #ff0000; background:#300; transform: scale(1.05); }
+        .urgent-text { color:#ff3d00; font-size:18px; letter-spacing:2px; font-weight:bold; }
 
         .r-lbl { font-size: 10px; color: #888; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 2px; }
         .r-val { font-size: 28px; color: #fff; font-weight: 800; font-family: 'Oswald', sans-serif; line-height: 1; }
 
         .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
         
-        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; gap: 4px; overflow: hidden; padding: 0 4px; margin-bottom: 5px; box-sizing: border-box; }
-        .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; flex-shrink: 0; }
+        /* HISTORY - 23 Balls */
+        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; margin-bottom: 5px; box-sizing: border-box; }
+        .hist-ball { width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 9px; box-shadow: 0 2px 4px black; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
+        .hist-empty { background: #333; opacity: 0.3; box-shadow: none; border: 1px solid #555; }
         
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
         
@@ -169,7 +169,7 @@
         #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 6000; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; opacity:0; transition:opacity 0.3s; }
         #winner-stage.active { display:flex; opacity:1; }
         
-        .flying-cell { position: absolute; width: 60px; height: 60px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 20px #FFD700; z-index: 6001; transition: all 1s ease-in-out; font-size:24px; }
+        .flying-cell { position: absolute; width: auto; min-width: 60px; padding: 0 10px; height: 60px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 20px #FFD700; z-index: 6001; transition: all 1s ease-in-out; font-size:20px; white-space:nowrap; }
         .flying-cell.red { background: #d32f2f; }
         .flying-cell.black { background: #222; }
         .flying-cell.green { background: #016D29; }
@@ -397,7 +397,7 @@
         let lastRoundBets = []; 
         let currentRoundBets = []; 
 
-        // Sounds
+        // Beep Sound
         const tickSound = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU");
         const coinSound = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_2492742969.mp3");
 
@@ -421,7 +421,17 @@
             updateDisplay();
         });
         socket.on('login_error', (m) => document.getElementById('loginErr').innerText = m);
-        socket.on('update_balance', (b) => { myBal = b; updateDisplay(); });
+        socket.on('update_balance', (b) => { 
+            // If mario coin effect is happening, this might look redundant, 
+            // but ensuring final balance is correct from server is key.
+            // We can delay this update if we want purely visual, but reliability first.
+            myBal = b; 
+            if(document.querySelector('.mario-coin')) {
+                // If coin flying, wait till it hits
+            } else {
+                updateDisplay(); 
+            }
+        });
         function updateDisplay() {
             document.getElementById('lobbyUser').innerText = myUser;
             document.getElementById('lobbyBal').innerText = myBal;
@@ -699,22 +709,18 @@
         socket.on('roulette_timer', (t) => { 
             if(currentRoom==='roulette') { 
                 let tb = document.getElementById('rTimerBox');
-                document.getElementById('r-timer').style.display = 'block';
-                
-                // Show Number normally
                 document.getElementById('r-timer').innerText = t; 
+                document.getElementById('r-timer').style.display = 'block';
                 document.getElementById('wheel-overlay').classList.remove('show');
                 
-                // URGENT STATE (3s)
-                if(t <= 3 && t > 0) {
-                    tb.classList.add('urgent');
+                if(t <= 3 && t > 0) { 
+                    tb.classList.add('urgent'); 
                     playSfx(tickSound);
                 } else if (t <= 0) {
-                    // Hide number, show text
-                    document.getElementById('r-timer').style.display = 'none';
-                    tb.innerHTML = '<div class="r-lbl">STATUS</div><div class="r-val urgent-text">NO BETS</div>';
+                    // Show STATUS SPINNING
+                    tb.classList.remove('urgent');
+                    tb.innerHTML = '<div class="r-lbl">STATUS</div><div class="r-val urgent-text">SPINNING</div>';
                 } else {
-                    // Reset
                     tb.classList.remove('urgent');
                     tb.innerHTML = '<div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">'+t+'</div>';
                 }
@@ -725,7 +731,6 @@
         
         socket.on('roulette_result_log', (n) => {
              let h = document.getElementById('rHistory');
-             // Remove placeholder
              let b = document.createElement('div');
              b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
              b.innerText = n;
@@ -785,6 +790,7 @@
                 }
             });
 
+            // Coin Anim
             setTimeout(() => {
                 let coin = document.createElement('div');
                 coin.className = 'mario-coin';
@@ -800,14 +806,15 @@
                     coin.style.top = (dest.top + 10) + 'px';
                     coin.style.opacity = '0';
                     playSfx(coinSound);
+                    updateDisplay(); // Visual Update when coin hits
                 }, 50);
-            }, 1500);
+            }, 2000);
 
             setTimeout(() => { stage.classList.remove('active'); stage.innerHTML = ''; }, 3000);
         }
 
         socket.on('roulette_win', (d) => {
-            setTimeout(() => { triggerWinAnim(d.number, d.amount); }, 1000); 
+            setTimeout(() => { triggerWinAnim(d.number, d.amount); }, 1500); 
         });
         
         socket.on('roulette_new_round', clearRoulette);
