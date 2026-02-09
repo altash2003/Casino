@@ -11,12 +11,9 @@ const io = new Server(server);
 const DB_FILE = 'database.json';
 let users = {};
 
-// Load DB or create if missing
 if (fs.existsSync(DB_FILE)) { 
     try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } 
-} else {
-    saveDatabase();
-}
+} else { saveDatabase(); }
 
 function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
 
@@ -35,137 +32,156 @@ app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 
 // ==========================================
-//  ROULETTE GAME ENGINE (STATE MACHINE)
+//  ROBUST GAME STATE MACHINES
 // ==========================================
-let rState = {
-    phase: 'BETTING', // BETTING, SPINNING, RESULT, PAYOUT
-    timeLeft: 20,
-    bets: [] 
+
+// --- ROULETTE STATE ---
+let rGame = {
+    phase: 'BETTING', // BETTING, SPINNING, RESULT, SHOWDOWN
+    timer: 20,        // Countdown in seconds
+    bets: [],
+    result: 0
 };
 
-// Main Heartbeat (1 Second Tick)
+// --- COLOR GAME STATE ---
+let cGame = {
+    phase: 'BETTING', // BETTING, ROLLING, RESULT
+    timer: 20,
+    bets: [],
+    result: ['WHITE', 'WHITE', 'WHITE']
+};
+
+// --- MASTER TICK (1 Second Heartbeat) ---
 setInterval(() => {
-    
-    // PHASE 1: BETTING (Countdown)
-    if(rState.phase === 'BETTING') {
-        rState.timeLeft--;
-        
-        // Broadcast Timer to ALL clients
-        io.to('roulette').emit('roulette_state_update', {
-            phase: 'BETTING',
-            time: rState.timeLeft
-        });
-
-        // TIME UP -> START GAME SEQUENCE
-        if(rState.timeLeft <= 0) {
-            startRouletteRound();
-        }
-    }
-
+    tickRoulette();
+    tickColorGame();
 }, 1000);
 
-function startRouletteRound() {
-    rState.phase = 'PROCESSING';
-    
-    // 1. LOCK BETS (Immediate)
-    io.to('roulette').emit('roulette_state_update', { phase: 'LOCKED', time: 0 });
 
-    // 2. GENERATE RESULT
-    let resultNum = Math.floor(Math.random() * 37);
-    rouletteHistory.unshift(resultNum);
-    if(rouletteHistory.length > 23) rouletteHistory.pop();
+// === ROULETTE LOGIC ===
+function tickRoulette() {
+    rGame.timer--;
 
-    // 3. BROADCAST SPIN (Clients will show Wheel)
-    // Spin Duration on Client is fixed (4s)
-    io.to('roulette').emit('roulette_spin_start', resultNum);
+    // Broadcast State Every Second
+    io.to('roulette').emit('roulette_state', {
+        phase: rGame.phase,
+        time: rGame.timer,
+        result: rGame.result // Send result only needed in result phase, but safe to send always
+    });
 
-    // 4. CALCULATE WINNERS (Internal)
+    if (rGame.timer <= 0) {
+        // STATE TRANSITIONS
+        if (rGame.phase === 'BETTING') {
+            // Start Spinning
+            rGame.phase = 'SPINNING';
+            rGame.timer = 4; // 4s Spin duration
+            rGame.result = Math.floor(Math.random() * 37);
+            
+            // Add to history
+            rouletteHistory.unshift(rGame.result);
+            if(rouletteHistory.length > 23) rouletteHistory.pop();
+            io.to('roulette').emit('roulette_history', rouletteHistory);
+
+        } else if (rGame.phase === 'SPINNING') {
+            // Spin done, Show Result on Wheel (Hold)
+            rGame.phase = 'RESULT';
+            rGame.timer = 2; // Hold wheel result for 2s
+
+        } else if (rGame.phase === 'RESULT') {
+            // Hide Wheel, Show Table & Gather Animations
+            rGame.phase = 'SHOWDOWN';
+            rGame.timer = 5; // 5s for Gathering + Coin Animation
+            processRoulettePayouts(rGame.result);
+
+        } else if (rGame.phase === 'SHOWDOWN') {
+            // Reset to Betting
+            rGame.phase = 'BETTING';
+            rGame.timer = 20;
+            rGame.bets = []; // Clear Bets
+            io.to('roulette').emit('roulette_reset');
+        }
+    }
+}
+
+function processRoulettePayouts(winningNumber) {
     let roundWinners = [];
-    rState.bets.forEach(bet => {
-        if(bet.numbers.includes(resultNum)) {
+    rGame.bets.forEach(bet => {
+        if(bet.numbers.includes(winningNumber)) {
             let count = bet.numbers.length;
-            // Payout Logic
             let payoutMult = (count===1)?36 : (count===2)?18 : (count===3)?12 : (count===4)?9 : (count===6)?6 : (count===12)?3 : 2;
             let winAmount = bet.amount * payoutMult;
             
             if(users[bet.username]) {
                 users[bet.username].balance += winAmount;
-                roundWinners.push({ 
-                    socketId: bet.socketId, 
-                    win: winAmount, 
-                    bal: users[bet.username].balance 
+                // Emit individual win event to player
+                io.to(bet.socketId).emit('roulette_win_data', { 
+                    amount: winAmount, 
+                    balance: users[bet.username].balance, 
+                    number: winningNumber 
                 });
-                logHistory(bet.username, `WIN Roulette +${winAmount}`, users[bet.username].balance);
             }
         }
     });
     saveDatabase();
-
-    // 5. SCHEDULE PHASES (Server orchestrates the delay)
-    // Timeline:
-    // 0s: Start Spin (Duration 4s)
-    // 4s: Wheel Stop & Hold (Duration 1.5s)
-    // 5.5s: Wheel Hide, Reveal Table (Duration 1.5s)
-    // 7s: Start Gather Anim (Duration 2s)
-    // 9s: Start Payout Coin Anim (Duration 1.5s)
-    
-    setTimeout(() => {
-        // This triggers the Gather -> Coin -> Balance Update
-        roundWinners.forEach(w => {
-            io.to(w.socketId).emit('roulette_win_data', { amount: w.win, balance: w.bal, number: resultNum });
-        });
-        
-        // Broadcast History Update to everyone
-        io.to('roulette').emit('roulette_history', rouletteHistory);
-        // Also tell non-winners to animate the result gathering (without the coin)
-        io.to('roulette').emit('roulette_result_generic', resultNum);
-
-        // 6. RESET ROUND (After animations finish)
-        setTimeout(() => {
-            rState.phase = 'BETTING';
-            rState.timeLeft = 20;
-            rState.bets = [];
-            io.to('roulette').emit('roulette_reset'); // Clears chips
-        }, 4000); // Time for Payout Anim (2s + 1.5s buffer)
-
-    }, 7500); // Time for Spin (4s) + Hold (1.5s) + Reveal (2s)
 }
 
 
-// --- COLOR GAME LOOP ---
-let colorState = { status: 'BETTING', timeLeft: 20, bets: [] };
-setInterval(() => {
-    if(colorState.status === 'BETTING') {
-        colorState.timeLeft--;
-        if(colorState.timeLeft <= 3) io.to('colorgame').emit('countdown_beep', colorState.timeLeft);
-        if(colorState.timeLeft <= 0) {
-            colorState.status = 'ROLLING';
-            const COLORS = ['RED', 'GREEN', 'BLUE', 'YELLOW', 'PINK', 'WHITE'];
-            let result = [COLORS[Math.floor(Math.random()*6)], COLORS[Math.floor(Math.random()*6)], COLORS[Math.floor(Math.random()*6)]];
-            io.to('colorgame').emit('game_rolling');
-            setTimeout(() => {
-                io.to('colorgame').emit('game_result', result);
-                colorState.bets.forEach(bet => {
-                    let matches = result.filter(c => c === bet.color).length;
-                    if(matches > 0) {
-                        let win = bet.amount * (matches + 1);
-                        if(users[bet.username]) {
-                            users[bet.username].balance += win;
-                            io.to(bet.socketId).emit('win_notification', { game: 'COLOR GAME', amount: win });
-                            io.to(bet.socketId).emit('update_balance', users[bet.username].balance);
-                        }
-                    }
-                });
-                saveDatabase();
-                setTimeout(() => {
-                    colorState.status = 'BETTING'; colorState.timeLeft = 20; colorState.bets = [];
-                    io.to('colorgame').emit('timer_update', 20);
-                    io.to('colorgame').emit('game_reset');
-                }, 5000);
-            }, 3000);
-        } else { io.to('colorgame').emit('timer_update', colorState.timeLeft); }
+// === COLOR GAME LOGIC ===
+function tickColorGame() {
+    cGame.timer--;
+    
+    // Broadcast State
+    io.to('colorgame').emit('color_state', {
+        phase: cGame.phase,
+        time: cGame.timer,
+        result: cGame.result
+    });
+
+    if(cGame.timer <= 3 && cGame.phase === 'BETTING') {
+        io.to('colorgame').emit('countdown_beep', cGame.timer);
     }
-}, 1000);
+
+    if (cGame.timer <= 0) {
+        if (cGame.phase === 'BETTING') {
+            // Start Rolling
+            cGame.phase = 'ROLLING';
+            cGame.timer = 4; // 4s Rolling animation
+            const COLORS = ['RED', 'GREEN', 'BLUE', 'YELLOW', 'PINK', 'WHITE'];
+            cGame.result = [
+                COLORS[Math.floor(Math.random()*6)], 
+                COLORS[Math.floor(Math.random()*6)], 
+                COLORS[Math.floor(Math.random()*6)]
+            ];
+
+        } else if (cGame.phase === 'ROLLING') {
+            // Show Result
+            cGame.phase = 'RESULT';
+            cGame.timer = 5; // 5s to show winners
+            processColorPayouts(cGame.result);
+
+        } else if (cGame.phase === 'RESULT') {
+            // Reset
+            cGame.phase = 'BETTING';
+            cGame.timer = 20;
+            cGame.bets = [];
+        }
+    }
+}
+
+function processColorPayouts(result) {
+    cGame.bets.forEach(bet => {
+        let matches = result.filter(c => c === bet.color).length;
+        if(matches > 0) {
+            let win = bet.amount * (matches + 1);
+            if(users[bet.username]) {
+                users[bet.username].balance += win;
+                io.to(bet.socketId).emit('win_notification', { game: 'COLOR GAME', amount: win });
+                io.to(bet.socketId).emit('update_balance', users[bet.username].balance);
+            }
+        }
+    });
+    saveDatabase();
+}
 
 // --- SOCKETS ---
 io.on('connection', (socket) => {
@@ -175,9 +191,8 @@ io.on('connection', (socket) => {
         if(users[data.username] && users[data.username].password === data.password) {
             joinRoom(socket, data.username, 'lobby');
             socket.emit('login_success', { username: data.username, balance: users[data.username].balance });
-            // Send current state immediately
+            // Sync immediately on login
             socket.emit('roulette_history', rouletteHistory);
-            socket.emit('roulette_state_update', { phase: rState.phase, time: rState.timeLeft });
         } else { socket.emit('login_error', "Invalid Credentials"); }
     });
 
@@ -203,34 +218,35 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('place_bet', (data) => { 
+    // --- BETTING HANDLERS ---
+    socket.on('place_bet', (data) => { // Color Game
         let u = activeSockets[socket.id];
-        if(!u || colorState.status !== 'BETTING') return;
+        if(!u || cGame.phase !== 'BETTING') return;
         if(users[u.username].balance >= data.amount) {
             users[u.username].balance -= data.amount;
-            colorState.bets.push({ username: u.username, color: data.color, amount: data.amount, socketId: socket.id });
+            cGame.bets.push({ username: u.username, color: data.color, amount: data.amount, socketId: socket.id });
             socket.emit('update_balance', users[u.username].balance);
         }
     });
 
     socket.on('place_bet_roulette', (data) => {
         let u = activeSockets[socket.id];
-        if(!u || rState.phase !== 'BETTING') return; 
+        if(!u || rGame.phase !== 'BETTING') return; 
         if(users[u.username].balance >= data.amount) {
             users[u.username].balance -= data.amount;
-            rState.bets.push({ username: u.username, numbers: data.numbers, amount: data.amount, socketId: socket.id });
+            rGame.bets.push({ username: u.username, numbers: data.numbers, amount: data.amount, socketId: socket.id });
             socket.emit('update_balance', users[u.username].balance);
         }
     });
 
     socket.on('roulette_clear', () => {
         let u = activeSockets[socket.id];
-        if(!u || rState.phase !== 'BETTING') return;
-        let userBets = rState.bets.filter(b => b.socketId === socket.id);
+        if(!u || rGame.phase !== 'BETTING') return;
+        let userBets = rGame.bets.filter(b => b.socketId === socket.id);
         if(userBets.length > 0) {
             let refund = userBets.reduce((a,b) => a + b.amount, 0);
             users[u.username].balance += refund;
-            rState.bets = rState.bets.filter(b => b.socketId !== socket.id);
+            rGame.bets = rGame.bets.filter(b => b.socketId !== socket.id);
             socket.emit('update_balance', users[u.username].balance);
             socket.emit('bets_cleared');
         }
@@ -238,13 +254,13 @@ io.on('connection', (socket) => {
 
     socket.on('roulette_undo', () => {
         let u = activeSockets[socket.id];
-        if(!u || rState.phase !== 'BETTING') return;
-        let myBets = rState.bets.filter(b => b.socketId === socket.id);
+        if(!u || rGame.phase !== 'BETTING') return;
+        let myBets = rGame.bets.filter(b => b.socketId === socket.id);
         if(myBets.length > 0) {
             let lastBet = myBets[myBets.length - 1];
             users[u.username].balance += lastBet.amount;
-            let idx = rState.bets.lastIndexOf(lastBet);
-            if(idx > -1) rState.bets.splice(idx, 1);
+            let idx = rGame.bets.lastIndexOf(lastBet);
+            if(idx > -1) rGame.bets.splice(idx, 1);
             socket.emit('update_balance', users[u.username].balance);
             socket.emit('bet_undone');
         }
@@ -269,6 +285,12 @@ function joinRoom(socket, username, room) {
     activeSockets[socket.id] = { username: username, room: room };
     socket.join(room);
     if(playerCounts[room] !== undefined) playerCounts[room]++;
+    // Immediate state sync
+    if(room === 'roulette') {
+        socket.emit('roulette_state', { phase: rGame.phase, time: rGame.timer, result: rGame.result });
+    } else if (room === 'colorgame') {
+        socket.emit('color_state', { phase: cGame.phase, time: cGame.timer, result: cGame.result });
+    }
 }
 
 const PORT = process.env.PORT || 3000;
