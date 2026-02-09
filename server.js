@@ -51,27 +51,41 @@ setInterval(() => {
     }
 }, 1000);
 
-let rouletteState = { status: 'BETTING', timeLeft: 30, bets: [] };
+let rouletteState = { status: 'BETTING', timeLeft: 20, bets: [] };
 setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
         io.to('roulette').emit('roulette_timer', rouletteState.timeLeft);
+        
         if(rouletteState.timeLeft <= 0) {
             rouletteState.status = 'SPINNING';
             let resultNum = Math.floor(Math.random() * 37);
+            
+            // 1. Start Spin (Client locks bets, shows wheel)
             io.to('roulette').emit('roulette_spin_start', resultNum);
             
-            // Timing: 
-            // 4s Spin + 1s Hold + 2s Gather + 1.5s Coin = 8.5s
-            // Increased buffer to 9s to ensure client animation finishes
+            // 2. TIMING CALCULATION:
+            // Spin Duration (Client): ~4s
+            // Hold Result on Wheel: 1s
+            // Table Reveal: 1.5s
+            // Winner Gather Anim: 2.0s
+            // Coin Anim: 1.5s
+            // TOTAL: ~10 Seconds
+            
             setTimeout(() => {
-                io.to('roulette').emit('roulette_result_log', resultNum);
+                // Send Win Data
                 processRouletteWinners(resultNum);
+                io.to('roulette').emit('roulette_result_log', resultNum);
+                
+                // Restart Round
                 setTimeout(() => {
-                    rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
+                    rouletteState.status = 'BETTING'; 
+                    rouletteState.timeLeft = 20; // 19s Countdown
+                    rouletteState.bets = [];
                     io.to('roulette').emit('roulette_new_round');
-                }, 5000);
-            }, 9000); 
+                }, 5000); // Buffer for animations to finish
+                
+            }, 5000); // Time until result is technically "processed" server side, client handles visuals
         }
     }
 }, 1000);
@@ -95,7 +109,15 @@ function processRouletteWinners(winningNumber) {
     rouletteState.bets.forEach(bet => {
         if(bet.numbers.includes(winningNumber)) {
             let count = bet.numbers.length;
-            let payoutMult = count === 1 ? 36 : count === 2 ? 18 : count === 3 ? 12 : count === 4 ? 9 : count === 6 ? 6 : count === 12 ? 3 : 2;
+            let payoutMult = 0;
+            if (count === 1) payoutMult = 36;
+            else if (count === 2) payoutMult = 18;
+            else if (count === 3) payoutMult = 12;
+            else if (count === 4) payoutMult = 9;
+            else if (count === 6) payoutMult = 6;
+            else if (count === 12) payoutMult = 3;
+            else if (count === 18) payoutMult = 2;
+
             let win = bet.amount * payoutMult;
             if(users[bet.username]) {
                 users[bet.username].balance += win;
