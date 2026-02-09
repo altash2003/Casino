@@ -7,6 +7,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/socket.io/socket.io.js"></script> 
 
     <style>
         /* GLOBAL RESET */
@@ -18,7 +19,8 @@
         /* AUTH OVERLAY */
         #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
         .auth-box { background: #111; border: 1px solid #333; padding: 40px; border-radius: 12px; text-align: center; width: 300px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
+        /* FIX: user-select text for inputs */
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; user-select: text; }
         .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
         /* PANELS */
@@ -35,14 +37,14 @@
         .chat-content.active { display: block; }
         .chat-content:hover { scrollbar-color: rgba(255,255,255,0.2) transparent; }
         .chat-input-area { padding: 8px; border-top: 1px solid #333; display: flex; background: #1a1a1a; border-radius: 0 0 12px 12px; }
-        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; outline:none; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; outline:none; user-select: text; }
         .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; line-height: 1.4; color:#eee; }
 
         .music-player { height: auto; padding: 10px; }
         .mp-title { font-size: 11px; color: #FFD700; margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
         .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
-        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
+        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; user-select: text; }
         .mp-status { font-size: 10px; color: #00E5FF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom:5px; }
         .vol-slider { -webkit-appearance: none; width: 100%; height: 4px; background: #333; border-radius: 2px; outline: none; }
         .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #FFD700; cursor: pointer; transition: 0.2s; }
@@ -56,7 +58,6 @@
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
         
-        /* BOARD CHIP */
         .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; }
         .chip.chip-board::after { inset: 4px; }
         .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
@@ -401,8 +402,16 @@
         const sU = localStorage.getItem('u'); const sP = localStorage.getItem('p');
         if(sU && sP) socket.emit('login', { username: sU, password: sP });
 
-        function login() { socket.emit('login', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
-        function register() { socket.emit('register', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
+        function login() { 
+            let u = document.getElementById('user').value;
+            let p = document.getElementById('pass').value;
+            if(u && p) socket.emit('login', { username: u, password: p }); 
+        }
+        function register() { 
+            let u = document.getElementById('user').value;
+            let p = document.getElementById('pass').value;
+            if(u && p) socket.emit('register', { username: u, password: p }); 
+        }
         
         socket.on('login_success', (data) => {
             localStorage.setItem('u', data.username); localStorage.setItem('p', document.getElementById('pass').value || sP);
@@ -608,7 +617,6 @@
             let h = document.getElementById('rHistory');
             h.innerHTML = '';
             for(let i=0; i<23; i++) {
-                let rand = Math.floor(Math.random()*37);
                 let b = document.createElement('div');
                 b.className = 'hist-ball hist-empty';
                 let inner = document.createElement('div');
@@ -703,52 +711,76 @@
             document.querySelector('.r-main-area').classList.remove('blurred');
         }
 
-        socket.on('roulette_timer', (t) => { 
-            if(currentRoom==='roulette') { 
-                let tb = document.getElementById('rTimerBox');
-                document.getElementById('r-timer').innerText = t; 
-                document.getElementById('r-timer').style.display = 'block';
+        socket.on('roulette_state_update', (d) => {
+            let tb = document.getElementById('rTimerBox');
+            let timerEl = document.getElementById('r-timer');
+            
+            if(d.phase === 'BETTING') {
+                isBettingLocked = false;
+                timerEl.style.display = 'block';
+                timerEl.innerText = d.time;
                 document.getElementById('wheel-overlay').classList.remove('show');
+                document.querySelector('.r-main-area').classList.remove('blurred');
                 
-                if(t <= 3 && t > 0) { 
-                    tb.classList.add('urgent'); 
-                    playSfx(tickSound);
-                } else if (t <= 0) {
-                    tb.classList.remove('urgent');
-                    tb.innerHTML = '<div class="r-lbl">STATUS</div><div class="r-val urgent-text">SPINNING</div>';
+                if(d.time <= 3) {
+                    tb.classList.add('urgent');
+                    try{ tickSound.play().catch(e=>{}); }catch(e){}
                 } else {
                     tb.classList.remove('urgent');
-                    tb.innerHTML = '<div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">'+t+'</div>';
+                    tb.innerHTML = '<div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">'+d.time+'</div>';
                 }
+            } 
+            else if(d.phase === 'LOCKED') {
+                isBettingLocked = true;
+                tb.classList.remove('urgent');
+                tb.innerHTML = '<div class="r-lbl">STATUS</div><div class="r-val urgent-text">SPINNING</div>';
             }
         });
-        
-        socket.on('roulette_spin_start', (wNum) => { 
-            if(currentRoom==='roulette') { 
-                isBettingLocked = true;
-                document.querySelector('.r-main-area').classList.add('blurred'); // Blur on spin
-                document.getElementById('wheel-overlay').classList.add('show'); 
-                spinWheel(wNum); 
-            } 
-        });
-        
-        socket.on('roulette_result_log', (n) => {
-             let h = document.getElementById('rHistory');
-             let empty = h.querySelector('.hist-empty');
-             if(empty) empty.remove();
-             let b = document.createElement('div');
-             b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
-             b.innerText = n;
-             h.prepend(b);
-             if(h.children.length > 23) h.lastChild.remove();
+
+        socket.on('roulette_spin_start', (wNum) => {
+            document.querySelector('.r-main-area').classList.add('blurred');
+            document.getElementById('wheel-overlay').classList.add('show'); 
+            spinWheel(wNum); 
         });
 
-        // ANIMATION
+        // ANIMATION SEQ
+        socket.on('roulette_win_data', (d) => {
+            // Server triggers this 7.5s after spin start (Wheel finished long ago)
+            // This event triggers the GATHER + COIN animation
+            document.getElementById('wheel-overlay').classList.remove('show'); // Ensure hidden
+            document.querySelector('.r-main-area').classList.remove('blurred'); // Show table
+            
+            // Wait 1.5s then start Gather
+            setTimeout(() => {
+                triggerWinAnim(d.number, d.amount, d.balance);
+            }, 1500);
+        });
+
+        socket.on('roulette_history', (hist) => {
+            let h = document.getElementById('rHistory');
+            h.innerHTML = '';
+            hist.forEach(n => {
+                let b = document.createElement('div');
+                b.className = `hist-ball ${n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black')}`;
+                b.innerText = n;
+                h.appendChild(b);
+            });
+        });
+
+        socket.on('roulette_reset', () => {
+            if(currentRoundBets.length > 0) lastRoundBets = [...currentRoundBets];
+            currentRoundBets = [];
+            rBetTotal=0; document.getElementById('r-bet-display').innerText='0';
+            document.getElementById('rOverlay').innerHTML='';
+            document.getElementById('winner-stage').classList.remove('active');
+            document.querySelector('.r-main-area').classList.remove('blurred');
+        });
+
         function triggerWinAnim(winnerNum, totalWin, finalBal) {
             const stage = document.getElementById('winner-stage');
             stage.classList.add('active');
             stage.innerHTML = ''; 
-            document.querySelector('.r-main-area').classList.add('blurred'); // Re-blur for gather
+            document.querySelector('.r-main-area').classList.add('blurred'); // Blur bg again
 
             let winningIds = [`cell-${winnerNum}`];
             if(winnerNum !== 0) {
@@ -784,7 +816,7 @@
                         clone.appendChild(lbl);
                     }
 
-                    // Horizontal Lineup with Gaps
+                    // GATHER TO CENTER (Horizontal)
                     let gap = 15;
                     let width = 60; 
                     let totalW = winningIds.length * (width + gap); 
@@ -800,7 +832,7 @@
                 }
             });
 
-            // Coin Anim
+            // COIN ANIMATION
             setTimeout(() => {
                 let coin = document.createElement('div');
                 coin.className = 'mario-coin';
@@ -817,89 +849,41 @@
                     coin.style.opacity = '0';
                     playSfx(coinSound);
                     
-                    myBal = finalBal; // Exact update from server
+                    // UPDATE BALANCE WHEN COIN HITS
+                    myBal = finalBal;
                     updateDisplay();
                 }, 50);
-            }, 2000);
-
-            setTimeout(() => { 
-                stage.classList.remove('active'); 
-                stage.innerHTML = ''; 
-                document.querySelector('.r-main-area').classList.remove('blurred');
-            }, 3500);
+            }, 2000); // 2s after gather start
         }
 
-        socket.on('roulette_win', (d) => {
-            // Sequence: Spin ends (Wheel shows result) -> Wait 1.5s -> Hide Wheel, Show Table -> Wait 1.5s -> Gather Win
-            setTimeout(() => { 
-                document.getElementById('wheel-overlay').classList.remove('show');
-                document.querySelector('.r-main-area').classList.remove('blurred'); // Show table clear
-                
-                // Allow user to see table for 1.5s
-                setTimeout(() => {
-                    triggerWinAnim(d.number, d.amount, d.balance);
-                }, 1500);
-            }, 1500); 
-        });
-        
-        socket.on('roulette_new_round', clearRoulette);
-
+        // --- WHEEL LOGIC (Standard Canvas) ---
         const cvs = document.getElementById('wheelCanvas'); const ctx = cvs.getContext('2d');
         const W = 800, H = 800, CX = 400, CY = 400;
         const R_TRACK_OUTER = 380, R_TRACK_INNER = 330, R_POCKETS = 320, R_NUMBERS = 250, R_HUB = 90;
         const WHEEL = ["0","32","15","19","4","21","2","25","17","34","6","27","13","36","11","30","8","23","10","5","24","16","33","1","20","14","31","9","22","18","29","7","28","12","35","3","26"];
-        
         function getLabelColor(lbl) { if(lbl==="0") return "#165b33"; return REDS.includes(parseInt(lbl)) ? "#c03a35" : "#111"; }
-
         function drawWheel(angle = 0) {
             ctx.clearRect(0,0,W,H);
-            let grad = ctx.createRadialGradient(CX, CY, R_TRACK_INNER, CX, CY, R_TRACK_OUTER);
-            grad.addColorStop(0, "#3a1f12"); grad.addColorStop(0.4, "#63391f"); grad.addColorStop(0.9, "#211108"); grad.addColorStop(1, "#000");
+            let grad = ctx.createRadialGradient(CX, CY, R_TRACK_INNER, CX, CY, R_TRACK_OUTER); grad.addColorStop(0, "#3a1f12"); grad.addColorStop(1, "#000");
             ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_OUTER, 0, Math.PI*2); ctx.fillStyle = grad; ctx.fill();
-            ctx.beginPath(); ctx.arc(CX, CY, R_TRACK_INNER, 0, Math.PI*2); ctx.fillStyle = "#0a2118"; ctx.fill();
             ctx.save(); ctx.translate(CX, CY); ctx.rotate(angle);
-            WHEEL.forEach((lbl, i) => drawWedge(i, lbl, 1.0, false));
-            ctx.beginPath(); ctx.arc(0,0, R_HUB, 0, Math.PI*2);
-            let hGrad = ctx.createRadialGradient(0,0, 20, 0,0, R_HUB); hGrad.addColorStop(0, "#666"); hGrad.addColorStop(1, "#222");
-            ctx.fillStyle = hGrad; ctx.fill();
-            ctx.beginPath(); ctx.arc(0,0, R_HUB-5, 0, Math.PI*2); ctx.strokeStyle = "#c9a44c"; ctx.lineWidth = 4; ctx.stroke();
-            ctx.beginPath(); ctx.arc(0,0, 30, 0, Math.PI*2); ctx.fillStyle = "#444"; ctx.fill();
-            ctx.restore();
+            WHEEL.forEach((lbl, i) => {
+                const ang = i * ((Math.PI*2)/WHEEL.length); const slice = (Math.PI*2)/WHEEL.length;
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, R_POCKETS, ang, ang+slice); ctx.closePath();
+                ctx.fillStyle = getLabelColor(lbl); ctx.fill();
+                ctx.save(); ctx.rotate(ang + slice/2); ctx.translate(R_NUMBERS+10, 0); ctx.rotate(Math.PI/2);
+                ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText(lbl, 0, 0); ctx.restore();
+            });
+            ctx.beginPath(); ctx.arc(0,0, R_HUB, 0, Math.PI*2); ctx.fillStyle="#222"; ctx.fill(); ctx.restore();
         }
-
-        function drawWedge(i, lbl, scale = 1.0, glow = false) {
-            const ang = i * ((Math.PI*2)/WHEEL.length); const slice = (Math.PI*2)/WHEEL.length;
-            ctx.save();
-            // No pulsing scale effect requested, keep flat
-            ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0, R_POCKETS, ang, ang+slice); ctx.closePath();
-            ctx.fillStyle = getLabelColor(lbl); ctx.fill();
-            if(!glow) {
-                let pGrad = ctx.createRadialGradient(0,0, R_NUMBERS, 0,0, R_POCKETS);
-                pGrad.addColorStop(0, "rgba(0,0,0,0)"); pGrad.addColorStop(1, "rgba(0,0,0,0.5)");
-                ctx.fillStyle = pGrad; ctx.fill();
-            } else { ctx.lineWidth = 5; ctx.strokeStyle = "#FFF"; ctx.stroke(); }
-            if(!glow) {
-                ctx.beginPath(); ctx.moveTo(Math.cos(ang)*R_HUB, Math.sin(ang)*R_HUB); ctx.lineTo(Math.cos(ang)*R_POCKETS, Math.sin(ang)*R_POCKETS);
-                ctx.strokeStyle = "#e0e0e0"; ctx.lineWidth = 2; ctx.stroke();
-            }
-            ctx.save(); ctx.rotate(ang + slice/2); ctx.translate(R_NUMBERS+10, 0); ctx.rotate(Math.PI/2);
-            ctx.fillStyle = "#fff"; ctx.font = "bold 24px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText(lbl, 0, 0); ctx.restore();
-            ctx.restore();
-        }
-
         function spinWheel(targetNum) {
             let idx = WHEEL.indexOf(targetNum.toString());
             let slice = (Math.PI*2)/WHEEL.length;
             let targetAngle = (Math.PI*1.5) - (idx*slice) - (slice/2);
             let final = targetAngle + (Math.PI*2 * 5);
             let start = null;
-            function winAnim(ts) {
-                if(!start) start=ts; let el = ts-start;
-                drawWheel(final); 
-                if(el < 1500) requestAnimationFrame(winAnim);
-                // Socket handles removal
-            }
+            function winAnim(ts) { if(!start) start=ts; let el = ts-start; drawWheel(final); if(el < 1500) requestAnimationFrame(winAnim); }
             function anim(ts) {
                 if(!start) start=ts; let p=(ts-start)/4000; // 4s spin
                 if(p>1) p=1; let ease = 1 - Math.pow(1-p, 3);
@@ -909,6 +893,13 @@
             }
             requestAnimationFrame(anim);
         }
+
+        // PANEL & CHAT
+        function toggleChat() { let p = document.getElementById('chatPanel'); let m = document.getElementById('globalMusicPlayer'); if(p.classList.contains('active')) p.classList.remove('active'); else { p.classList.add('active'); m.classList.remove('active'); } }
+        function toggleMusicUI() { let p = document.getElementById('globalMusicPlayer'); let c = document.getElementById('chatPanel'); if(p.classList.contains('active')) p.classList.remove('active'); else { p.classList.add('active'); c.classList.remove('active'); } }
+        function toggleMusic() { if(audio.paused) { if(!audio.src) audio.src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; audio.play(); } else audio.pause(); }
+        function sendChat() { let i = document.getElementById('chatInput'); if(i.value) { socket.emit('chat_msg', { msg: i.value, room: currentRoom }); i.value=''; } }
+        function tabChat(t) { document.querySelectorAll('.chat-content').forEach(e=>e.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); }
     </script>
 </body>
 </html>
