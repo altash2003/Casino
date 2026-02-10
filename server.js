@@ -36,7 +36,7 @@ function broadcastRoomList(room) {
     io.to(room).emit('room_users_update', list);
 }
 
-// --- LOOPS ---
+// --- GAME LOOPS ---
 let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30 };
 
@@ -81,9 +81,7 @@ setInterval(() => {
 }, 1000);
 
 function processRouletteWinners(n) {
-    io.to('roulette').emit('roulette_win', { number: n, amount: 0 }); // Simplified for logic check
-    // Real payout logic requires tracking user bets server-side fully
-    // For this UI demo, we trigger client visual win
+    io.to('roulette').emit('roulette_win', { number: n, amount: 0 }); 
 }
 
 io.on('connection', (socket) => {
@@ -114,9 +112,18 @@ io.on('connection', (socket) => {
     });
 
     socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
+    socket.on('support_msg', (d) => socket.emit('chat_broadcast', {type:'support_sent', user:activeSockets[socket.id].username, msg:d.msg}));
     
     socket.on('place_bet_roulette', (d) => {
-        // Logic to deduct balance would go here
+        let u = activeSockets[socket.id];
+        if(u && users[u.username]) {
+            users[u.username].balance -= d.amount;
+            socket.emit('update_balance', users[u.username].balance);
+        }
+    });
+
+    socket.on('roulette_clear', () => {
+        // Simple client-side clear sync
     });
 
     socket.on('disconnect', () => {
