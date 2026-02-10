@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* CORE */
         :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; }
         body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
@@ -19,77 +20,84 @@
         /* AUTH */
         #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
         .auth-box { background: #111; padding: 40px; border: 1px solid #333; border-radius: 12px; text-align: center; width: 300px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; font-weight:bold; }
-        .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; font-family:'Rajdhani'; font-weight:bold; }
+        .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius:4px; }
 
-        /* LEFT & RIGHT PANELS */
-        .side-panel { position: fixed; top: 70px; width: 220px; max-height: 60vh; background: rgba(15,15,15,0.95); border: 1px solid #444; display: none; flex-direction: column; z-index: 8000; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .side-panel.active { display: flex; }
-        #playerPanel { left: 15px; border-left: 3px solid var(--cyan); }
-        #betPanel { right: 15px; border-right: 3px solid var(--gold); }
-        .panel-head { padding: 10px; font-weight: bold; font-size: 12px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; }
+        /* UNIFIED LOWER-RIGHT PANELS */
+        .lr-panel { position: fixed; bottom: 90px; right: 15px; width: 280px; background: rgba(15,15,15,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .lr-panel.active { display: flex; }
+        
+        /* PLAYER PANEL (LEFT) */
+        #playerPanel { position: fixed; top: 70px; left: 15px; width: 200px; max-height: 60vh; background: rgba(15,15,15,0.95); border-left: 3px solid var(--cyan); display: none; flex-direction: column; z-index: 8000; border-radius: 8px; }
+        #playerPanel.active { display: flex; }
+        .panel-head { padding: 10px; font-weight: bold; font-size: 12px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; display: flex; justify-content: space-between; }
         .panel-list { overflow-y: auto; padding: 5px; flex: 1; }
         .panel-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #222; font-size: 13px; align-items: center; }
-        .pl-mic { font-size: 10px; color: #555; margin-right: 8px; width: 15px; text-align: center; transition: 0.2s; }
+        .pl-mic { font-size: 10px; color: #555; margin-right: 8px; width: 15px; text-align: center; }
         .pl-mic.talking { color: var(--gold); text-shadow: 0 0 5px var(--gold); animation: pulse 0.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
-        /* UNIFIED LOWER RIGHT PANEL (Buttons toggle these) */
-        .lr-panel { position: fixed; bottom: 80px; right: 20px; width: 280px; background: rgba(15,15,15,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .lr-panel.active { display: flex; }
+        /* BET PANEL (RIGHT) */
+        #betPanel { position: fixed; top: 70px; right: 15px; width: 200px; max-height: 60vh; background: rgba(15,15,15,0.95); border-right: 3px solid var(--gold); display: none; flex-direction: column; z-index: 8000; border-radius: 8px; }
+        #betPanel.active { display: flex; }
 
         /* CHAT */
+        #chatPanel { height: 350px; }
         .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; }
         .chat-tabs { display: flex; border-bottom: 1px solid #333; background: #111; }
         .chat-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; color: #666; font-weight: bold; font-size: 11px; }
         .chat-tab.active { background: #222; color: var(--gold); border-bottom: 2px solid var(--gold); }
-        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; font-size: 13px; height: 250px; }
+        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; font-size: 13px; }
         .chat-content.active { display: block; }
         .chat-input-area { padding: 8px; border-top: 1px solid #333; display: none; background: #1a1a1a; gap: 5px; }
         .chat-input-area.active { display: flex; }
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; outline:none; border-radius: 4px; }
 
-        /* VOICE & MUSIC */
-        .vp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #333; }
-        .vp-btn { background: #222; border: 1px solid #555; color: #888; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 10px; }
-        .vp-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.1); }
-        .vp-btn.talking { background: var(--gold); color: black; box-shadow: 0 0 10px var(--gold); }
-        
+        /* MUSIC */
+        #musicPanel { height: auto; padding: 15px; }
+        .mp-title { font-size: 11px; color: var(--gold); margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; }
         .mp-controls { display: flex; gap: 5px; margin-bottom: 10px; }
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 8px; border-radius: 4px; transition: 0.2s; }
         .mp-btn:hover { background: #444; border-color: var(--gold); }
+        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 8px; box-sizing: border-box; font-size: 11px; margin-bottom: 10px; border-radius: 4px; }
         .vol-slider { width: 100%; height: 4px; background: #333; outline: none; -webkit-appearance: none; border-radius: 2px; }
         .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: var(--gold); border-radius: 50%; cursor: pointer; }
+
+        /* VOICE SETTINGS PANEL */
+        #voicePanel { height: auto; padding: 15px; }
+        .vp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: #ccc; }
+        .vp-btn { background: #222; border: 1px solid #555; color: #888; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 10px; }
+        .vp-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.1); }
+        .vp-btn.talking { background: var(--gold); color: black; box-shadow: 0 0 10px var(--gold); }
 
         /* CHIPS */
         .chips-bar { display: flex; gap: 10px; padding: 8px 20px; background: rgba(0,0,0,0.5); border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; pointer-events: auto; }
         .chip { width: 40px; height: 40px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
         .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; }
-        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
+        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.3); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 20px; height: 20px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; color: #333; }
-        
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
+        
         .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; position: absolute; }
         .chip.chip-board::after { inset: 4px; } 
         .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
 
-        /* LOBBY & COLOR GAME */
+        /* LOBBY */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
-        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
         .game-card:hover { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 0 30px rgba(255,215,0,0.2); }
-        #view-colorgame { background: url('background.jpg') center/cover; flex-direction:column; justify-content:center; align-items:center; }
-        .die { width: 90px; height: 90px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid rgba(255,255,255,0.1); background: #222; }
-        .cg-btn { height: 80px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; border: 1px solid rgba(255,255,255,0.2); }
+        .gc-count { position: absolute; bottom: 20px; font-size: 12px; color: #888; }
 
         /* ROULETTE */
         #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); }
         .r-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; }
-        .r-scaler { transform: scale(1.25); transform-origin: center center; margin-top: 10px; }
+        .r-scaler { transform: scale(1.4); transform-origin: center center; margin-top: 10px; } /* BIGGER TABLE */
+        
         .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; width: fit-content; display: flex; flex-direction: column; align-items: center; }
         
         /* HUD */
@@ -98,13 +106,13 @@
         .r-hud-lbl { font-size: 10px; color: #888; letter-spacing: 1px; }
         .r-hud-val { font-size: 24px; font-weight: bold; color: white; font-family: 'Oswald'; }
 
-        /* HISTORY (Above Grid, Matching Width) */
-        .r-history { width: 730px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; padding: 0 5px; gap: 5px; margin-bottom: 8px; overflow: hidden; justify-content: flex-end; border:1px solid #333; }
+        /* History */
+        .r-history { width: 590px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; padding: 0 2px; gap: 4px; margin-bottom: 8px; overflow: hidden; justify-content: flex-start; border: 1px solid #333; }
         .hist-ball { width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 9px; box-shadow: 0 2px 4px black; color: white; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
         .hist-empty { background: rgba(255,255,255,0.1); box-shadow: none; }
 
-        /* GRID */
+        /* Grid */
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; }
         .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; position: relative; z-index: 5; }
         .cell:hover { background: rgba(255,255,255,0.2); }
@@ -114,13 +122,12 @@
         .hotspot-overlay { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
         .hotspot { position: absolute; cursor: pointer; pointer-events: auto; z-index: 60; }
         
-        /* CONTROLS (Below Grid) */
+        /* Controls & Chips (Below Grid) */
         .r-controls-area { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; gap: 10px; }
         .btn-row { display: flex; gap: 10px; }
         .ctrl-btn { background: #111; border: 1px solid #444; color: #ccc; padding: 6px 15px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         .ctrl-btn:hover { background: #222; color: white; border-color: var(--gold); }
 
-        /* BOTTOM RIGHT ICONS */
         .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 5000; }
         .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: #ccc; transition: 0.2s; }
         .icon-btn:hover { color: white; border-color: var(--gold); }
@@ -134,14 +141,17 @@
 
     <div id="authOverlay">
         <div class="auth-box">
-            <h1 style="color:var(--gold)">CASINO</h1>
-            <input id="u" class="auth-input" placeholder="USERNAME"><input id="p" class="auth-input" type="password" placeholder="PASSWORD">
-            <button onclick="login()" class="auth-btn">ENTER</button><button onclick="register()" class="auth-btn" style="background:transparent; border:1px solid #555; color:#aaa; font-size:12px;">REGISTER</button>
+            <h1 style="color:var(--gold)">GRAND CASINO</h1>
+            <input id="u" class="auth-input" placeholder="USERNAME" maxlength="12">
+            <input id="p" class="auth-input" type="password" placeholder="PASSWORD" maxlength="12">
+            <button onclick="login()" class="auth-btn">ENTER</button>
+            <button onclick="register()" class="auth-btn" style="background:transparent; border:1px solid #555; color:#aaa; font-size:12px;">REGISTER</button>
             <div id="authErr" style="color:red; font-size:12px; margin-top:5px;"></div>
         </div>
     </div>
 
     <div id="playerPanel" class="side-panel"><div class="panel-head">PLAYERS</div><div class="panel-list" id="pList"></div></div>
+    
     <div id="betPanel" class="side-panel"><div class="panel-head">BETS</div><div class="panel-list" id="bList"></div><div style="padding:10px; font-size:12px; text-align:right; color:var(--gold);">TOTAL: <span id="bTotal">0</span></div></div>
 
     <div id="chatPanel" class="lr-panel">
@@ -152,19 +162,20 @@
         </div>
         <div class="chat-content active" id="content-public"></div>
         <div class="chat-content" id="content-support"></div>
-        <div class="chat-input-area active" id="input-public"><input id="chatIn" class="chat-input" placeholder="Type..."><button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px;">></button></div>
-        <div class="chat-input-area" id="input-support"><input id="supportIn" class="chat-input" placeholder="Msg Admin..."><button onclick="sendChat('support')" style="background:var(--cyan); border:none; padding:0 10px;">></button></div>
+        <div class="chat-input-area active" id="input-public"><input id="chatIn" class="chat-input" placeholder="Type message..."><button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px; font-weight:bold;">></button></div>
+        <div class="chat-input-area" id="input-support"><input id="supportIn" class="chat-input" placeholder="Message Admin..."><button onclick="sendChat('support')" style="background:var(--cyan); border:none; padding:0 10px; font-weight:bold;">></button></div>
     </div>
 
     <div id="musicPanel" class="lr-panel" style="padding:15px; height:auto;">
         <div class="mp-title"><span>CASINO DJ</span><span onclick="closeAllPanels()" style="cursor:pointer;">&times;</span></div>
         <div class="mp-controls"><button class="mp-btn" onclick="toggleMusic()">PLAY/PAUSE</button><button class="mp-btn" onclick="stopMusic()">STOP</button></div>
-        <input class="mp-input" id="musicUrl" placeholder="MP3 URL..."><button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
+        <input class="mp-input" id="musicUrl" placeholder="MP3 URL...">
+        <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
         <div style="display:flex; align-items:center; gap:5px; margin-top:10px;"><i class="fa fa-volume-down" style="font-size:10px; color:#aaa;"></i><input type="range" class="vol-slider" min="0" max="100" value="20" onchange="setVolume(this.value)"></div>
     </div>
 
     <div id="voicePanel" class="lr-panel" style="padding:15px; height:auto;">
-        <div class="mp-title"><span>VOICE</span><span onclick="closeAllPanels()" style="cursor:pointer;">&times;</span></div>
+        <div class="mp-title"><span>VOICE SETTINGS</span><span onclick="closeAllPanels()" style="cursor:pointer;">&times;</span></div>
         <div class="vp-row">
             <button class="vp-btn" id="v-off" onclick="setVoice('off')">OFF</button>
             <button class="vp-btn" id="v-ptt" onclick="setVoice('ptt')">PTT (Space)</button>
@@ -175,9 +186,9 @@
 
     <button class="global-back" id="backBtn" onclick="lobby()">← LOBBY</button>
 
-    <div id="view-lobby" class="view-section active">
+    <div id="view-lobby" class="view-section active" style="background:url('background.jpg') center/cover; justify-content:center; align-items:center;">
         <h1 style="font-size:80px; color:var(--gold); margin-bottom:20px;">GRAND CASINO</h1>
-        <div style="font-size:20px; margin-bottom:30px;"><span id="lobbyUser" style="color:var(--gold)">Guest</span> | <span id="lobbyBal" style="color:var(--cyan)">0</span></div>
+        <div style="margin-bottom:30px; font-size:20px;"><span id="lobbyUser" style="color:var(--gold)">Guest</span> | <span id="lobbyBal" style="color:var(--cyan)">0</span></div>
         <div style="display:flex; gap:40px;">
             <div class="game-card" onclick="enter('colorgame')"><h2 style="color:#ccc;">COLOR</h2></div>
             <div class="game-card" onclick="enter('roulette')"><h2 style="color:#ccc;">ROULETTE</h2></div>
@@ -185,21 +196,7 @@
     </div>
 
     <div id="view-colorgame" class="view-section">
-        <div class="cg-main">
-            <div class="cg-hud">
-                <div class="hud-item"><label>BALANCE</label><div id="cg-balance" style="color:var(--cyan)">0</div></div>
-                <div class="hud-item"><label>TIMER</label><div id="cg-timer" style="color:var(--gold)">20</div></div>
-            </div>
-            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                <div class="cg-dice-row"><div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div></div>
-                <div class="cg-bet-area"><div class="chips-bar"><div class="chip chip-50 active" onclick="setChip(50, this)">50</div></div><div class="cg-grid" id="cg-grid"></div></div>
-            </div>
-        </div>
-        <div class="icon-controls">
-            <div class="icon-btn" onclick="togglePanel('musicPanel')"><i class="fa fa-music"></i></div>
-            <div class="icon-btn" onclick="togglePanel('voicePanel')"><i class="fa fa-microphone"></i></div>
-            <div class="icon-btn" onclick="togglePanel('chatPanel')"><i class="fa fa-comment"></i></div>
-        </div>
+        <div style="text-align:center; padding-top:50px;"><h1 style="color:white;">COLOR GAME</h1></div>
     </div>
 
     <div id="view-roulette" class="view-section">
@@ -265,16 +262,16 @@
     <script>
         const socket = io();
         let me="", bal=0, room="lobby", chip=50;
-        let isRolling=false, boardChips={}; // Key: "x_y" or "desc", Val: {amt, dom, nums, desc, relX, relY}
-        let lastBets={};
-        const SCALE = 1.25; const REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+        let isRolling=false, lastBets={};
+        let boardChips = {}; // Key: "desc", Val: {amt, dom, nums, desc, relX, relY}
+        const SCALE = 1.4; const REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
         // AUTH & BASIC
         function login(){ socket.emit('login', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         function register(){ socket.emit('register', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         socket.on('login_success', d=>{ me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
         socket.on('update_balance', b=>{ bal=b; upd(); });
-        function upd(){ ['lobbyBal','r-bal','cg-balance'].forEach(id=>{ if(document.getElementById(id))document.getElementById(id).innerText=bal; }); document.getElementById('lobbyUser').innerText=me; }
+        function upd(){ ['lobbyBal','r-bal'].forEach(id=>{ let el=document.getElementById(id); if(el)el.innerText=bal; }); document.getElementById('lobbyUser').innerText=me; }
 
         function enter(r) { 
             room=r; socket.emit('switch_room', r);
@@ -297,11 +294,16 @@
         function togglePanel(id) { let p=document.getElementById(id); if(p.classList.contains('active'))p.classList.remove('active'); else{ closeAllPanels(); p.classList.add('active'); } }
 
         // VOICE & PLAYERS
-        socket.on('room_users_update', l=>{ document.getElementById('pList').innerHTML=l.map(u=>`<div class="panel-item" id="u-${u.id}"><div style="display:flex;align-items:center;"><span class="pl-mic ${u.talking?'talking':''}"><i class="fa fa-microphone"></i></span> ${u.username}</div></div>`).join(''); });
-        socket.on('player_voice_update', d=>{ let el=document.getElementById('u-'+d.id); if(el){ let m=el.querySelector('.pl-mic'); d.talking ? m.classList.add('talking') : m.classList.remove('talking'); } });
+        socket.on('room_users_update', l=>{ document.getElementById('pList').innerHTML=l.map(u=>`<div class="panel-item ${u.talking?'talking':''}" id="u-${u.id}"><div style="display:flex;align-items:center;"><span class="pl-mic"><i class="fa fa-microphone"></i></span> ${u.username}</div></div>`).join(''); });
+        socket.on('player_voice_update', d=>{ let el=document.getElementById('u-'+d.id); if(el){ d.talking ? el.classList.add('talking') : el.classList.remove('talking'); } });
         
         let audioCtx, mediaStream, vMode='off';
-        function setVoice(m) { vMode=m; document.querySelectorAll('.vp-btn').forEach(b=>b.classList.remove('active')); document.getElementById('v-'+m).classList.add('active'); if(m!='off') initAudio(); }
+        function setVoice(m) { 
+            vMode=m; 
+            document.querySelectorAll('.vp-btn').forEach(b=>b.classList.remove('active')); 
+            document.getElementById('v-'+m).classList.add('active'); 
+            if(m!='off') initAudio();
+        }
         function initAudio() {
             if(mediaStream) return;
             navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
@@ -337,22 +339,21 @@
             if(isRolling) return alert("Wait");
             if(bal<chip) return alert("Funds");
             
-            // Determine Position
-            let overlay = document.getElementById('rOverlay').getBoundingClientRect();
-            // If direct click (e is Event), else coordinates passed manually (Rebet)
-            let mx = e.clientX || e.x; let my = e.clientY || e.y;
-            
-            // Center in cell logic for direct clicks
-            if(e.currentTarget) {
+            // CENTER LOGIC
+            let mx, my;
+            if(e.currentTarget) { // Clicked specific cell
                 let cell = e.currentTarget;
                 let cRect = cell.getBoundingClientRect();
                 mx = cRect.left + cRect.width/2;
                 my = cRect.top + cRect.height/2;
+            } else { // Hotspot
+                mx = e.clientX; my = e.clientY;
             }
 
+            let overlay = document.getElementById('rOverlay').getBoundingClientRect();
             let relX = (mx - overlay.left) / SCALE; 
             let relY = (my - overlay.top) / SCALE;
-            let key = desc; // Unique key for stacking by bet type
+            let key = desc; // Stack by description
 
             if(boardChips[key]) {
                 boardChips[key].amt += chip;
@@ -367,10 +368,10 @@
                 d.style.top = relY + 'px';
                 d.style.transform = 'translate(-50%, -50%)';
                 document.getElementById('rOverlay').appendChild(d);
-                boardChips[key] = { amt: chip, dom: d, nums: nums, desc: desc, x: mx, y: my };
+                boardChips[key] = { amt: chip, dom: d, nums: nums, desc: desc, relX: relX, relY: relY };
             }
             
-            socket.emit('place_bet_roulette', {numbers:nums, amount:chip});
+            socket.emit('place_bet', {amount:chip}); // Simple bal deduct
             renderBetList();
         }
 
@@ -389,19 +390,14 @@
             document.getElementById('r-bet-display').innerText = total;
         }
 
-        function sendClear() { socket.emit('roulette_clear'); boardChips={}; document.getElementById('rOverlay').innerHTML=''; renderBetList(); }
+        function sendClear() { boardChips={}; document.getElementById('rOverlay').innerHTML=''; renderBetList(); }
         function sendUndo() {
             let keys = Object.keys(boardChips);
             if(keys.length > 0) {
                 let lastKey = keys[keys.length-1];
                 let b = boardChips[lastKey];
-                // Simple undo: remove whole stack or top chip? 
-                // Let's remove whole stack for simplicity in this logic
                 b.dom.remove();
                 delete boardChips[lastKey];
-                // Sync with server (Re-clear and re-bet remaining is safest for sync)
-                socket.emit('roulette_clear');
-                for(let k in boardChips) socket.emit('place_bet_roulette', {numbers:boardChips[k].nums, amount:boardChips[k].amt});
                 renderBetList();
             }
         }
@@ -409,24 +405,14 @@
             if(Object.keys(lastBets).length > 0) {
                 for(let k in lastBets) {
                     let old = lastBets[k];
-                    // Simulate click flow
-                    chip = old.amt; // temp set chip
-                    // Manually call place logic logic
-                    // Recreate visual
                     let d = document.createElement('div');
                     d.className = `chip chip-board ${getChipClass(old.amt)}`;
                     d.innerHTML = `<div class="chip-label">${formatChip(old.amt)}</div>`;
-                    // Need stored relative coords or recalc
-                    let overlay = document.getElementById('rOverlay').getBoundingClientRect();
-                    let relX = (old.x - overlay.left) / SCALE; 
-                    let relY = (old.y - overlay.top) / SCALE;
-                    d.style.left = relX + 'px'; d.style.top = relY + 'px'; d.style.transform = 'translate(-50%, -50%)';
+                    d.style.left = old.relX + 'px'; d.style.top = old.relY + 'px'; d.style.transform = 'translate(-50%, -50%)';
                     document.getElementById('rOverlay').appendChild(d);
-                    
                     boardChips[k] = { ...old, dom: d };
-                    socket.emit('place_bet_roulette', {numbers:old.nums, amount:old.amt});
+                    socket.emit('place_bet', {amount:old.amt});
                 }
-                chip = 50; // reset
                 renderBetList();
             }
         }
@@ -438,14 +424,13 @@
                     b.amt += add;
                     b.dom.className = `chip chip-board ${getChipClass(b.amt)}`;
                     b.dom.innerHTML = `<div class="chip-label">${formatChip(b.amt)}</div>`;
-                    socket.emit('place_bet_roulette', {numbers:b.nums, amount:add});
+                    socket.emit('place_bet', {amount:add});
                 }
             }
             renderBetList();
         }
 
-        socket.on('bets_cleared', ()=>{ boardChips={}; document.getElementById('rOverlay').innerHTML=''; renderBetList(); });
-        socket.on('roulette_spin_start', n=>{ isRolling=true; lastBets=JSON.parse(JSON.stringify(boardChips)); document.getElementById('wheel-overlay').classList.add('show'); spin(n); });
+        socket.on('roulette_spin_start', n=>{ isRolling=true; lastBets=JSON.parse(JSON.stringify(boardChips, (key, value) => key === 'dom' ? undefined : value)); document.getElementById('wheel-overlay').classList.add('show'); spin(n); });
         socket.on('roulette_new_round', ()=>{ isRolling=false; boardChips={}; renderBetList(); document.getElementById('rOverlay').innerHTML=''; });
         
         // ROULETTE UI GEN
@@ -487,21 +472,17 @@
             h.prepend(createBall(c, n));
         });
 
-        // HOTSPOTS (Street & SixLine & Corners)
+        // HOTSPOTS
         function buildHotspots() {
             const overlay = document.getElementById('ghostOverlay'); overlay.innerHTML='';
             const W=42, H=42, GAP=2, OX=55+GAP, OY=5;
             for(let c=0; c<12; c++) {
                 let x = OX + (c*(W+GAP));
                 let nT=(c*3)+3, nM=(c*3)+2, nB=(c*3)+1;
-                // Street (Top Edge of Top Cell)
                 mkZone(x, OY-6, W, 12, [nT, nM, nB], "Street "+nB);
-                // Vertical Splits
                 mkZone(x, OY+H-5, W, 10, [nT,nM], "Split "+nT+","+nM); mkZone(x, OY+(H*2)+GAP-5, W, 10, [nM,nB], "Split "+nM+","+nB); 
                 if(c<11) {
-                    // Six Line (Top intersection corner)
                     mkZone(x+W-5, OY-6, 12, 12, [nT, nM, nB, nT+3, nM+3, nB+3], "Six Line");
-                    // Corners/Horiz Splits
                     mkZone(x+W-5, OY+H-5, 10, 10, [nT,nM,nT+3,nM+3], "Corner"); mkZone(x+W-5, OY+(H*2)+GAP-5, 10, 10, [nM,nB,nM+3,nB+3], "Corner");
                     mkZone(x+W-5, OY, 10, H, [nT,nT+3], "Split"); mkZone(x+W-5, OY+H+GAP, 10, H, [nM,nM+3], "Split"); mkZone(x+W-5, OY+(H+GAP)*2, 10, H, [nB,nB+3], "Split");
                 }
