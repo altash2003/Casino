@@ -124,22 +124,49 @@ function processRouletteWinners(winningNumber) {
     saveDatabase();
 }
 
+// --- SOCKET HANDLING ---
 io.on('connection', (socket) => {
     
+    // LOGIN
     socket.on('login', (data) => {
-        if(users[data.username] && users[data.username].password === data.password) {
-            joinRoom(socket, data.username, 'lobby');
-            socket.emit('login_success', { username: data.username, balance: users[data.username].balance });
-        } else { socket.emit('login_error', "Invalid Credentials"); }
+        const u = data.username;
+        const p = data.password;
+
+        if(!u || !p) return socket.emit('login_error', "Missing fields.");
+        
+        if(users[u] && users[u].password === p) {
+            joinRoom(socket, u, 'lobby');
+            socket.emit('login_success', { username: u, balance: users[u].balance });
+        } else { 
+            socket.emit('login_error', "Invalid Username or Password."); 
+        }
     });
 
+    // REGISTER (FIXED)
     socket.on('register', (data) => {
-        if(!users[data.username]) {
-            users[data.username] = { password: data.password, balance: 1000, history: [] };
+        const u = data.username;
+        const p = data.password;
+
+        // 1. Check Username Format (5-12 chars, Letters/Numbers only)
+        const userRegex = /^[a-zA-Z0-9]{5,12}$/;
+        if(!userRegex.test(u)) {
+            return socket.emit('login_error', "Username must be 5-12 chars (Letters/Numbers only).");
+        }
+
+        // 2. Check Password Format (5-12 chars, Any char)
+        if(!p || p.length < 5 || p.length > 12) {
+            return socket.emit('login_error', "Password must be 5-12 characters.");
+        }
+
+        // 3. Create User
+        if(!users[u]) {
+            users[u] = { password: p, balance: 1000, history: [] };
             saveDatabase();
-            joinRoom(socket, data.username, 'lobby');
-            socket.emit('login_success', { username: data.username, balance: 1000 });
-        } else { socket.emit('login_error', "Username taken"); }
+            joinRoom(socket, u, 'lobby');
+            socket.emit('login_success', { username: u, balance: 1000 });
+        } else { 
+            socket.emit('login_error', "Username already taken."); 
+        }
     });
 
     socket.on('switch_room', (room) => {
@@ -173,7 +200,7 @@ io.on('connection', (socket) => {
     // BETTING
     socket.on('place_bet', (data) => { 
         let u = activeSockets[socket.id];
-        if(!u || colorState.status !== 'BETTING') return; // Server-side Lock
+        if(!u || colorState.status !== 'BETTING') return;
         if(users[u.username].balance >= data.amount) {
             users[u.username].balance -= data.amount;
             colorState.bets.push({ username: u.username, color: data.color, amount: data.amount, socketId: socket.id });
@@ -182,7 +209,7 @@ io.on('connection', (socket) => {
 
     socket.on('place_bet_roulette', (data) => {
         let u = activeSockets[socket.id];
-        if(!u || rouletteState.status !== 'BETTING') return; // Server-side Lock
+        if(!u || rouletteState.status !== 'BETTING') return;
         if(users[u.username].balance >= data.amount) {
             users[u.username].balance -= data.amount;
             rouletteState.bets.push({ username: u.username, numbers: data.numbers, amount: data.amount, socketId: socket.id });
