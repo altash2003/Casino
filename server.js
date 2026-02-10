@@ -5,9 +5,7 @@ const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-    maxHttpBufferSize: 1e8 // Allow audio chunks
-});
+const io = new Server(server, { maxHttpBufferSize: 1e8 });
 
 const DB_FILE = 'database.json';
 let users = {};
@@ -15,8 +13,7 @@ if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE))
 
 function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
 
-// State Tracking
-let activeSockets = {}; // { socketId: { username, room, isTalking } }
+let activeSockets = {}; 
 let chatHistory = { colorgame: [], roulette: [] };
 let supportHistory = [];
 
@@ -24,7 +21,7 @@ app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 app.get('/admin', (req, res) => { res.sendFile(__dirname + '/admin.html'); });
 
-// --- BROADCAST HELPERS ---
+// --- HELPERS ---
 function broadcastRoomList(room) {
     if(!room || room === 'lobby') return;
     let list = [];
@@ -44,17 +41,15 @@ function broadcastRoomList(room) {
 let colorState = { status: 'BETTING', timeLeft: 20, bets: [] };
 let rouletteState = { status: 'BETTING', timeLeft: 30, bets: [] };
 
-// Color Game Loop
+// Color Game
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
         if(colorState.timeLeft <= 0) {
             colorState.status = 'ROLLING';
             io.to('colorgame').emit('game_rolling');
-            
             const COLORS = ['RED', 'GREEN', 'BLUE', 'YELLOW', 'PINK', 'WHITE'];
             let result = [COLORS[Math.floor(Math.random()*6)], COLORS[Math.floor(Math.random()*6)], COLORS[Math.floor(Math.random()*6)]];
-            
             setTimeout(() => {
                 io.to('colorgame').emit('game_result', result);
                 processColorWinners(result);
@@ -64,13 +59,11 @@ setInterval(() => {
                     io.to('colorgame').emit('timer_update', 20);
                 }, 5000);
             }, 3000);
-        } else {
-            io.to('colorgame').emit('timer_update', colorState.timeLeft);
-        }
+        } else { io.to('colorgame').emit('timer_update', colorState.timeLeft); }
     }
 }, 1000);
 
-// Roulette Loop
+// Roulette
 setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
@@ -79,7 +72,6 @@ setInterval(() => {
             rouletteState.status = 'SPINNING';
             let resultNum = Math.floor(Math.random() * 37);
             io.to('roulette').emit('roulette_spin_start', resultNum);
-            
             setTimeout(() => {
                 io.to('roulette').emit('roulette_result_log', resultNum);
                 processRouletteWinners(resultNum);
@@ -110,12 +102,9 @@ function processColorWinners(result) {
 function processRouletteWinners(winningNumber) {
     rouletteState.bets.forEach(bet => {
         if(bet.numbers.includes(winningNumber)) {
-            // Standard Payouts: Straight 35:1, Split 17:1, Street 11:1, Corner 8:1, Line 5:1, Column/Doz 2:1, Even/Odd 1:1
-            // My simplified multiplier logic based on count:
             let count = bet.numbers.length;
             let payoutMult = count === 1 ? 36 : count === 2 ? 18 : count === 3 ? 12 : count === 4 ? 9 : count === 6 ? 6 : count === 12 ? 3 : 2;
             let win = bet.amount * payoutMult;
-            
             if(users[bet.username]) {
                 users[bet.username].balance += win;
                 io.to(bet.socketId).emit('roulette_win', { amount: win, number: winningNumber });
@@ -127,8 +116,6 @@ function processRouletteWinners(winningNumber) {
 }
 
 io.on('connection', (socket) => {
-    
-    // Auth
     socket.on('login', (data) => {
         if(users[data.username] && users[data.username].password === data.password) {
             joinRoom(socket, data.username, 'lobby');
@@ -150,46 +137,33 @@ io.on('connection', (socket) => {
         if(u) joinRoom(socket, u.username, room);
     });
 
-    // Voice Chat Relay
     socket.on('voice_data', (blob) => {
         let u = activeSockets[socket.id];
-        if(u && u.room !== 'lobby') {
-            socket.to(u.room).emit('voice_receive', { id: socket.id, audio: blob });
-        }
+        if(u && u.room !== 'lobby') socket.to(u.room).emit('voice_receive', { id: socket.id, audio: blob });
     });
-
     socket.on('voice_status', (isTalking) => {
         let u = activeSockets[socket.id];
         if(u && u.room !== 'lobby') {
             activeSockets[socket.id].isTalking = isTalking;
-            // Broadcast visual update
             io.to(u.room).emit('player_voice_update', { id: socket.id, talking: isTalking });
         }
     });
 
-    // Chat (Public vs Support)
     socket.on('chat_msg', (data) => {
         let u = activeSockets[socket.id];
         if(u && data.msg) {
             let msgObj = { type: 'public', user: u.username, msg: data.msg, room: data.room };
-            if(chatHistory[data.room]) {
-                chatHistory[data.room].push(msgObj);
-                if(chatHistory[data.room].length > 20) chatHistory[data.room].shift();
-            }
             io.to(data.room).emit('chat_broadcast', msgObj);
         }
     });
-
     socket.on('support_msg', (data) => {
         let u = activeSockets[socket.id];
         if(u && data.msg) {
-            let msgObj = { type: 'support_sent', user: u.username, msg: data.msg }; // Send back to user
+            let msgObj = { type: 'support_sent', user: u.username, msg: data.msg };
             socket.emit('chat_broadcast', msgObj); 
-            // In a real app, you would emit to Admin room here
         }
     });
 
-    // Betting
     socket.on('place_bet', (data) => { 
         let u = activeSockets[socket.id];
         if(!u || colorState.status !== 'BETTING') return;
@@ -207,32 +181,27 @@ io.on('connection', (socket) => {
             rouletteState.bets.push({ username: u.username, numbers: data.numbers, amount: data.amount, socketId: socket.id });
         }
     });
-    
+
     socket.on('roulette_clear', () => {
         let u = activeSockets[socket.id];
         if(!u || rouletteState.status !== 'BETTING') return;
-        let userBets = rouletteState.bets.filter(b => b.socketId === socket.id);
-        if(userBets.length > 0) {
-            let refund = userBets.reduce((a,b)=>a+b.amount,0);
-            users[u.username].balance += refund;
+        let myBets = rouletteState.bets.filter(b => b.socketId === socket.id);
+        if(myBets.length > 0) {
+            users[u.username].balance += myBets.reduce((a,b)=>a+b.amount,0);
             rouletteState.bets = rouletteState.bets.filter(b => b.socketId !== socket.id);
             socket.emit('update_balance', users[u.username].balance);
             socket.emit('bets_cleared');
         }
     });
 
-    // Disconnect
     socket.on('disconnect', () => {
         let u = activeSockets[socket.id];
         if(u) {
-            let r = u.room;
-            delete activeSockets[socket.id];
+            let r = u.room; delete activeSockets[socket.id];
             
-            // Update lobby counts
             let counts = { lobby:0, colorgame:0, roulette:0 };
             for(let i in activeSockets) counts[activeSockets[i].room]++;
             io.emit('lobby_counts', counts);
-            
             broadcastRoomList(r);
         }
     });
@@ -240,20 +209,14 @@ io.on('connection', (socket) => {
 
 function joinRoom(socket, username, room) {
     let old = activeSockets[socket.id] ? activeSockets[socket.id].room : null;
-    if(old) {
-        socket.leave(old);
-        broadcastRoomList(old); 
-    }
-
+    if(old) { socket.leave(old); broadcastRoomList(old); }
     activeSockets[socket.id] = { username: username, room: room, isTalking: false };
     socket.join(room);
-
+    
     let counts = { lobby:0, colorgame:0, roulette:0 };
     for(let i in activeSockets) counts[activeSockets[i].room]++;
     io.emit('lobby_counts', counts);
-
     broadcastRoomList(room);
-    if(chatHistory[room]) socket.emit('chat_history', chatHistory[room]);
 }
 
 const PORT = process.env.PORT || 3000;
