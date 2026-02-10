@@ -2,396 +2,385 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>GRAND CASINO PRO</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CASINO</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        /* --- GLOBAL & RESET --- */
-        :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; --panel-bg: rgba(15,15,15,0.95); }
+        /* GLOBAL RESET */
         body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
-        
-        .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; flex-direction:column; }
+        .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; }
         .view-section.active { display: flex; }
+        .global-back { position: fixed; top: 10px; left: 10px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
+
+        /* AUTH OVERLAY */
+        #authOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .auth-box { background: #111; border: 1px solid #333; padding: 40px; border-radius: 12px; text-align: center; width: 300px; }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; }
+        .auth-btn { width: 100%; padding: 12px; background: #FFD700; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* CHAT PANEL */
+        .chat-panel { position: fixed; bottom: 100px; right: 20px; width: 280px; height: 350px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .chat-panel.active { display: flex; }
+        .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
+        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; }
+        .chat-input-area { padding: 8px; border-top: 1px solid #333; display: flex; background: #1a1a1a; border-radius: 0 0 12px 12px; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; outline:none; }
+        .chat-msg { margin-bottom: 6px; font-size: 12px; word-wrap: break-word; color: #eee; }
+
+        /* CHIPS UI - EXACTLY AS REQUESTED */
+        .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; pointer-events: auto; }
+        .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; pointer-events: auto; }
+        .chip:hover { transform: scale(1.1); }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; }
+        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
+        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
+        .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
         
-        /* --- ROULETTE TABLE STYLING (YOUR FILE) --- */
-        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); }
-        .r-wrapper { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
+        .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; }
+        .chip.chip-board::after { inset: 4px; }
+        .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
 
-        /* SCALER WRAPPER (Makes table 1.25x bigger) */
-        .r-scaler { transform: scale(1.25); transform-origin: center center; margin-top: 20px; } 
+        .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
+        .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
+        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
+        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
+        .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
 
-        .r-table-wrapper { position: relative; background-color: #01431E; padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; }
+        /* LOBBY */
+        #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
+        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .game-card:hover { border-color: #FFD700; transform: translateY(-10px); }
+
+        /* COLOR GAME */
+        #view-colorgame { background: url('background.jpg') center/cover; justify-content: center; align-items: center; }
+        .cg-main-area { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding-bottom: 20px; }
+        .cg-top-bar { display:flex; justify-content:center; gap:40px; width:100%; padding:20px; background:rgba(0,0,0,0.6); backdrop-filter: blur(5px); border-bottom: 1px solid #333; }
+        .die { width: 90px; height: 90px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 3px solid rgba(255,255,255,0.2); background: #222; }
+        .die.red { background: #d32f2f; } .die.green { background: #388e3c; } .die.blue { background: #1976d2; }
+        .die.pink { background: #e91e63; } .die.white { background: #eee; color:black; } .die.yellow { background: #fbc02d; color:black; }
+        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; width: 80%; max-width: 600px; margin-bottom: 20px; }
+        .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 15px; }
+        .cg-bet-card { height: 80px; border: 1px solid #555; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; box-sizing: border-box; }
+
+        /* ROULETTE LAYOUT - EXACT REPLICATION */
+        :root { --bg-felt: #01431E; --grid-gold: #F3C620; --cell-red: #d32f2f; --cell-black: #222; }
+        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); flex-direction: column; overflow:hidden; }
+        .r-main-area { width: 100%; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-origin: center center; }
         
-        /* EXACT GRID FROM YOUR CODE */
-        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; border: 2px solid var(--gold); padding: 5px; border-radius: 8px; background: rgba(0,0,0,0.2); }
+        .r-table-scaler { transform-origin: center center; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
         
-        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid var(--gold); color:white; position: relative; transition: background 0.1s; }
-        .cell:hover { background: rgba(255,255,255,0.2); }
-        .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
-        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
+        .r-hud-container { width: 730px; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .r-hud-box { background: #000; border-radius: 8px; padding: 10px 20px; width: 180px; text-align: center; border: 2px solid #444; }
+        .r-val { font-size: 28px; color: #fff; font-weight: 800; font-family: 'Oswald', sans-serif; }
 
-        /* EXACT CHIPS FROM YOUR CODE */
-        .chips-bar { display: flex; gap: 10px; background: rgba(0,0,0,0.5); padding: 8px 20px; border-radius: 50px; margin: 30px auto 0; width: fit-content; border: 1px solid rgba(255,255,255,0.1); pointer-events: auto; }
-        .chip { width: 40px; height: 40px; border-radius: 50%; position: relative; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
-        .chip.active { transform: scale(1.2) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 10; border: 2px solid white; }
-        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
-        .chip::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.3); }
-        .chip-label { position: relative; z-index: 2; font-size: 10px; font-weight: 900; color: #333; background: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center; border: 1px solid #aaa; }
+        .r-table-wrapper { position: relative; background-color: var(--bg-felt); padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px #F3C620, 0 20px 50px black; display: flex; flex-direction: column; align-items: center; gap: 8px; width: 730px; }
         
-        .chip-50 { --c1: #ddd; --c2: #fff; --c3: #bbb; }
-        .chip-200 { --c1: #800; --c2: #a00; --c3: #500; }
-        .chip-1k { --c1: #060; --c2: #080; --c3: #040; }
-        .chip-10k { --c1: #008; --c2: #00a; --c3: #004; }
-        .chip-100k { --c1: #111; --c2: #333; --c3: #000; }
-
-        /* BOARD CHIP (FIXED POSITIONING) */
-        .board-chip { position: absolute; width: 18px; height: 18px; border-radius: 50%; pointer-events: none; z-index: 50; box-shadow: 0 3px 6px rgba(0,0,0,0.8); border: 1px solid white; }
-        /* Reuse colors for board chips simplified */
-        .bc-50 { background: white; color: black; } .bc-200 { background: #900; } .bc-1k { background: #060; } .bc-10k { background: #008; } .bc-100k { background: #111; border-color: gold; }
-
-        /* --- PANELS & UI --- */
-        .side-panel { position: fixed; background: rgba(0,0,0,0.9); border: 1px solid #444; color: white; display: none; flex-direction: column; z-index: 8000; backdrop-filter: blur(5px); border-radius: 8px; }
-        .side-panel.active { display: flex; }
+        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; padding: 0 10px; margin-bottom: 5px; gap: 5px; overflow: hidden; }
+        .hist-ball { width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 9px; box-shadow: 0 2px 4px black; }
+        .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
         
-        #playerPanel { top: 70px; left: 10px; width: 200px; max-height: 50vh; border-left: 3px solid var(--cyan); }
-        #betPanel { top: 70px; right: 10px; width: 220px; border-right: 3px solid var(--gold); }
-        #chatPanel { bottom: 90px; right: 10px; width: 300px; height: 350px; border: 1px solid #555; }
+        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--grid-gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
         
-        .panel-head { padding: 10px; font-weight: bold; background: rgba(255,255,255,0.05); font-size: 12px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; }
-        .panel-list { overflow-y: auto; padding: 5px; flex: 1; font-size: 12px; }
-        .panel-item { display: flex; justify-content: space-between; padding: 6px; border-bottom: 1px solid #222; }
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--grid-gold); z-index: 5; position: relative; }
+        .red-cell { background-color: var(--cell-red); } .black-cell { background-color: var(--cell-black); }
+        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 10px 0 0 10px; }
+        .zone-2to1 { grid-column: 14; writing-mode: vertical-rl; color: #F3C620; font-size: 9px; }
+        .label-cell { font-size: 10px; text-transform: uppercase; }
+        .zone-dozen { grid-row: 4; } .doz-1 { grid-column: 2 / 6; } .doz-2 { grid-column: 6 / 10; } .doz-3 { grid-column: 10 / 14; }
+        .zone-bottom { grid-row: 5; } .low { grid-column: 2 / 4; } .even { grid-column: 4 / 6; } .odd { grid-column: 10 / 12; } .high { grid-column: 12 / 14; }
+        .diamond-cell { grid-column: 6 / 8; grid-row: 5; display:flex; justify-content:center; align-items:center; } .diamond-cell.blk { grid-column: 8 / 10; }
+        .diamond { width: 18px; height: 18px; transform: rotate(45deg); } .diamond.red { background: #d32f2f; } .diamond.black { background: #111; }
         
-        /* Chat Tabs */
-        .chat-tabs { display: flex; background: #111; }
-        .c-tab { flex: 1; padding: 10px; text-align: center; font-size: 11px; cursor: pointer; color: #666; font-weight: bold; transition:0.2s; }
-        .c-tab.active { color: white; background: #222; border-bottom: 2px solid var(--gold); }
+        .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+        .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
+        
+        /* TABLE CONTROLS */
+        .table-controls { display: flex; gap: 10px; margin-bottom: 5px; width: 100%; justify-content: center; }
+        .t-btn { background: #111; border: 1px solid #444; color: #aaa; padding: 5px 12px; font-size: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .t-btn:hover { background: #333; color: white; border-color: #FFD700; }
 
-        /* Voice Bar */
-        .voice-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; background: rgba(0,0,0,0.8); padding: 8px 20px; border-radius: 30px; border: 1px solid #444; z-index: 9000; }
-        .vb-btn { font-size: 11px; padding: 6px 12px; border-radius: 15px; cursor: pointer; border: 1px solid #555; color: #aaa; background: #222; display: flex; gap: 5px; align-items: center; }
-        .vb-btn.active { color: var(--gold); border-color: var(--gold); background: rgba(255,215,0,0.1); }
-        .vb-btn.talking { background: var(--gold); color: black; border-color: var(--gold); }
+        /* WHEEL POPUP */
+        #wheel-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 500px; height: 500px; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.5s ease; }
+        #wheel-overlay.show { display: flex; animation: fadeIn 0.3s; opacity: 1; }
+        .wheelPanel { width: 500px; max-width: 95vw; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-radius: 50%; filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
+        .stage { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+        canvas { border-radius: 50%; width: 100%; height: 100%; object-fit: contain; }
+        .pointer { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 36px solid #f0e6d2; z-index: 5005; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); pointer-events: none; }
 
-        /* Wheel Pop */
-        #wheel-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; pointer-events: none; }
-        #wheel-overlay.show { display: flex; }
-        .wheelPanel { filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
-
-        .disabled { filter: grayscale(1); pointer-events: none; opacity: 0.5; }
+        /* WINNING ANIMATION */
+        #winner-stage { position: fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index: 6000; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; }
+        #winner-stage.active { display:flex; }
+        .flying-cell { position: absolute; width: auto; min-width: 60px; padding: 0 10px; height: 60px; background: #222; border: 2px solid #FFD700; color: white; font-weight: bold; font-family: 'Oswald'; display: flex; justify-content: center; align-items: center; border-radius: 8px; box-shadow: 0 0 20px #FFD700; z-index: 6001; transition: all 1s ease-in-out; font-size:20px; white-space:nowrap; }
+        .flying-cell.red { background: #d32f2f; }
+        .flying-cell.black { background: #222; }
+        .flying-cell.green { background: #016D29; }
+        .win-label { position:absolute; top:-35px; left:50%; transform:translateX(-50%); color:#00E5FF; font-weight:900; font-size:18px; text-shadow:0 1px 2px black; white-space:nowrap; }
     </style>
 </head>
 <body>
 
-    <div id="authOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:10000; display:flex; justify-content:center; align-items:center;">
-        <div style="background:#111; padding:40px; border:1px solid #333; text-align:center; border-radius:10px; box-shadow: 0 0 50px rgba(0,0,0,0.5);">
-            <h1 style="color:var(--gold); margin-top:0;">GRAND CASINO</h1>
-            <input id="u" placeholder="USERNAME (5-12 chars)" maxlength="12" style="padding:12px; width:220px; display:block; margin:10px auto; background:#222; border:1px solid #444; color:white; text-align:center; font-weight:bold;">
-            <input id="p" type="password" placeholder="PASSWORD (5-12 chars)" maxlength="12" style="padding:12px; width:220px; display:block; margin:10px auto; background:#222; border:1px solid #444; color:white; text-align:center; font-weight:bold;">
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="auth('login')" style="flex:1; padding:12px; background:var(--gold); border:none; font-weight:bold; cursor:pointer; color:black; border-radius:4px;">LOGIN</button>
-                <button onclick="auth('register')" style="flex:1; padding:12px; background:transparent; border:1px solid #444; color:white; font-weight:bold; cursor:pointer; border-radius:4px;">REGISTER</button>
+    <div id="authOverlay">
+        <div class="auth-box">
+            <h1 style="color:#FFD700; margin-bottom:20px;">CASINO LOGIN</h1>
+            <input id="user" class="auth-input" placeholder="USERNAME">
+            <input id="pass" class="auth-input" type="password" placeholder="PASSWORD">
+            <button onclick="login()" class="auth-btn">ENTER</button>
+            <button onclick="register()" class="auth-btn" style="background:transparent; border:1px solid #555; color:#aaa; font-size:12px;">REGISTER</button>
+            <div id="loginErr" style="color:red; margin-top:5px;"></div>
+        </div>
+    </div>
+
+    <div class="chat-panel panel-position" id="chatPanel">
+        <div class="chat-header"><span>GLOBAL CHAT</span> <span onclick="toggleChat()" style="cursor:pointer;">&times;</span></div>
+        <div class="chat-content" id="chatList"></div>
+        <div class="chat-input-area">
+            <input id="chatInput" class="chat-input" placeholder="Type here...">
+            <button onclick="sendChat()" style="background:#FFD700; border:none; padding:0 10px;">></button>
+        </div>
+    </div>
+
+    <button class="global-back" id="backBtn" onclick="goToLobby()">← LOBBY</button>
+
+    <div id="view-lobby" class="view-section active">
+        <h1 style="font-size:60px; color:#FFD700; margin-bottom:10px;">GRAND CASINO</h1>
+        <div style="margin-bottom:20px; font-size:18px;">
+            PLAYER: <span id="lobbyUser" style="color:#FFD700;">Guest</span> | 
+            BALANCE: <span id="lobbyBal" style="color:#00E5FF;">0</span>
+        </div>
+        <div class="lobby-grid">
+            <div class="game-card" onclick="enterGame('colorgame')">
+                <div class="gc-title">COLOR GAME</div>
             </div>
-            <div id="authMsg" style="color:var(--red); margin-top:15px; font-size:12px; min-height:15px;"></div>
-        </div>
-    </div>
-
-    <div id="playerPanel" class="side-panel"><div class="panel-head">PLAYERS <span id="pCount">0</span></div><div class="panel-list" id="pList"></div></div>
-    
-    <div id="betPanel" class="side-panel">
-        <div class="panel-head">CURRENT BETS</div>
-        <div class="panel-list" id="bList"></div>
-        <div style="padding:10px; text-align:right; font-size:11px; border-top:1px solid #333;">TOTAL: <span id="bTotal" style="color:var(--gold); font-weight:bold; font-size:14px;">0</span></div>
-    </div>
-    
-    <div id="chatPanel" class="side-panel">
-        <div class="panel-head">COMMUNICATION <span onclick="toggleChat()" style="cursor:pointer; font-size:16px;">&times;</span></div>
-        <div class="chat-tabs">
-            <div class="c-tab active" onclick="setChatTab('public')" id="tab-public">PUBLIC</div>
-            <div class="c-tab" onclick="setChatTab('support')" id="tab-support">SUPPORT</div>
-        </div>
-        <div class="panel-list" id="cBox" style="padding:10px;"></div>
-        <div style="padding:10px; border-top:1px solid #333; display:flex; gap:5px;">
-            <input id="cInput" style="flex:1; background:#222; border:1px solid #444; color:white; padding:8px; font-size:12px; border-radius:4px;" placeholder="Type message...">
-            <button onclick="sendChat()" style="background:var(--gold); border:none; font-weight:bold; padding:0 12px; border-radius:4px; cursor:pointer;">></button>
-        </div>
-    </div>
-
-    <div class="voice-bar" id="voiceBar">
-        <div class="vb-btn" id="v-off" onclick="setVoice('off')">OFF</div>
-        <div class="vb-btn" id="v-ptt" onclick="setVoice('ptt')"><i class="fas fa-microphone"></i> PTT</div>
-        <div class="vb-btn" id="v-auto" onclick="setVoice('auto')"><i class="fas fa-headset"></i> AUTO</div>
-    </div>
-
-    <button onclick="lobby()" id="backBtn" style="position:fixed; top:20px; left:20px; display:none; z-index:9000; background:rgba(0,0,0,0.6); color:white; border:1px solid #555; padding:8px 15px; cursor:pointer; border-radius:4px; font-weight:bold;">← LOBBY</button>
-
-    <div id="view-lobby" class="view-section active" style="background:url('background.jpg') center/cover; justify-content:center; align-items:center;">
-        <h1 style="font-size:80px; color:var(--gold); text-shadow:0 0 30px black; margin:0 0 10px 0; font-weight:800;">GRAND CASINO</h1>
-        <div style="margin-bottom:40px; font-size:18px;">
-            <i class="fas fa-user"></i> <span id="myName" style="color:var(--gold); font-weight:bold;">Guest</span> &nbsp;|&nbsp; 
-            <i class="fas fa-coins"></i> <span id="myBal" style="color:var(--cyan); font-weight:bold;">0</span>
-        </div>
-        <div style="display:flex; gap:40px;">
-            <div onclick="enter('colorgame')" style="width:240px; height:340px; background:rgba(0,0,0,0.85); border:2px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; border-radius:16px; transition:0.3s;">
-                <div style="font-size:60px; margin-bottom:20px;">🎨</div><h2 style="margin:0; color:#ccc;">COLOR GAME</h2>
-            </div>
-            <div onclick="enter('roulette')" style="width:240px; height:340px; background:rgba(0,0,0,0.85); border:2px solid #333; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; border-radius:16px; transition:0.3s;">
-                <div style="font-size:60px; margin-bottom:20px;">🎡</div><h2 style="margin:0; color:#ccc;">ROULETTE</h2>
+            <div class="game-card" onclick="enterGame('roulette')">
+                <div class="gc-title">ROULETTE</div>
             </div>
         </div>
     </div>
 
-    <div id="view-colorgame" class="view-section" style="background:url('background.jpg') center/cover;">
-        <div style="text-align:center; margin-top:30px; background:rgba(0,0,0,0.7); padding:10px 30px; border-radius:40px; width:fit-content; margin-left:auto; margin-right:auto;">
-            <div style="font-size:10px; color:#aaa; letter-spacing:2px;">STATUS</div>
-            <div style="font-size:24px; font-weight:bold;"><span id="cg-status" style="color:var(--gold)">BETTING</span> <span id="cg-timer" style="color:white">20</span></div>
+    <div id="view-colorgame" class="view-section">
+        <div class="cg-main-area">
+            <div class="cg-top-bar">
+                <div class="hud-stat"><label>BALANCE</label><div id="cg-balance">0</div></div>
+                <div class="hud-stat"><label>TIMER</label><div id="cg-timer">20</div></div>
+                <div class="hud-stat"><label>BET</label><div id="cg-bet-total">0</div></div>
+            </div>
+            <div style="flex:1; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+                <div id="cg-status" style="font-size:24px; margin-bottom:20px;">BETS OPEN</div>
+                <div class="cg-dice-row">
+                    <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
+                </div>
+            </div>
+            <div class="cg-bet-panel">
+                <div class="chips-bar">
+                    <div class="chip chip-50 active" onclick="setCgChip(50, this)"><div class="chip-label">50</div></div>
+                    <div class="chip chip-200" onclick="setCgChip(200, this)"><div class="chip-label">200</div></div>
+                    <div class="chip chip-1k" onclick="setCgChip(1000, this)"><div class="chip-label">1K</div></div>
+                    <div class="chip chip-10k" onclick="setCgChip(10000, this)"><div class="chip-label">10K</div></div>
+                    <div class="chip chip-100k" onclick="setCgChip(100000, this)"><div class="chip-label">100K</div></div>
+                </div>
+                <div class="cg-bet-grid">
+                    <div class="cg-bet-card" style="background: #d32f2f;" onclick="placeCgBet('RED')"><b>RED</b><span id="cg-bet-RED">0</span></div>
+                    <div class="cg-bet-card" style="background: #388e3c;" onclick="placeCgBet('GREEN')"><b>GREEN</b><span id="cg-bet-GREEN">0</span></div>
+                    <div class="cg-bet-card" style="background: #1976d2;" onclick="placeCgBet('BLUE')"><b>BLUE</b><span id="cg-bet-BLUE">0</span></div>
+                    <div class="cg-bet-card" style="background: #fbc02d; color:black;" onclick="placeCgBet('YELLOW')"><b>YEL</b><span id="cg-bet-YELLOW">0</span></div>
+                    <div class="cg-bet-card" style="background: #e91e63;" onclick="placeCgBet('PINK')"><b>PINK</b><span id="cg-bet-PINK">0</span></div>
+                    <div class="cg-bet-card" style="background: #eee; color:black;" onclick="placeCgBet('WHITE')"><b>WHT</b><span id="cg-bet-WHITE">0</span></div>
+                </div>
+            </div>
         </div>
-        
-        <div style="display:flex; justify-content:center; gap:30px; margin:50px 0;">
-            <div id="d1" class="die" style="font-size:50px; width:100px; height:100px; background:#222; border:4px solid rgba(255,255,255,0.1); display:flex; justify-content:center; align-items:center; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">?</div>
-            <div id="d2" class="die" style="font-size:50px; width:100px; height:100px; background:#222; border:4px solid rgba(255,255,255,0.1); display:flex; justify-content:center; align-items:center; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">?</div>
-            <div id="d3" class="die" style="font-size:50px; width:100px; height:100px; background:#222; border:4px solid rgba(255,255,255,0.1); display:flex; justify-content:center; align-items:center; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">?</div>
-        </div>
-        
-        <div id="cg-btns" style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;"></div>
     </div>
 
     <div id="view-roulette" class="view-section">
-        <div id="wheel-overlay"><div class="wheelPanel" style="position:relative;"><div style="position:absolute; top:20px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:20px solid transparent; border-right:20px solid transparent; border-top:40px solid var(--gold); z-index:10;"></div><canvas id="wheelCanvas" width="600" height="600" style="width:500px; height:500px; border-radius:50%;"></canvas></div></div>
+        <div id="wheel-overlay"><div class="wheelPanel"><div class="stage"><div class="pointer"></div><canvas id="wheelCanvas" width="800" height="800"></canvas></div></div></div>
+        <div id="winner-stage"></div>
 
-        <div class="r-wrapper">
-            <div style="text-align:center; margin-bottom:15px; display:flex; gap:30px;">
-                <div><span style="font-size:10px; color:#888;">STATUS</span><br><span id="r-status" style="font-weight:bold; color:var(--gold); font-size:20px;">BETTING</span> <span id="r-timer" style="font-size:20px;">40</span></div>
-                <div><span style="font-size:10px; color:#888;">BALANCE</span><br><span id="r-bal" style="color:var(--cyan); font-size:20px; font-weight:bold;">0</span></div>
-            </div>
+        <div class="r-main-area">
+            <div class="r-table-scaler" id="rWrapper">
+                <div class="r-hud-container">
+                    <div class="r-hud-box"><div class="r-lbl">BALANCE</div><div class="r-val" id="r-balance">0</div></div>
+                    <div class="r-hud-box" style="border-color:#FFD700"><div class="r-lbl">TIMER</div><div class="r-val" id="r-timer">--</div></div>
+                    <div class="r-hud-box"><div class="r-lbl">BET</div><div class="r-val" id="r-bet-display">0</div></div>
+                </div>
 
-            <div class="r-scaler">
                 <div class="r-table-wrapper">
-                    <div class="r-grid" id="rGrid">
-                        <div class="cell zone-0" id="cell-0" onclick="smartBet(0, event)">0</div>
-                        <div class="cell" style="grid-column:14; grid-row:1; writing-mode:vertical-rl; font-size:10px;" onclick="betArea(getArr('row1'), 'Row 1', event)">2 to 1</div>
-                        <div class="cell" style="grid-column:14; grid-row:2; writing-mode:vertical-rl; font-size:10px;" onclick="betArea(getArr('row2'), 'Row 2', event)">2 to 1</div>
-                        <div class="cell" style="grid-column:14; grid-row:3; writing-mode:vertical-rl; font-size:10px;" onclick="betArea(getArr('row3'), 'Row 3', event)">2 to 1</div>
+                    <div class="r-history" id="rHistory"></div>
+                    <div class="r-grid" id="grid">
+                        <div class="ghost-overlay" id="ghostOverlay"></div>
+                        <div style="position:absolute; inset:0; z-index:50; pointer-events:none;" id="rOverlay"></div>
                         
-                        <div class="cell" style="grid-row:4; grid-column:2/6; font-size:10px;" onclick="betArea(getArr('1st12'), '1st 12', event)">1st 12</div>
-                        <div class="cell" style="grid-row:4; grid-column:6/10; font-size:10px;" onclick="betArea(getArr('2nd12'), '2nd 12', event)">2nd 12</div>
-                        <div class="cell" style="grid-row:4; grid-column:10/14; font-size:10px;" onclick="betArea(getArr('3rd12'), '3rd 12', event)">3rd 12</div>
-                        <div class="cell" style="grid-row:5; grid-column:2/4; font-size:10px;" onclick="betArea(getArr('1-18'), '1-18', event)">1-18</div>
-                        <div class="cell" style="grid-row:5; grid-column:4/6; font-size:10px;" onclick="betArea(getArr('even'), 'EVEN', event)">EVEN</div>
-                        <div class="cell" style="grid-row:5; grid-column:6/8;" onclick="betArea(getArr('red'), 'RED', event)"><div style="width:15px; height:15px; background:#d32f2f; transform:rotate(45deg);"></div></div>
-                        <div class="cell" style="grid-row:5; grid-column:8/10;" onclick="betArea(getArr('black'), 'BLACK', event)"><div style="width:15px; height:15px; background:#111; transform:rotate(45deg);"></div></div>
-                        <div class="cell" style="grid-row:5; grid-column:10/12; font-size:10px;" onclick="betArea(getArr('odd'), 'ODD', event)">ODD</div>
-                        <div class="cell" style="grid-row:5; grid-column:12/14; font-size:10px;" onclick="betArea(getArr('19-36'), '19-36', event)">19-36</div>
+                        <div class="cell zone-0" id="cell-0">0</div>
+                        <div class="cell zone-2to1" style="grid-row:1" id="btn-row1">2to1</div>
+                        <div class="cell zone-2to1" style="grid-row:2" id="btn-row2">2to1</div>
+                        <div class="cell zone-2to1" style="grid-row:3" id="btn-row3">2to1</div>
+                        <div class="cell label-cell zone-dozen doz-1" id="btn-doz1">1st 12</div>
+                        <div class="cell label-cell zone-dozen doz-2" id="btn-doz2">2nd 12</div>
+                        <div class="cell label-cell zone-dozen doz-3" id="btn-doz3">3rd 12</div>
+                        <div class="cell label-cell zone-bottom low" id="btn-low">1-18</div>
+                        <div class="cell label-cell zone-bottom even" id="btn-even">EVEN</div>
+                        <div class="cell label-cell diamond-cell" id="btn-red"><div class="diamond red"></div></div>
+                        <div class="cell label-cell diamond-cell blk" id="btn-black"><div class="diamond black"></div></div>
+                        <div class="cell label-cell zone-bottom odd" id="btn-odd">ODD</div>
+                        <div class="cell label-cell zone-bottom high" id="btn-high">19-36</div>
                     </div>
-                    <div id="chipLayer" style="position:absolute; inset:0; pointer-events:none;"></div>
+                    
+                    <div class="table-controls">
+                        <div class="t-btn" onclick="sendUndo()">UNDO</div>
+                        <div class="t-btn" onclick="sendClear()">CLEAR</div>
+                    </div>
+
+                    <div class="chips-bar">
+                        <div class="chip chip-50 active" onclick="setRChip(50, this)"><div class="chip-label">50</div></div>
+                        <div class="chip chip-200" onclick="setRChip(200, this)"><div class="chip-label">200</div></div>
+                        <div class="chip chip-1k" onclick="setRChip(1000, this)"><div class="chip-label">1K</div></div>
+                        <div class="chip chip-10k" onclick="setRChip(10000, this)"><div class="chip-label">10K</div></div>
+                        <div class="chip chip-100k" onclick="setRChip(100000, this)"><div class="chip-label">100K</div></div>
+                    </div>
                 </div>
             </div>
-
-            <div class="chips-bar" id="chipsBar">
-                <div class="chip chip-50 active" onclick="setChip(50, this)"><div class="chip-label">50</div></div>
-                <div class="chip chip-200" onclick="setChip(200, this)"><div class="chip-label">200</div></div>
-                <div class="chip chip-1k" onclick="setChip(1000, this)"><div class="chip-label">1K</div></div>
-                <div class="chip chip-10k" onclick="setChip(10000, this)"><div class="chip-label">10K</div></div>
-                <div class="chip chip-100k" onclick="setChip(100000, this)"><div class="chip-label">100K</div></div>
-            </div>
             
-            <div style="margin-top:15px; display:flex; gap:15px;">
-                <div onclick="toggleChat()" style="width:45px; height:45px; background:#222; border:1px solid #555; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer;"><i class="fas fa-comment"></i></div>
-                <button onclick="clearRBets()" style="background:#333; color:white; border:1px solid #555; padding:0 25px; font-weight:bold; cursor:pointer; border-radius:25px;">CLEAR BETS</button>
-            </div>
+            <div style="position:absolute; bottom:20px; right:20px; cursor:pointer;" onclick="toggleChat()"><i class="fa fa-comment" style="color:white; font-size:24px;"></i></div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let me="", bal=0, room="lobby", chip=50;
-        let isRolling=false, bets=[];
-        const SCALE = 1.25; // MATCH CSS TRANSFORM
+        let myUser = "Guest"; let myBal = 0; let currentRoom = 'lobby';
+        let rChip = 50; let currentRoundBets = []; let rBetTotal = 0;
 
-        // --- AUTH ---
-        function auth(act) { socket.emit(act, {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
-        socket.on('login_success', d=>{ me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
-        socket.on('login_error', m=>document.getElementById('authMsg').innerText=m);
-        socket.on('update_balance', b=>{ bal=b; upd(); });
-        function upd() { ['myBal','r-bal'].forEach(i=>document.getElementById(i).innerText=bal); document.getElementById('myName').innerText=me; }
+        function login() { socket.emit('login', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
+        function register() { socket.emit('register', { username: document.getElementById('user').value, password: document.getElementById('pass').value }); }
+        socket.on('login_success', (data) => { document.getElementById('authOverlay').style.display = 'none'; myUser = data.username; myBal = data.balance; updateDisplay(); });
+        socket.on('update_balance', (b) => { myBal = b; updateDisplay(); });
+        function updateDisplay() { ['lobbyBal','cg-balance','r-balance'].forEach(id=>document.getElementById(id).innerText=myBal); document.getElementById('lobbyUser').innerText=myUser; }
 
-        // --- NAV ---
-        function enter(r) { 
-            room=r; socket.emit('switch_room', r);
-            document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
-            document.getElementById('view-'+r).classList.add('active');
-            ['playerPanel','betPanel','voiceBar','backBtn'].forEach(i=>document.getElementById(i).style.display='flex');
-            document.getElementById('chipsBar').style.display = (r==='roulette') ? 'flex' : 'none';
-            if(r==='roulette') initR();
-            initAudio();
+        function enterGame(g) {
+            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
+            document.getElementById('view-'+g).classList.add('active');
+            document.getElementById('backBtn').style.display = 'block';
+            if(g === 'roulette') { initRoulette(); scaleRoulette(); window.onresize = scaleRoulette; }
+            currentRoom = g; socket.emit('switch_room', g);
         }
-        function lobby() {
-            room='lobby'; socket.emit('switch_room', 'lobby');
-            document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
+        function goToLobby() {
+            document.querySelectorAll('.view-section').forEach(e => e.classList.remove('active'));
             document.getElementById('view-lobby').classList.add('active');
-            ['playerPanel','betPanel','voiceBar','backBtn','chatPanel'].forEach(i=>document.getElementById(i).style.display='none');
+            document.getElementById('backBtn').style.display = 'none';
+            socket.emit('switch_room', 'lobby');
         }
 
-        // --- ROULETTE (SMART BETTING) ---
+        // CHAT
+        function toggleChat() { let p=document.getElementById('chatPanel'); p.classList.contains('active') ? p.classList.remove('active') : p.classList.add('active'); }
+        function sendChat() { let i=document.getElementById('chatInput'); if(i.value) { socket.emit('chat_msg', {msg:i.value, room:currentRoom}); i.value=''; } }
+        socket.on('chat_broadcast', d => { 
+            let b=document.getElementById('chatList'); b.innerHTML+=`<div class="chat-msg"><b style="color:#FFD700">${d.user}:</b> ${d.msg}</div>`; b.scrollTop=b.scrollHeight; 
+        });
+
+        // COLOR GAME
+        let cgChip = 50;
+        function setCgChip(v, el) { cgChip=v; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); }
+        function placeCgBet(c) { 
+            if(myBal<cgChip) return; 
+            socket.emit('place_bet', {color:c, amount:cgChip}); 
+            let el=document.getElementById('cg-bet-'+c); el.innerText=parseInt(el.innerText)+cgChip;
+        }
+        socket.on('game_rolling', ()=>{ document.getElementById('cg-status').innerText="ROLLING..."; });
+        socket.on('game_result', r=>{ ['d1','d2','d3'].forEach((d,i)=>document.getElementById(d).className=`die ${r[i].toLowerCase()}`); document.getElementById('cg-status').innerText="RESULT"; });
+        socket.on('game_reset', ()=>{ ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'].forEach(c=>document.getElementById('cg-bet-'+c).innerText='0'); });
+
+        // ROULETTE
+        function scaleRoulette() {
+            let scale = Math.min(window.innerWidth/800, window.innerHeight/600);
+            document.getElementById('rWrapper').style.transform = `scale(${scale})`;
+        }
+        function setRChip(v, el) { rChip=v; document.querySelectorAll('.chips-bar .chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); }
         const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-        function initR() {
+        
+        function initRoulette() {
+            let g = document.getElementById('grid');
             if(document.getElementById('cell-1')) return;
-            let h='';
             for(let i=1; i<=36; i++) {
-                let r = (i%3===0)?1:(i%3===2?2:3);
-                let c = Math.floor((i-1)/3)+2;
-                let cls = REDS.includes(i)?'red-cell':'black-cell';
-                h+=`<div class="cell ${cls}" id="cell-${i}" style="grid-row:${r}; grid-column:${c};" onclick="smartBet(${i}, event)">${i}</div>`;
+                let d = document.createElement('div'); d.className = `cell ${REDS.includes(i)?'red-cell':'black-cell'}`;
+                d.innerText = i; d.id = `cell-${i}`;
+                d.style.gridRow = (i%3===0)?1:(i%3===2?2:3); d.style.gridColumn = Math.floor((i-1)/3)+2;
+                g.appendChild(d);
             }
-            document.getElementById('cell-0').insertAdjacentHTML('afterend', h);
-            drawWheel(0);
+            buildHotspots(); drawWheel(0);
         }
 
-        function smartBet(n, e) {
-            // MATH FOR SPLITS/CORNERS
-            let rect = e.target.getBoundingClientRect();
-            // All deltas must be divided by SCALE to match internal grid
-            let x = (e.clientX - rect.left); // Screen pixel delta
-            let y = (e.clientY - rect.top);
-            let w = rect.width;
-            let h = rect.height;
+        function buildHotspots() {
+            const overlay = document.getElementById('ghostOverlay'); overlay.innerHTML='';
+            const W=42, H=42, GAP=2, OX=50+5+GAP, OY=5;
+            function mkZone(x,y,w,h,nums) {
+                let el=document.createElement('div'); el.className='hotspot'; el.style.left=x+'px'; el.style.top=y+'px'; el.style.width=w+'px'; el.style.height=h+'px';
+                el.onclick = () => placeRouletteBet(x+w/2, y+h/2, nums);
+                overlay.appendChild(el);
+            }
+            // Standard Grid Hotspots Logic from your file
+            for(let c=0; c<12; c++) {
+                let x = OX + (c*(W+GAP));
+                let nT=(c*3)+3, nM=(c*3)+2, nB=(c*3)+1;
+                mkZone(x+5, OY+5, W-10, H-10, [nT]); mkZone(x+5, OY+H+GAP+5, W-10, H-10, [nM]); mkZone(x+5, OY+(H+GAP)*2+5, W-10, H-10, [nB]); // Numbers
+                mkZone(x, OY+H-5, W, 10, [nT,nM]); mkZone(x, OY+(H*2)+GAP-5, W, 10, [nM,nB]); // Vertical Splits
+                if(c<11) {
+                    mkZone(x+W-5, OY, 10, H, [nT,nT+3]); mkZone(x+W-5, OY+H+GAP, 10, H, [nM,nM+3]); mkZone(x+W-5, OY+(H+GAP)*2, 10, H, [nB,nB+3]); // Horizontal Splits
+                    mkZone(x+W-5, OY+H-5, 10, 10, [nT,nM,nT+3,nM+3]); mkZone(x+W-5, OY+(H*2)+GAP-5, 10, 10, [nM,nB,nM+3,nB+3]); // Corners
+                }
+            }
+            mkZone(5,5,50,(H+GAP)*3,[0]); // Zero
             
-            let nums = [n];
-            let type = "Straight " + n;
-            let edge = 0.25; // 25% edge zone
-
-            // Right Edge (Split)
-            if(x > w * (1-edge)) {
-                if(n < 34) { nums=[n, n+3]; type=`Split ${n}, ${n+3}`; }
-            }
-            // Top Edge (Split)
-            else if(y < h * edge) {
-                if(n%3 !== 0) { nums=[n, n+1]; type=`Split ${n}, ${n+1}`; }
-            }
-            // Bottom Edge (Split)
-            else if(y > h * (1-edge)) {
-                if(n%3 !== 1) { nums=[n, n-1]; type=`Split ${n}, ${n-1}`; }
-            }
-            
-            placeChip(nums, type, e.clientX, e.clientY);
-        }
-        
-        function betArea(nums, name, e) {
-            placeChip(nums, name, e.clientX, e.clientY);
+            // Outside Bets Mappings
+            let singles = (id, nums) => { document.getElementById(id).onclick = (e) => placeRouletteBet(e.target.offsetLeft+e.target.offsetWidth/2, e.target.offsetTop+e.target.offsetHeight/2, nums); };
+            singles('btn-red', REDS); singles('btn-black', Array.from({length:36},(_,i)=>i+1).filter(n=>!REDS.includes(n)));
+            singles('btn-even', Array.from({length:36},(_,i)=>i+1).filter(n=>n%2===0)); singles('btn-odd', Array.from({length:36},(_,i)=>i+1).filter(n=>n%2!==0));
+            singles('btn-low', Array.from({length:18},(_,i)=>i+1)); singles('btn-high', Array.from({length:18},(_,i)=>19+i));
+            singles('btn-doz1', Array.from({length:12},(_,i)=>i+1)); singles('btn-doz2', Array.from({length:12},(_,i)=>13+i)); singles('btn-doz3', Array.from({length:12},(_,i)=>25+i));
+            singles('btn-row1', Array.from({length:36},(_,i)=>i+1).filter(n=>n%3===0)); singles('btn-row2', Array.from({length:36},(_,i)=>i+1).filter(n=>n%3===2)); singles('btn-row3', Array.from({length:36},(_,i)=>i+1).filter(n=>n%3===1));
         }
 
-        function placeChip(nums, desc, mx, my) {
-            if(isRolling) return alert("WAIT");
-            if(bal<chip) return alert("Funds");
+        function placeRouletteBet(x,y,nums) {
+            if(myBal<rChip) return;
+            myBal-=rChip; updateDisplay(); rBetTotal+=rChip; document.getElementById('r-bet-display').innerText=rBetTotal;
+            currentRoundBets.push({nums, amt:rChip});
             
-            socket.emit('place_bet_roulette', {numbers:nums, amount:chip});
-            
-            // Calculate Position Relative to ChipLayer (Scale Corrected)
-            let layerRect = document.getElementById('chipLayer').getBoundingClientRect();
-            let finalX = (mx - layerRect.left) / SCALE;
-            let finalY = (my - layerRect.top) / SCALE;
-
-            let c = document.createElement('div');
-            let cls = chip==50?'bc-50':(chip==200?'bc-200':(chip==1000?'bc-1k':(chip==10000?'bc-10k':'bc-100k')));
-            c.className = 'board-chip ' + cls;
-            c.style.left = (finalX - 9) + 'px'; // Center 18px chip
-            c.style.top = (finalY - 9) + 'px';
-            document.getElementById('chipLayer').appendChild(c);
-            
-            bets.push({d:desc, a:chip}); renderBetLog();
+            let cls = rChip==50?'chip-50':(rChip==200?'chip-200':(rChip==1000?'chip-1k':(rChip==10000?'chip-10k':'chip-100k')));
+            let mk = document.createElement('div'); mk.className=`chip chip-board ${cls}`;
+            mk.innerHTML=`<div class="chip-label">${rChip>=1000?rChip/1000+'k':rChip}</div>`;
+            mk.style.position='absolute'; mk.style.left=x+'px'; mk.style.top=y+'px'; mk.style.transform='translate(-50%,-50%)';
+            document.getElementById('rOverlay').appendChild(mk);
+            socket.emit('place_bet_roulette', {numbers:nums, amount:rChip});
         }
 
-        function getArr(t) {
-            let a=[]; 
-            for(let i=1;i<=36;i++) {
-                if(t=='row1' && i%3==0) a.push(i);
-                if(t=='row2' && i%3==2) a.push(i);
-                if(t=='row3' && i%3==1) a.push(i);
-                if(t=='1st12' && i<=12) a.push(i);
-                if(t=='2nd12' && i>12 && i<=24) a.push(i);
-                if(t=='3rd12' && i>24) a.push(i);
-                if(t=='1-18' && i<=18) a.push(i);
-                if(t=='19-36' && i>=19) a.push(i);
-                if(t=='even' && i%2==0) a.push(i);
-                if(t=='odd' && i%2!=0) a.push(i);
-                if(t=='red' && REDS.includes(i)) a.push(i);
-                if(t=='black' && !REDS.includes(i)) a.push(i);
-            }
-            return a;
-        }
-        
-        function clearRBets() { socket.emit('roulette_clear'); }
-        socket.on('bets_cleared', ()=>{ document.getElementById('chipLayer').innerHTML=''; bets=[]; renderBetLog(); });
-        socket.on('roulette_timer', t=> document.getElementById('r-timer').innerText=t);
-        socket.on('roulette_spin_start', n=> { isRolling=true; document.getElementById('r-status').innerText="SPINNING"; document.getElementById('wheel-overlay').classList.add('show'); spinWheel(n); });
-        socket.on('roulette_new_round', ()=>{ isRolling=false; bets=[]; renderBetLog(); document.getElementById('chipLayer').innerHTML=''; document.getElementById('r-status').innerText="BETTING"; });
-        socket.on('roulette_win', d=> alert(`WINNER: ${d.number} | WON: ${d.amount}`));
+        function sendClear() { socket.emit('roulette_clear'); }
+        function sendUndo() { socket.emit('roulette_undo'); }
+        socket.on('bets_cleared', ()=>{ currentRoundBets=[]; document.getElementById('rOverlay').innerHTML=''; rBetTotal=0; document.getElementById('r-bet-display').innerText='0'; });
+        socket.on('bet_undone', ()=>{ let c=document.getElementById('rOverlay').children; if(c.length>0) c[c.length-1].remove(); rBetTotal-=rChip; document.getElementById('r-bet-display').innerText=rBetTotal; });
 
-        // --- COLOR GAME ---
-        const CG_C = ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'];
-        const CG_H = {'RED':'#d32f2f','GREEN':'#388e3c','BLUE':'#1976d2','YELLOW':'#fbc02d','PINK':'#e91e63','WHITE':'#eee'};
-        let ch = ''; CG_C.forEach(c => { ch+=`<div onclick="betCg('${c}')" style="background:${CG_H[c]}; width:80px; height:80px; border-radius:10px; cursor:pointer; border:2px solid #555; display:flex; flex-direction:column; align-items:center; justify-content:center; color:black; font-weight:bold; box-shadow:0 5px 15px rgba(0,0,0,0.3);">${c}<span id="b-${c}" style="background:rgba(255,255,255,0.7); padding:2px; margin-top:5px; border-radius:3px;">0</span></div>`; });
-        document.getElementById('cg-btns').innerHTML=ch;
-        function betCg(c) { if(isRolling)return; if(bal<chip)return; socket.emit('place_bet',{color:c, amount:chip}); document.getElementById('b-'+c).innerText=parseInt(document.getElementById('b-'+c).innerText)+chip; }
-        socket.on('game_rolling', ()=>{ isRolling=true; document.getElementById('cg-status').innerText="ROLLING"; });
-        socket.on('game_result', r=>{ isRolling=false; ['d1','d2','d3'].forEach((d,i)=>{ document.getElementById(d).innerText=""; document.getElementById(d).style.backgroundColor=CG_H[r[i]]; }); document.getElementById('cg-status').innerText="RESULT"; });
-        socket.on('game_reset', ()=>{ isRolling=false; document.getElementById('cg-status').innerHTML=`BETTING <span id="cg-timer">20</span>`; CG_C.forEach(c=>document.getElementById('b-'+c).innerText='0'); });
-        socket.on('timer_update', t=> { if(document.getElementById('cg-timer')) document.getElementById('cg-timer').innerText=t; });
-
-        // --- WHEEL ---
+        // WHEEL ANIMATION
+        const cvs = document.getElementById('wheelCanvas'); const ctx = cvs.getContext('2d');
         const WHEEL = ["0","32","15","19","4","21","2","25","17","34","6","27","13","36","11","30","8","23","10","5","24","16","33","1","20","14","31","9","22","18","29","7","28","12","35","3","26"];
-        function drawWheel(ang) {
-            let ctx = document.getElementById('wheelCanvas').getContext('2d');
-            ctx.clearRect(0,0,600,600); ctx.save(); ctx.translate(300,300); ctx.rotate(ang);
-            let s = (Math.PI*2)/37;
-            WHEEL.forEach((n,i) => {
-                ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,280, i*s, (i+1)*s);
-                ctx.fillStyle=n=="0"?'#060':(REDS.includes(parseInt(n))?'#b00':'#111'); ctx.fill(); ctx.stroke();
-                ctx.save(); ctx.rotate(i*s+s/2); ctx.fillStyle="white"; ctx.font="bold 24px Arial"; ctx.fillText(n, 220, 10); ctx.restore();
+        function drawWheel(a) {
+            ctx.clearRect(0,0,800,800); ctx.save(); ctx.translate(400,400); ctx.rotate(a);
+            WHEEL.forEach((n,i)=>{
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,320,i*(Math.PI*2/37),(i+1)*(Math.PI*2/37));
+                ctx.fillStyle=n=="0"?'#016D29':(REDS.includes(parseInt(n))?'#b00':'#111'); ctx.fill(); ctx.stroke();
+                ctx.save(); ctx.rotate(i*(Math.PI*2/37)+(Math.PI/37)); ctx.fillStyle="#fff"; ctx.font="bold 24px Arial"; ctx.fillText(n,250,10); ctx.restore();
             });
             ctx.restore();
         }
-        function spinWheel(t) {
-            let idx = WHEEL.indexOf(t.toString());
-            let dest = (Math.PI*2*5) - (idx*((Math.PI*2)/37)) - (((Math.PI*2)/37)/2);
-            let s; function anim(ts) { if(!s)s=ts; let p=(ts-s)/5000; if(p>1)p=1; drawWheel(dest*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(anim); else setTimeout(()=>document.getElementById('wheel-overlay').classList.remove('show'),2000); }
-            requestAnimationFrame(anim);
+        socket.on('roulette_spin_start', n=>{ document.getElementById('wheel-overlay').classList.add('show'); spin(n); });
+        function spin(n) {
+            let idx=WHEEL.indexOf(n.toString()), dest=(Math.PI*2*5)-(idx*(Math.PI*2/37))-(Math.PI/37), s;
+            function ani(ts) { if(!s)s=ts; let p=(ts-s)/5000; if(p>1)p=1; drawWheel(dest*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(ani); else setTimeout(()=>document.getElementById('wheel-overlay').classList.remove('show'),2000); }
+            requestAnimationFrame(ani);
         }
-
-        // --- CHIPS ---
-        function setChip(v, el) { chip=v; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); }
-
-        // --- UI UTILS ---
-        let chatType='public', vMode='off';
-        function renderBetLog() { let h=''; let t=0; bets.forEach(b=>{ h+=`<div class="panel-item"><span>${b.d}</span><span style="color:var(--gold)">${b.a}</span></div>`; t+=b.a; }); document.getElementById('bList').innerHTML=h; document.getElementById('bTotal').innerText=t; }
-        function toggleChat() { let p=document.getElementById('chatPanel'); p.classList.toggle('active'); }
-        function setChatTab(t) { chatType=t; document.querySelectorAll('.c-tab').forEach(e=>e.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); document.getElementById('cBox').innerHTML=''; }
-        function sendChat() { let i=document.getElementById('cInput'); if(i.value) socket.emit('chat_msg',{msg:i.value, room:room, type:chatType}); i.value=''; }
-        socket.on('chat_broadcast', d=>{ if(d.type==chatType) { let b=document.getElementById('cBox'); b.innerHTML+=`<div><b style="color:${d.type=='support'?'var(--cyan)':'var(--gold)'}">${d.user}:</b> ${d.msg}</div>`; } });
-        socket.on('room_users_update', l=>{ document.getElementById('pList').innerHTML=l.map(u=>`<div class="panel-item" id="u-${u.id}"><i class="fas fa-user"></i> ${u.username}</div>`).join(''); });
-
-        // --- VOICE ---
-        let audioCtx, mediaStream;
-        function setVoice(m) { vMode=m; document.querySelectorAll('.vb-btn').forEach(b=>b.classList.remove('active')); document.getElementById('v-'+m).classList.add('active'); if(m!='off') initAudio(); }
-        function initAudio() {
-            if(mediaStream) return;
-            navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
-                mediaStream=s; audioCtx=new AudioContext();
-                let src=audioCtx.createMediaStreamSource(s); let p=audioCtx.createScriptProcessor(4096,1,1);
-                src.connect(p); p.connect(audioCtx.destination);
-                p.onaudioprocess=e=>{
-                    if(vMode=='off') return;
-                    let d=e.inputBuffer.getChannelData(0); let sum=0; for(let i=0;i<d.length;i++)sum+=d[i]*d[i];
-                    let vol=Math.sqrt(sum/d.length);
-                    let speak=(vMode=='auto'&&vol>0.02)||(vMode=='ptt'&&spaceDown);
-                    if(speak) { socket.emit('voice_status',true); } else socket.emit('voice_status',false);
-                };
-            });
-        }
-        let spaceDown=false; window.onkeydown=e=>{if(e.code=='Space')spaceDown=true;}; window.onkeyup=e=>{if(e.code=='Space')spaceDown=false;};
-        socket.on('player_voice_update', d=>{ let el=document.getElementById('u-'+d.id); if(el) d.talking?el.style.color='var(--gold)':el.style.color='white'; });
-
+        
+        socket.on('roulette_win', d=>{ 
+            let stage=document.getElementById('winner-stage'); stage.classList.add('active'); stage.innerHTML=`<div class="flying-cell ${REDS.includes(d.number)?'red':(d.number==0?'green':'black')}" style="left:50%; top:50%; transform:translate(-50%,-50%)">${d.number}<div class="win-label">+${d.amount}</div></div>`;
+            setTimeout(()=>stage.classList.remove('active'),3000);
+        });
     </script>
 </body>
 </html>
