@@ -19,7 +19,7 @@ let chatHistory = { colorgame: [], roulette: [] };
 app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 
-// --- BROADCAST ---
+// --- HELPERS ---
 function broadcastRoomList(room) {
     if(!room || room === 'lobby') return;
     let list = [];
@@ -35,10 +35,11 @@ function broadcastRoomList(room) {
     io.to(room).emit('room_users_update', list);
 }
 
-// --- GAME LOOPS ---
+// --- LOOPS ---
 let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30 };
 
+// Color Game
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
@@ -59,6 +60,7 @@ setInterval(() => {
     }
 }, 1000);
 
+// Roulette
 setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
@@ -84,6 +86,7 @@ function processRouletteWinners(n) {
 }
 
 io.on('connection', (socket) => {
+    // Auth
     socket.on('login', (d) => {
         if(users[d.username] && users[d.username].password === d.password) {
             joinRoom(socket, d.username, 'lobby');
@@ -101,6 +104,7 @@ io.on('connection', (socket) => {
     
     socket.on('switch_room', (r) => { if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r); });
     
+    // Voice
     socket.on('voice_data', (b) => socket.to(activeSockets[socket.id]?.room).emit('voice_receive', {id:socket.id, audio:b}));
     socket.on('voice_status', (t) => {
         if(activeSockets[socket.id]) {
@@ -109,7 +113,8 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('place_bet', (d) => {
+    // Betting
+    socket.on('place_bet_roulette', (d) => {
         let u = activeSockets[socket.id];
         if(u && users[u.username]) {
             users[u.username].balance -= d.amount;
@@ -117,10 +122,11 @@ io.on('connection', (socket) => {
         }
     });
     
+    // Chat
     socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
     socket.on('support_msg', (d) => socket.emit('chat_broadcast', {type:'support_sent', user:activeSockets[socket.id].username, msg:d.msg}));
 
-    socket.on('roulette_clear', () => { /* Sync handled client side mostly for visual, server tracking implied */ });
+    socket.on('roulette_clear', () => { /* Server tracking clear logic would go here */ });
 
     socket.on('disconnect', () => {
         if(activeSockets[socket.id]) { let r=activeSockets[socket.id].room; delete activeSockets[socket.id]; broadcastRoomList(r); }
