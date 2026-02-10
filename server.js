@@ -14,7 +14,6 @@ if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE))
 function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
 
 let activeSockets = {}; 
-let chatHistory = { colorgame: [], roulette: [] };
 
 app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
@@ -39,6 +38,7 @@ function broadcastRoomList(room) {
 let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30 };
 
+// Color Game Loop
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
@@ -59,6 +59,7 @@ setInterval(() => {
     }
 }, 1000);
 
+// Roulette Loop
 setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
@@ -73,7 +74,7 @@ setInterval(() => {
                 setTimeout(() => {
                     rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30;
                     io.to('roulette').emit('roulette_new_round');
-                }, 9000); 
+                }, 9000); // 9s for animation sequence
             }, 9000); 
         }
     }
@@ -98,6 +99,7 @@ io.on('connection', (socket) => {
             socket.emit('login_success', { username: d.username, balance: 1000 });
         } else socket.emit('login_error', "Taken");
     });
+    
     socket.on('switch_room', (r) => { if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r); });
     
     socket.on('voice_data', (b) => socket.to(activeSockets[socket.id]?.room).emit('voice_receive', {id:socket.id, audio:b}));
@@ -115,19 +117,11 @@ io.on('connection', (socket) => {
             socket.emit('update_balance', users[u.username].balance);
         }
     });
-    socket.on('add_winnings', (amt) => {
-        let u = activeSockets[socket.id];
-        if(u && users[u.username]) {
-            users[u.username].balance += amt;
-            socket.emit('update_balance', users[u.username].balance);
-            saveDatabase();
-        }
-    });
     
     socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
     socket.on('support_msg', (d) => socket.emit('chat_broadcast', {type:'support_sent', user:activeSockets[socket.id].username, msg:d.msg}));
 
-    socket.on('roulette_clear', () => { /* Sync handled client side */ });
+    socket.on('roulette_clear', () => { });
 
     socket.on('disconnect', () => {
         if(activeSockets[socket.id]) { let r=activeSockets[socket.id].room; delete activeSockets[socket.id]; broadcastRoomList(r); }
