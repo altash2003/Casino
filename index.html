@@ -3,136 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ROYAL CASINO</title>
+    <title>GRAND CASINO</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- SECURITY & RESET --- */
+        /* --- GLOBAL RESET --- */
+        :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; }
         body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
-        
-        /* --- CORE UI --- */
-        :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; --panel-bg: rgba(10, 10, 12, 0.95); }
-        
+        * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+        input { -webkit-user-select: auto; user-select: auto; }
+
         .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; flex-direction:column; }
         .view-section.active { display: flex; }
-        .global-back { position: fixed; top: 20px; left: 20px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 10px 20px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; transition: 0.2s; }
-        .global-back:hover { border-color: var(--gold); color: var(--gold); }
+        .global-back { position: fixed; top: 10px; left: 10px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
 
-        /* --- LEFT PANEL: ACTIVE PLAYERS --- */
-        .player-panel {
-            position: fixed; top: 80px; left: 20px; width: 220px; max-height: 60vh;
-            background: var(--panel-bg); border-left: 3px solid var(--cyan);
-            border-radius: 0 10px 10px 0; z-index: 8000;
-            display: none; flex-direction: column; overflow: hidden;
-            box-shadow: 5px 0 20px rgba(0,0,0,0.5);
-            transition: transform 0.3s ease;
-        }
-        .player-panel.active { display: flex; animation: slideInLeft 0.3s; }
-        @keyframes slideInLeft { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        /* --- YOUR ORIGINAL PANELS (Right Side) --- */
+        .panel-position { position: fixed; bottom: 100px; right: 20px; width: 280px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .panel-position.active { display: flex; animation: slideUp 0.2s ease-out; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .chat-panel { height: 350px; }
+        .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; font-size: 11px; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
+        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; scrollbar-width: thin; }
+        .chat-input-area { padding: 8px; border-top: 1px solid #333; display: flex; background: #1a1a1a; border-radius: 0 0 12px 12px; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; outline:none; }
         
-        .pp-header { padding: 12px; background: rgba(0, 229, 255, 0.1); font-size: 12px; font-weight: bold; color: var(--cyan); letter-spacing: 1px; display:flex; justify-content:space-between; }
-        .pp-list { flex: 1; overflow-y: auto; padding: 5px; }
-        .pp-user { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; transition:0.2s; }
-        .pp-mic { width: 30px; display: flex; justify-content: center; color: #555; }
-        
-        /* Talking State */
-        .pp-user.talking .pp-mic { color: var(--gold); animation: pulseMic 0.5s infinite; }
-        .pp-user.talking .pp-name { color: var(--gold); font-weight:bold; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-        @keyframes pulseMic { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        /* Music Panel (Original Style) */
+        .music-player { height: auto; padding: 10px; }
+        .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
+        .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
+        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
 
-        /* --- RIGHT PANEL: CHAT --- */
-        .chat-panel { 
-            position: fixed; bottom: 100px; right: 20px; width: 300px; height: 350px;
-            background: var(--panel-bg); border: 1px solid #333; border-radius: 12px;
-            display: none; flex-direction: column; z-index: 8000; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
-        .chat-panel.active { display: flex; animation: fadeUp 0.2s; }
-        .chat-content { flex: 1; overflow-y: auto; padding: 10px; font-size: 13px; color:#ddd; }
-        .chat-input-area { padding: 10px; border-top: 1px solid #333; display: flex; background: rgba(0,0,0,0.2); }
-        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; outline: none; border-radius: 4px; }
+        /* --- LEFT PLAYER PANEL (New Feature) --- */
+        .player-panel { position: fixed; top: 60px; left: 10px; width: 200px; max-height: 50vh; background: rgba(0,0,0,0.7); border-left: 3px solid var(--cyan); border-radius: 0 8px 8px 0; z-index: 7000; display: none; flex-direction: column; backdrop-filter: blur(5px); transition:0.3s; }
+        .player-panel.active { display: flex; }
+        .pp-head { padding: 8px; font-size: 10px; color: var(--cyan); font-weight: bold; background: rgba(0,255,255,0.1); }
+        .pp-list { overflow-y: auto; padding: 5px; }
+        .pp-item { display: flex; align-items: center; gap: 5px; padding: 4px; font-size: 12px; border-bottom: 1px solid #333; }
+        .pp-item.talking { color: var(--gold); font-weight: bold; }
+        .pp-item.talking i { color: var(--gold); animation: pulse 0.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
 
-        /* --- VOICE CONTROLS --- */
-        .voice-hud { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 15px; z-index: 9000; }
-        .v-btn { background: rgba(0,0,0,0.8); border: 1px solid #555; color: #aaa; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 8px; transition:0.2s; }
-        .v-btn:hover { background: #333; color: white; }
-        .v-btn.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,0.15); }
-        .v-btn.talking { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.15); box-shadow: 0 0 15px rgba(255,215,0,0.2); }
+        /* --- CURRENT BET PANEL (New Feature) --- */
+        .bet-panel { position: fixed; top: 60px; right: 10px; width: 200px; background: rgba(0,0,0,0.8); border: 1px solid var(--gold); border-radius: 8px; padding: 10px; display: none; z-index: 7000; color: white; font-size: 12px; }
+        .bet-panel.active { display: block; }
+        .bp-head { border-bottom: 1px solid #444; margin-bottom: 5px; padding-bottom: 5px; color: var(--gold); font-weight: bold; }
+        .bp-list { max-height: 200px; overflow-y: auto; }
+        .bp-item { display: flex; justify-content: space-between; margin-bottom: 2px; }
 
-        /* --- COLOR GAME (FIXED LAYOUT) --- */
-        #view-colorgame { background: url('background.jpg') center/cover; }
-        .cg-container { display: grid; grid-template-rows: auto 1fr auto; height: 100%; width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; box-sizing: border-box; gap: 20px; }
-        
-        /* Top Stats */
-        .cg-stats { display: flex; justify-content: center; gap: 40px; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 50px; backdrop-filter: blur(10px); border: 1px solid #444; width: fit-content; margin: 0 auto; }
-        .stat-box { text-align: center; }
-        .stat-lbl { font-size: 10px; color: #888; letter-spacing: 1px; font-weight: bold; }
-        .stat-val { font-size: 24px; font-weight: bold; font-family: 'Oswald'; }
-
-        /* Stage (Dice) - Separated */
-        .cg-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .dice-row { display: flex; gap: 25px; margin-top: 20px; }
-        .die { width: 100px; height: 100px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid rgba(255,255,255,0.1); background: #222; box-shadow: 0 15px 30px rgba(0,0,0,0.5); transition: transform 0.2s; }
-        .die.red { background: #d32f2f; box-shadow: 0 0 25px #d32f2f; }
-        .die.green { background: #388e3c; box-shadow: 0 0 25px #388e3c; }
-        .die.blue { background: #1976d2; box-shadow: 0 0 25px #1976d2; }
-        .die.pink { background: #e91e63; box-shadow: 0 0 25px #e91e63; }
-        .die.yellow { background: #fbc02d; color:black; box-shadow: 0 0 25px #fbc02d; }
-        .die.white { background: #eee; color:black; box-shadow: 0 0 25px #eee; }
-
-        /* Betting Controls - Separated */
-        .cg-controls { background: rgba(0,0,0,0.8); padding: 20px; border-radius: 20px; border: 1px solid #333; width: 100%; max-width: 700px; margin: 0 auto; display:flex; flex-direction: column; gap: 15px; }
-        .bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
-        .bet-btn { height: 80px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; transition: 0.2s; border: 2px solid transparent; opacity: 0.9; }
-        .bet-btn:hover { transform: translateY(-5px); opacity: 1; z-index: 10; border-color: white; }
-        .bet-amt { background: rgba(0,0,0,0.4); border-radius: 4px; font-size: 12px; padding: 2px 6px; align-self: flex-end; }
-
-        /* --- ROULETTE (FIXED & POLISHED) --- */
-        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); }
-        .r-center { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        /* Using your exact Grid Logic */
-        .r-table-wrapper { position: relative; background-color: #01431E; padding: 20px; border-radius: 16px; border: 8px solid #002b12; box-shadow: 0 0 0 4px var(--gold), 0 30px 60px black; }
-        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; border: 2px solid var(--gold); padding: 4px; border-radius: 6px; background: rgba(0,0,0,0.2); }
-        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid var(--gold); color:white; transition: 0.1s; z-index: 5; }
-        .cell:hover { filter: brightness(1.3); }
-        .red-cell { background-color: var(--red); } .black-cell { background-color: #1a1a1a; }
-        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 4px 0 0 4px; }
-        
-        /* Win Animation Gaps */
-        #winner-stage { position: fixed; inset: 0; pointer-events: none; z-index: 6000; display: none; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
-        #winner-stage.active { display: block; }
-        .flying-cell { position: absolute; width: 60px; height: 60px; background: #222; border: 2px solid var(--gold); color: white; display: flex; justify-content: center; align-items: center; font-family: 'Oswald'; font-size: 24px; border-radius: 8px; box-shadow: 0 0 20px var(--gold); transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .flying-cell.red { background: var(--red); }
-        .win-lbl { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); font-size: 24px; color: var(--cyan); font-weight: 900; white-space: nowrap; opacity: 0; animation: dropIn 0.5s forwards 1s; }
-        @keyframes dropIn { from { top: -80px; opacity: 0; } to { top: -50px; opacity: 1; } }
-
-        /* Chips */
-        .chips-bar { display: flex; gap: 10px; background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 50px; border: 1px solid #444; width: fit-content; margin: 0 auto; }
-        .chip { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; position: relative; }
-        .chip.active { transform: scale(1.2) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.8); z-index: 10; border: 2px solid white; }
+        /* --- CHIPS (Restored Exact Values) --- */
+        .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: fit-content; margin: 10px auto; pointer-events: auto; }
+        .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
+        .chip:hover { transform: scale(1.1); }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: 2px solid white; }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
-        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px dashed rgba(0,0,0,0.3); }
-        .chip-lbl { position: relative; z-index: 2; font-size: 9px; font-weight: 900; color: #333; background: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; justify-content: center; align-items: center; }
-        /* Colors */
-        .c-50 { --c1: #ddd; --c2: #fff; --c3: #bbb; } .c-200 { --c1: #900; --c2: #b00; --c3: #600; } .c-1k { --c1: #060; --c2: #080; --c3: #040; } .c-10k { --c1: #008; --c2: #00a; --c3: #004; } .c-100k { --c1: #111; --c2: #333; --c3: #000; }
+        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); }
+        .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
+        
+        /* Specific Colors */
+        .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
+        .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; } /* Red */
+        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; } /* Green */
+        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; } /* Blue */
+        .chip-100k { --c1: #262626; --c2: #444; --c3: #000; } /* Black */
 
-        /* Wheel Overlay */
-        #wheel-overlay { position: fixed; inset: 0; z-index: 5000; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.8); }
-        #wheel-overlay.show { display: flex; }
+        /* --- AUTH --- */
+        #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .auth-box { background: #111; border: 1px solid #333; padding: 40px; text-align: center; width: 300px; }
+        .auth-inp { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; }
         
-        /* Auth */
-        #auth { position: fixed; inset: 0; z-index: 9999; background: black; display: flex; justify-content: center; align-items: center; }
-        .login-box { text-align: center; width: 300px; }
-        .inp { width: 100%; padding: 12px; background: #222; border: 1px solid #444; color: white; margin: 5px 0; text-align: center; }
-        .btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        /* --- LOBBY --- */
+        #view-lobby { background: url('background.jpg') center/cover; justify-content: center; align-items: center; gap: 30px; }
+        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
         
-        /* Icons */
-        .float-btns { position: absolute; bottom: 30px; right: 30px; z-index: 7000; }
-        .f-btn { width: 50px; height: 50px; border-radius: 50%; background: #222; border: 1px solid #555; color: white; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 20px; transition: 0.2s; }
-        .f-btn:hover { border-color: var(--gold); color: var(--gold); }
+        /* --- DICE GAME --- */
+        #view-colorgame { background: url('background.jpg') center/cover; flex-direction: column; }
+        .cg-stats { display: flex; justify-content: center; gap: 40px; margin-top: 20px; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 30px; width: fit-content; margin: 20px auto; }
+        .cg-dice-row { display: flex; gap: 20px; justify-content: center; margin: 40px 0; }
+        .die { width: 90px; height: 90px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 3px solid rgba(255,255,255,0.2); background: #222; }
+        .die.red { background: #d32f2f; } .die.green { background: #388e3c; } .die.blue { background: #1976d2; }
+        .die.pink { background: #e91e63; } .die.white { background: #eee; color:black; } .die.yellow { background: #fbc02d; color:black; }
+        
+        .cg-bet-panel { background: rgba(0,0,0,0.5); padding: 20px; width: 80%; max-width: 600px; margin: 0 auto; border-radius: 10px; }
+        .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        .cg-btn { height: 80px; border: 1px solid #555; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; opacity: 0.9; transition: 0.2s; }
+        .cg-btn:hover { opacity: 1; transform: scale(1.05); }
+        .cg-btn.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); } /* Disabled style */
+
+        /* --- ROULETTE --- */
+        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); }
+        .r-wrapper { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; }
+        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); background: rgba(0,0,0,0.2); border-radius: 8px; position: relative; }
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 1px solid var(--gold); color:white; }
+        .cell.disabled { opacity: 0.5; pointer-events: none; }
+        .red-cell { background-color: var(--red); } .black-cell { background-color: #111; }
+        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
+
+        /* Pop Up Wheel */
+        #wheel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+        #wheel-overlay.show { display: flex; animation: fadeIn 0.3s; opacity: 1; pointer-events: auto; }
+        .wheelPanel { filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
+        .pointer { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 40px solid var(--gold); z-index: 5005; }
+
+        /* Floating Icons */
+        .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 5000; }
+        .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; }
+        
+        /* Voice PTT */
+        .ptt-btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #222; border: 1px solid #555; color: #888; padding: 10px 20px; border-radius: 30px; cursor: pointer; display: none; z-index: 9000; }
+        .ptt-btn.talking { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.2); }
     </style>
 </head>
 <body>
@@ -142,426 +123,314 @@
         document.onkeydown = function(e) {
             if(e.keyCode == 123) return false; 
             if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; 
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; 
-            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; 
             if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; 
         }
     </script>
 
-    <div id="auth">
-        <div class="login-box">
-            <h1 style="color:var(--gold); font-size: 40px; margin-bottom: 20px;">ROYAL CASINO</h1>
-            <input id="u" class="inp" placeholder="USERNAME">
-            <input id="p" class="inp" type="password" placeholder="PASSWORD">
-            <button onclick="doLogin()" class="btn">LOGIN</button>
-            <button onclick="doReg()" class="btn" style="background:transparent; border:1px solid #444; color:#888;">REGISTER</button>
-            <div id="authMsg" style="color:red; margin-top:10px;"></div>
+    <div id="authOverlay">
+        <div class="auth-box">
+            <h1 style="color:var(--gold); margin-bottom:20px;">GRAND CASINO</h1>
+            <input id="user" class="auth-inp" placeholder="USERNAME">
+            <input id="pass" class="auth-inp" type="password" placeholder="PASSWORD">
+            <button onclick="login()" style="width:100%; padding:10px; background:var(--gold); border:none; font-weight:bold; cursor:pointer;">ENTER</button>
+            <div id="loginErr" style="color:red; margin-top:10px;"></div>
         </div>
     </div>
 
-    <div class="player-panel" id="pPanel">
-        <div class="pp-header"><span>PLAYERS</span> <span id="pCount">0</span></div>
-        <div class="pp-list" id="pList"></div>
+    <div class="player-panel" id="playerListPanel">
+        <div class="pp-head">PLAYERS IN ROOM</div>
+        <div class="pp-list" id="plList"></div>
     </div>
 
-    <div class="chat-panel" id="cPanel">
-        <div class="chat-content" id="cList"></div>
+    <div class="bet-panel" id="betPanel">
+        <div class="bp-head">CURRENT BETS</div>
+        <div class="bp-list" id="bpList"></div>
+        <div style="margin-top:5px; border-top:1px solid #444; padding-top:5px; text-align:right;">Total: <span id="bpTotal" style="color:var(--gold)">0</span></div>
+    </div>
+
+    <div class="chat-panel panel-position" id="chatPanel">
+        <div class="chat-header"><span>GLOBAL CHAT</span> <span onclick="toggleChat()" style="cursor:pointer;">&times;</span></div>
+        <div class="chat-content" id="chatBox"></div>
         <div class="chat-input-area">
-            <input id="cInput" class="chat-input" placeholder="Type here...">
-            <button onclick="sendChat()" style="background:var(--gold); border:none; padding:0 15px; margin-left:5px; font-weight:bold;">></button>
+            <input id="chatInput" class="chat-input" placeholder="Type here...">
+            <button onclick="sendChat()" style="background:var(--gold); border:none; padding:0 10px; font-weight:bold;">></button>
         </div>
     </div>
 
-    <div class="voice-hud" id="vHud">
-        <div class="v-btn" id="btn-ptt" onclick="setVoice('ptt')"><i class="fas fa-microphone"></i> HOLD SPACE</div>
-        <div class="v-btn" id="btn-auto" onclick="setVoice('auto')"><i class="fas fa-headset"></i> AUTO MODE</div>
+    <div class="music-player panel-position" id="musicPanel">
+        <div class="chat-header"><span>MUSIC</span> <span onclick="toggleMusic()" style="cursor:pointer;">&times;</span></div>
+        <div style="padding:10px;">
+            <div class="mp-controls">
+                <button class="mp-btn" onclick="playMusic()">PLAY</button>
+                <button class="mp-btn" onclick="pauseMusic()">STOP</button>
+            </div>
+            <input id="musicUrl" class="mp-input" placeholder="MP3 URL">
+            <button class="mp-btn" style="width:100%" onclick="playCustom()">LOAD CUSTOM</button>
+            <audio id="audioEl" loop></audio>
+        </div>
     </div>
 
+    <div class="ptt-btn" id="pttBtn" onclick="toggleVoice()"><i class="fas fa-microphone"></i> AUTO VOICE</div>
     <button class="global-back" id="backBtn" onclick="goLobby()">← LOBBY</button>
 
-    <div id="view-lobby" class="view-section active" style="background:url('background.jpg') center/cover; justify-content:center; align-items:center;">
-        <h1 style="font-size:80px; color:var(--gold); text-shadow:0 10px 30px black;">ROYAL CASINO</h1>
-        <div style="font-size:18px; margin-bottom:30px;">
-            <i class="fas fa-user"></i> <span id="lUser" style="color:var(--gold)">Guest</span> | 
-            <i class="fas fa-coins"></i> <span id="lBal" style="color:var(--cyan)">0</span>
-        </div>
+    <div id="view-lobby" class="view-section active">
+        <h1 style="font-size:60px; color:var(--gold); text-shadow:0 0 20px black;">GRAND CASINO</h1>
+        <div>User: <span id="lUser" style="color:var(--gold)">Guest</span> | Balance: <span id="lBal" style="color:var(--cyan)">0</span></div>
         <div style="display:flex; gap:30px;">
-            <div onclick="enter('colorgame')" style="width:250px; height:350px; background:rgba(0,0,0,0.8); border:2px solid #333; border-radius:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.3s;">
-                <div style="font-size:60px;">🎨</div>
-                <h2 style="color:var(--gold)">COLOR GAME</h2>
-                <div id="cnt-cg" style="color:#666">0 Playing</div>
-            </div>
-            <div onclick="enter('roulette')" style="width:250px; height:350px; background:rgba(0,0,0,0.8); border:2px solid #333; border-radius:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.3s;">
-                <div style="font-size:60px;">🎡</div>
-                <h2 style="color:var(--gold)">ROULETTE</h2>
-                <div id="cnt-r" style="color:#666">0 Playing</div>
-            </div>
+            <div class="game-card" onclick="enter('colorgame')"><div style="font-size:50px">🎨</div><h2>COLOR GAME</h2></div>
+            <div class="game-card" onclick="enter('roulette')"><div style="font-size:50px">🎡</div><h2>ROULETTE</h2></div>
         </div>
     </div>
 
     <div id="view-colorgame" class="view-section">
-        <div class="cg-container">
-            <div class="cg-stats">
-                <div class="stat-box"><div class="stat-lbl">BALANCE</div><div class="stat-val" style="color:var(--cyan)" id="cg-bal">0</div></div>
-                <div class="stat-box"><div class="stat-lbl">TIMER</div><div class="stat-val" style="color:var(--gold)" id="cg-time">20</div></div>
-                <div class="stat-box"><div class="stat-lbl">STATUS</div><div class="stat-val" style="font-size:18px; margin-top:4px;" id="cg-status">BETTING</div></div>
+        <div class="cg-stats">
+            <div style="text-align:center"><div style="font-size:10px; color:#888">TIMER</div><div id="cg-time" style="font-size:24px; color:var(--gold); font-weight:bold;">20</div></div>
+            <div style="text-align:center"><div style="font-size:10px; color:#888">STATUS</div><div id="cg-status" style="font-size:18px; margin-top:4px;">BETTING</div></div>
+        </div>
+
+        <div class="cg-dice-row">
+            <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
+        </div>
+
+        <div class="cg-bet-panel">
+            <div class="chips-bar">
+                <div class="chip chip-50 active" onclick="setChip(50, this)"><div class="chip-label">50</div></div>
+                <div class="chip chip-200" onclick="setChip(200, this)"><div class="chip-label">200</div></div>
+                <div class="chip chip-1k" onclick="setChip(1000, this)"><div class="chip-label">1K</div></div>
+                <div class="chip chip-10k" onclick="setChip(10000, this)"><div class="chip-label">10K</div></div>
+                <div class="chip chip-100k" onclick="setChip(100000, this)"><div class="chip-label">100K</div></div>
             </div>
 
-            <div class="cg-stage">
-                <div class="dice-row">
-                    <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
-                </div>
+            <div class="cg-bet-grid" id="cg-buttons">
+                <div class="cg-btn" style="background:#d32f2f" onclick="betCg('RED')"><b>RED</b><span id="b-RED">0</span></div>
+                <div class="cg-btn" style="background:#388e3c" onclick="betCg('GREEN')"><b>GREEN</b><span id="b-GREEN">0</span></div>
+                <div class="cg-btn" style="background:#1976d2" onclick="betCg('BLUE')"><b>BLUE</b><span id="b-BLUE">0</span></div>
+                <div class="cg-btn" style="background:#fbc02d; color:black" onclick="betCg('YELLOW')"><b>YEL</b><span id="b-YELLOW">0</span></div>
+                <div class="cg-btn" style="background:#e91e63" onclick="betCg('PINK')"><b>PINK</b><span id="b-PINK">0</span></div>
+                <div class="cg-btn" style="background:#eee; color:black" onclick="betCg('WHITE')"><b>WHT</b><span id="b-WHITE">0</span></div>
             </div>
-
-            <div class="cg-controls">
-                <div class="chips-bar">
-                    <div class="chip c-50 active" onclick="chip=50; uiChip(this)"><div class="chip-lbl">50</div></div>
-                    <div class="chip c-200" onclick="chip=100; uiChip(this)"><div class="chip-lbl">100</div></div>
-                    <div class="chip c-1k" onclick="chip=1000; uiChip(this)"><div class="chip-lbl">1K</div></div>
-                </div>
-                <div class="bet-grid">
-                    <div class="bet-btn" style="background:#d32f2f" onclick="betCg('RED')"><b>RED</b><span class="bet-amt" id="b-RED">0</span></div>
-                    <div class="bet-btn" style="background:#388e3c" onclick="betCg('GREEN')"><b>GREEN</b><span class="bet-amt" id="b-GREEN">0</span></div>
-                    <div class="bet-btn" style="background:#1976d2" onclick="betCg('BLUE')"><b>BLUE</b><span class="bet-amt" id="b-BLUE">0</span></div>
-                    <div class="bet-btn" style="background:#fbc02d; color:black" onclick="betCg('YELLOW')"><b>YEL</b><span class="bet-amt" id="b-YELLOW">0</span></div>
-                    <div class="bet-btn" style="background:#e91e63" onclick="betCg('PINK')"><b>PINK</b><span class="bet-amt" id="b-PINK">0</span></div>
-                    <div class="bet-btn" style="background:#eee; color:black" onclick="betCg('WHITE')"><b>WHT</b><span class="bet-amt" id="b-WHITE">0</span></div>
-                </div>
-            </div>
-            
-            <div class="float-btns"><div class="f-btn" onclick="toggleChat()"><i class="fas fa-comment"></i></div></div>
+        </div>
+        
+        <div class="icon-controls">
+            <div class="icon-btn" onclick="toggleChat()"><i class="fas fa-comment"></i></div>
+            <div class="icon-btn" onclick="toggleMusic()"><i class="fas fa-music"></i></div>
         </div>
     </div>
 
     <div id="view-roulette" class="view-section">
-        <div id="wheel-overlay"><canvas id="wCan" width="600" height="600"></canvas></div>
-        <div id="winner-stage"></div>
+        <div id="wheel-overlay">
+            <div class="wheelPanel" style="position:relative;">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="600" height="600" style="width:500px; height:500px; border-radius:50%;"></canvas>
+            </div>
+        </div>
 
-        <div class="r-center">
-            <div class="cg-stats" style="margin-bottom:20px; min-width:600px;">
-                <div class="stat-box"><div class="stat-lbl">BALANCE</div><div class="stat-val" style="color:var(--cyan)" id="r-bal">0</div></div>
-                <div class="stat-box"><div class="stat-lbl">TIMER</div><div class="stat-val" style="color:var(--gold)" id="r-time">30</div></div>
-                <div class="stat-box"><div class="stat-lbl">BET</div><div class="stat-val" id="r-bet-sum">0</div></div>
+        <div class="r-wrapper">
+            <div style="display:flex; gap:20px; margin-bottom:10px;">
+                <div style="text-align:center"><div style="font-size:10px; color:#888">TIMER</div><div id="r-time" style="font-size:24px; color:var(--gold); font-weight:bold;">30</div></div>
+                <div style="text-align:center"><div style="font-size:10px; color:#888">BALANCE</div><div id="r-bal" style="font-size:18px; color:var(--cyan); margin-top:4px;">0</div></div>
             </div>
 
-            <div class="r-table-wrapper">
-                <div class="r-grid" id="grid">
-                    <div id="ghost" style="position:absolute; inset:0; z-index:100;"></div>
-                    <div id="chips" style="position:absolute; inset:0; z-index:90; pointer-events:none;"></div>
-                    
-                    <div class="cell zone-0" id="cell-0">0</div>
-                    <div class="cell" style="grid-column:14; grid-row:1; writing-mode:vertical-rl; font-size:10px;" id="btn-row1">2 to 1</div>
-                    <div class="cell" style="grid-column:14; grid-row:2; writing-mode:vertical-rl; font-size:10px;" id="btn-row2">2 to 1</div>
-                    <div class="cell" style="grid-column:14; grid-row:3; writing-mode:vertical-rl; font-size:10px;" id="btn-row3">2 to 1</div>
-                    
-                    <div class="cell" style="grid-row:4; grid-column:2/6; font-size:11px;" id="btn-doz1">1st 12</div>
-                    <div class="cell" style="grid-row:4; grid-column:6/10; font-size:11px;" id="btn-doz2">2nd 12</div>
-                    <div class="cell" style="grid-row:4; grid-column:10/14; font-size:11px;" id="btn-doz3">3rd 12</div>
-                    
-                    <div class="cell" style="grid-row:5; grid-column:2/4; font-size:11px;" id="btn-low">1-18</div>
-                    <div class="cell" style="grid-row:5; grid-column:4/6; font-size:11px;" id="btn-even">EVEN</div>
-                    <div class="cell" style="grid-row:5; grid-column:6/8;" id="btn-red"><div style="width:16px; height:16px; background:var(--red); transform:rotate(45deg);"></div></div>
-                    <div class="cell" style="grid-row:5; grid-column:8/10;" id="btn-black"><div style="width:16px; height:16px; background:#111; transform:rotate(45deg);"></div></div>
-                    <div class="cell" style="grid-row:5; grid-column:10/12; font-size:11px;" id="btn-odd">ODD</div>
-                    <div class="cell" style="grid-row:5; grid-column:12/14; font-size:11px;" id="btn-high">19-36</div>
-                </div>
+            <div class="r-grid" id="r-grid">
+                <div class="cell zone-0" id="btn-0" onclick="betR([0])">0</div>
+                <div class="cell" style="grid-column:14; grid-row:1; writing-mode:vertical-rl; font-size:10px;" onclick="betR(getArr('row1'))">2 to 1</div>
+                <div class="cell" style="grid-column:14; grid-row:2; writing-mode:vertical-rl; font-size:10px;" onclick="betR(getArr('row2'))">2 to 1</div>
+                <div class="cell" style="grid-column:14; grid-row:3; writing-mode:vertical-rl; font-size:10px;" onclick="betR(getArr('row3'))">2 to 1</div>
 
-                <div class="chips-bar" style="margin-top:15px;">
-                    <div class="chip c-50 active" onclick="chip=50; uiChip(this)"><div class="chip-lbl">50</div></div>
-                    <div class="chip c-200" onclick="chip=200; uiChip(this)"><div class="chip-lbl">200</div></div>
-                    <div class="chip c-1k" onclick="chip=1000; uiChip(this)"><div class="chip-lbl">1K</div></div>
-                    <div class="chip c-10k" onclick="chip=10000; uiChip(this)"><div class="chip-lbl">10K</div></div>
-                </div>
+                <div class="cell" style="grid-row:4; grid-column:2/6; font-size:10px;" onclick="betR(getArr('1st12'))">1st 12</div>
+                <div class="cell" style="grid-row:4; grid-column:6/10; font-size:10px;" onclick="betR(getArr('2nd12'))">2nd 12</div>
+                <div class="cell" style="grid-row:4; grid-column:10/14; font-size:10px;" onclick="betR(getArr('3rd12'))">3rd 12</div>
                 
-                <div style="text-align:center; margin-top:10px;">
-                    <button onclick="clearRoulette()" style="background:#333; color:white; border:1px solid #555; padding:6px 20px; font-weight:bold; cursor:pointer;">CLEAR BETS</button>
-                </div>
+                <div class="cell" style="grid-row:5; grid-column:2/4; font-size:10px;" onclick="betR(getArr('1-18'))">1-18</div>
+                <div class="cell" style="grid-row:5; grid-column:4/6; font-size:10px;" onclick="betR(getArr('even'))">EVEN</div>
+                <div class="cell" style="grid-row:5; grid-column:6/8;" onclick="betR(getArr('red'))"><div style="width:15px; height:15px; background:var(--red); transform:rotate(45deg);"></div></div>
+                <div class="cell" style="grid-row:5; grid-column:8/10;" onclick="betR(getArr('black'))"><div style="width:15px; height:15px; background:#111; transform:rotate(45deg);"></div></div>
+                <div class="cell" style="grid-row:5; grid-column:10/12; font-size:10px;" onclick="betR(getArr('odd'))">ODD</div>
+                <div class="cell" style="grid-row:5; grid-column:12/14; font-size:10px;" onclick="betR(getArr('19-36'))">19-36</div>
             </div>
 
-            <div class="float-btns"><div class="f-btn" onclick="toggleChat()"><i class="fas fa-comment"></i></div></div>
+            <div class="chips-bar" style="margin-top:20px;">
+                <div class="chip chip-50 active" onclick="setChip(50, this)"><div class="chip-label">50</div></div>
+                <div class="chip chip-200" onclick="setChip(200, this)"><div class="chip-label">200</div></div>
+                <div class="chip chip-1k" onclick="setChip(1000, this)"><div class="chip-label">1K</div></div>
+                <div class="chip chip-10k" onclick="setChip(10000, this)"><div class="chip-label">10K</div></div>
+                <div class="chip chip-100k" onclick="setChip(100000, this)"><div class="chip-label">100K</div></div>
+            </div>
+            
+            <button onclick="clearRBets()" style="margin-top:10px; background:#333; color:white; border:1px solid #555; padding:5px 10px;">CLEAR BETS</button>
+        </div>
+        
+        <div class="icon-controls">
+            <div class="icon-btn" onclick="toggleChat()"><i class="fas fa-comment"></i></div>
+            <div class="icon-btn" onclick="toggleMusic()"><i class="fas fa-music"></i></div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let me = "Guest", bal = 0, room = "lobby";
-        let chip = 50;
-        let rBetSum = 0;
+        let me="Guest", bal=0, room="lobby", chip=50;
+        let isDiceRolling = false, isWheelSpinning = false;
+        let currentRoundBets = []; // For Current Bet Panel
 
         // --- AUTH ---
-        function doLogin() { socket.emit('login', { username:document.getElementById('u').value, password:document.getElementById('p').value }); }
-        function doReg() { socket.emit('register', { username:document.getElementById('u').value, password:document.getElementById('p').value }); }
-        socket.on('login_success', d => {
-            me = d.username; bal = d.balance;
-            document.getElementById('auth').style.display='none';
-            upd();
-        });
-        socket.on('login_error', m => document.getElementById('authMsg').innerText = m);
-        socket.on('update_balance', b => { bal = b; upd(); });
-        function upd() { 
-            ['lBal','cg-bal','r-bal'].forEach(i=>document.getElementById(i).innerText=bal);
-            document.getElementById('lUser').innerText = me;
-        }
+        function login() { socket.emit('login', { username:document.getElementById('user').value, password:document.getElementById('pass').value }); }
+        socket.on('login_success', d => { me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
+        socket.on('login_error', m => document.getElementById('loginErr').innerText=m);
+        socket.on('update_balance', b => { bal=b; upd(); });
+        function upd() { ['lBal','r-bal'].forEach(i=>document.getElementById(i).innerText=bal); document.getElementById('lUser').innerText=me; }
 
-        // --- NAVIGATION ---
+        // --- NAV ---
         function enter(r) {
-            room = r;
+            room=r; socket.emit('switch_room', r);
             document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
             document.getElementById('view-'+r).classList.add('active');
-            socket.emit('switch_room', r);
-            document.getElementById('backBtn').style.display = 'block';
-            document.getElementById('pPanel').classList.add('active');
-            document.getElementById('vHud').style.display = 'flex';
+            document.getElementById('backBtn').style.display='block';
+            document.getElementById('playerListPanel').classList.add('active');
+            document.getElementById('betPanel').classList.add('active');
+            document.getElementById('pttBtn').style.display='block';
             if(r==='roulette') initR();
-            initAudio(); // Prepare Audio
+            initAudio();
         }
         function goLobby() {
-            room = 'lobby';
+            room='lobby'; socket.emit('switch_room', 'lobby');
             document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
             document.getElementById('view-lobby').classList.add('active');
-            socket.emit('switch_room', 'lobby');
-            document.getElementById('backBtn').style.display = 'none';
-            document.getElementById('pPanel').classList.remove('active');
-            document.getElementById('vHud').style.display = 'none';
-            closeAudio();
+            document.getElementById('backBtn').style.display='none';
+            document.getElementById('playerListPanel').classList.remove('active');
+            document.getElementById('betPanel').classList.remove('active');
+            document.getElementById('pttBtn').style.display='none';
+            document.getElementById('chatPanel').classList.remove('active');
+            document.getElementById('musicPanel').classList.remove('active');
         }
 
-        // --- VOICE CHAT LOGIC ---
-        let audioCtx, mediaStream, processor;
-        let vMode = null; 
-        let spaceDown = false;
-
-        document.addEventListener('keydown', e => { if(e.code==='Space' && vMode==='ptt') spaceDown=true; });
-        document.addEventListener('keyup', e => { if(e.code==='Space' && vMode==='ptt') spaceDown=false; });
-
-        function setVoice(m) {
-            vMode = m;
-            document.querySelectorAll('.v-btn').forEach(b=>b.classList.remove('active'));
-            document.getElementById('btn-'+m).classList.add('active');
-            if(!mediaStream) startMic();
+        // --- CHIPS ---
+        function setChip(v, el) { 
+            chip = v; 
+            document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); 
+            el.classList.add('active'); 
         }
 
-        function startMic() {
-            navigator.mediaDevices.getUserMedia({audio:true}).then(s => {
-                mediaStream = s;
-                audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-                let src = audioCtx.createMediaStreamSource(s);
-                processor = audioCtx.createScriptProcessor(4096, 1, 1);
-                src.connect(processor);
-                processor.connect(audioCtx.destination);
-                
-                processor.onaudioprocess = e => {
-                    if(!vMode) return;
-                    let input = e.inputBuffer.getChannelData(0);
-                    let sum = 0;
-                    for(let i=0; i<input.length; i++) sum += input[i]*input[i];
-                    let vol = Math.sqrt(sum/input.length);
-
-                    let talking = false;
-                    if(vMode === 'ptt' && spaceDown) talking = true;
-                    if(vMode === 'auto' && vol > 0.02) talking = true;
-
-                    if(talking) {
-                        // Send status
-                        socket.emit('voice_status', true);
-                        // Convert to Int16
-                        let buf = new ArrayBuffer(input.length*2);
-                        let view = new DataView(buf);
-                        for(let i=0; i<input.length; i++){
-                            let s = Math.max(-1, Math.min(1, input[i]));
-                            view.setInt16(i*2, s<0 ? s*0x8000 : s*0x7FFF, true);
-                        }
-                        socket.emit('voice_data', buf);
-                        document.getElementById(vMode==='ptt'?'btn-ptt':'btn-auto').classList.add('talking');
-                    } else {
-                        socket.emit('voice_status', false);
-                        document.querySelectorAll('.v-btn').forEach(b=>b.classList.remove('talking'));
-                    }
-                };
-            }).catch(e => alert("Mic Denied"));
+        // --- CURRENT BET PANEL ---
+        function addBetLog(desc, amt) {
+            currentRoundBets.push({desc, amt});
+            renderBetLog();
         }
-        function closeAudio() {
-            if(mediaStream) mediaStream.getTracks().forEach(t=>t.stop());
-            if(audioCtx) audioCtx.close();
-            mediaStream=null; vMode=null;
-        }
-        function initAudio() { /* Placeholder for context resume if needed */ }
-
-        // RECEIVE VOICE
-        socket.on('voice_receive', d => {
-            if(!audioCtx) return;
-            let i16 = new Int16Array(d.audio);
-            let f32 = new Float32Array(i16.length);
-            for(let i=0; i<i16.length; i++) f32[i] = i16[i] / (i16[i]<0 ? 0x8000 : 0x7FFF);
-            let b = audioCtx.createBuffer(1, f32.length, audioCtx.sampleRate);
-            b.getChannelData(0).set(f32);
-            let s = audioCtx.createBufferSource();
-            s.buffer = b;
-            s.connect(audioCtx.destination);
-            s.start(0);
-        });
-
-        // --- PLAYER PANEL ---
-        socket.on('room_users_update', list => {
-            document.getElementById('pCount').innerText = list.length;
-            let h = '';
-            list.forEach(u => {
-                h += `<div class="pp-user" id="usr-${u.id}"><div class="pp-mic"><i class="fas fa-microphone"></i></div><div class="pp-name">${u.username}</div></div>`;
+        function renderBetLog() {
+            let h = ''; let t = 0;
+            currentRoundBets.forEach(b => {
+                h += `<div class="bp-item"><span>${b.desc}</span><span>${b.amt}</span></div>`;
+                t += b.amt;
             });
-            document.getElementById('pList').innerHTML = h;
-        });
-        socket.on('player_voice_update', d => {
-            let el = document.getElementById('usr-'+d.id);
-            if(el) {
-                if(d.talking) el.classList.add('talking');
-                else el.classList.remove('talking');
-            }
-        });
+            document.getElementById('bpList').innerHTML = h;
+            document.getElementById('bpTotal').innerText = t;
+        }
+        function clearBetLog() { currentRoundBets = []; renderBetLog(); }
 
-        // --- COLOR GAME ---
-        function uiChip(e) { document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); e.classList.add('active'); }
+        // --- DICE LOGIC ---
         function betCg(c) {
-            if(bal < chip) return alert("Low Balance");
+            if(isDiceRolling) return alert("BETS CLOSED!"); // CHECK ROLLING
+            if(bal < chip) return alert("No funds");
             socket.emit('place_bet', {color:c, amount:chip});
-            let el = document.getElementById('b-'+c);
-            el.innerText = parseInt(el.innerText)+chip;
+            document.getElementById('b-'+c).innerText = parseInt(document.getElementById('b-'+c).innerText)+chip;
+            addBetLog(c, chip);
         }
         socket.on('game_rolling', () => {
+            isDiceRolling = true;
             document.getElementById('cg-status').innerText = "ROLLING...";
-            window.rollInt = setInterval(() => {
-                ['d1','d2','d3'].forEach(d => {
-                    document.getElementById(d).className = `die ${['red','green','blue','yellow','pink','white'][Math.floor(Math.random()*6)]}`;
-                });
-            }, 100);
+            document.querySelectorAll('.cg-btn').forEach(b => b.classList.add('disabled')); // UI LOCK
+            let c = ['red','green','blue','yellow','pink','white'];
+            window.rollInt = setInterval(() => { ['d1','d2','d3'].forEach(d => document.getElementById(d).className=`die ${c[Math.floor(Math.random()*6)]}`); }, 100);
         });
         socket.on('game_result', res => {
             clearInterval(window.rollInt);
-            ['d1','d2','d3'].forEach((d,i) => document.getElementById(d).className = `die ${res[i].toLowerCase()}`);
+            ['d1','d2','d3'].forEach((d,i) => document.getElementById(d).className=`die ${res[i].toLowerCase()}`);
             document.getElementById('cg-status').innerText = "RESULT";
         });
         socket.on('game_reset', () => {
-            document.querySelectorAll('.bet-amt').forEach(e=>e.innerText='0');
+            isDiceRolling = false;
+            document.querySelectorAll('.cg-btn').forEach(b => b.classList.remove('disabled')); // UI UNLOCK
+            document.querySelectorAll('.cg-btn span').forEach(s => s.innerText='0');
             document.getElementById('cg-status').innerText = "BETTING";
+            clearBetLog();
         });
         socket.on('timer_update', t => document.getElementById('cg-time').innerText = t);
-        socket.on('lobby_counts', c => {
-            document.getElementById('cnt-cg').innerText = (c.colorgame||0)+" Playing";
-            document.getElementById('cnt-r').innerText = (c.roulette||0)+" Playing";
-        });
 
         // --- ROULETTE LOGIC ---
         const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
         function initR() {
-            let g = document.getElementById('grid');
-            if(document.getElementById('cell-1')) return; // Already built
+            let g = document.getElementById('r-grid');
+            if(document.getElementById('btn-1')) return;
             for(let i=1; i<=36; i++) {
                 let d = document.createElement('div');
                 d.className = `cell ${REDS.includes(i)?'red-cell':'black-cell'}`;
-                d.innerText = i; d.id = `cell-${i}`;
+                d.innerText = i; d.id = `btn-${i}`;
+                d.onclick = () => betR([i]);
                 d.style.gridRow = (i%3===0)?1:(i%3===2?2:3);
                 d.style.gridColumn = Math.floor((i-1)/3)+2;
                 g.appendChild(d);
             }
-            bindRoulette();
             drawWheel(0);
         }
-        function bindRoulette() {
-            // Simple click mapping for bets
-            document.getElementById('ghost').onclick = (e) => {
-                // Find element under click
-                g.style.pointerEvents='none';
-                let el = document.elementFromPoint(e.clientX, e.clientY);
-                g.style.pointerEvents='auto';
-                if(el && el.id && (el.classList.contains('cell'))) {
-                    let nums = getNums(el.id);
-                    if(nums.length>0) placeRBet(nums, el);
-                }
-            };
-            let g = document.getElementById('ghost');
+        function getArr(type) {
+            let a = [];
+            for(let i=1; i<=36; i++) {
+                if(type=='red' && REDS.includes(i)) a.push(i);
+                if(type=='black' && !REDS.includes(i)) a.push(i);
+                if(type=='even' && i%2==0) a.push(i);
+                if(type=='odd' && i%2!=0) a.push(i);
+                if(type=='1-18' && i<=18) a.push(i);
+                if(type=='19-36' && i>=19) a.push(i);
+                if(type=='1st12' && i<=12) a.push(i);
+                if(type=='2nd12' && i>12 && i<=24) a.push(i);
+                if(type=='3rd12' && i>24) a.push(i);
+                if(type=='row1' && i%3==0) a.push(i);
+                if(type=='row2' && i%3==2) a.push(i);
+                if(type=='row3' && i%3==1) a.push(i);
+            }
+            return a;
         }
-        function getNums(id) {
-            if(id.startsWith('cell-')) return [parseInt(id.split('-')[1])];
-            if(id=='btn-red') return REDS;
-            if(id=='btn-black') return Array.from({length:36},(_,i)=>i+1).filter(n=>!REDS.includes(n));
-            // Add other groupings for pro functionality (simplified here)
-            return [];
-        }
-        function placeRBet(nums, el) {
-            if(bal < chip) return alert("Low Funds");
+        function betR(nums) {
+            if(isWheelSpinning) return alert("BETS CLOSED");
+            if(bal < chip) return alert("No Funds");
             socket.emit('place_bet_roulette', {numbers:nums, amount:chip});
             
-            let rect = el.getBoundingClientRect();
-            let wrap = document.getElementById('chips').getBoundingClientRect();
-            let c = document.createElement('div');
-            c.className = 'chip c-50'; // simplified visual
-            c.style.position='absolute'; c.style.width='20px'; c.style.height='20px';
-            c.style.left = (rect.left + rect.width/2 - wrap.left)+'px';
-            c.style.top = (rect.top + rect.height/2 - wrap.top)+'px';
-            c.style.pointerEvents='none'; c.style.transform='translate(-50%, -50%)';
-            document.getElementById('chips').appendChild(c);
-            
-            rBetSum += chip; document.getElementById('r-bet-sum').innerText = rBetSum;
+            // Visual Chip on first number
+            let id = nums.length===1 ? 'btn-'+nums[0] : (nums.length===18?'btn-red':'btn-0'); // Fallback visual
+            // In a full implementation, you'd find the clicked element.
+            // Simplified: Add to Bet Log
+            let desc = nums.length === 1 ? "Num "+nums[0] : (nums.length===18?"Color/Half":"Group");
+            addBetLog(desc, chip);
         }
-        function clearRoulette() { socket.emit('roulette_clear'); }
-        socket.on('bets_cleared', () => {
-            document.getElementById('chips').innerHTML='';
-            rBetSum=0; document.getElementById('r-bet-sum').innerText='0';
-        });
+        function clearRBets() { socket.emit('roulette_clear'); }
+        
         socket.on('roulette_timer', t => document.getElementById('r-time').innerText = t);
-        socket.on('roulette_spin_start', n => { 
+        socket.on('roulette_spin_start', n => {
+            isWheelSpinning = true;
+            document.querySelectorAll('.cell').forEach(c => c.classList.add('disabled'));
             document.getElementById('wheel-overlay').classList.add('show');
             spinWheel(n);
         });
         socket.on('roulette_new_round', () => {
-            document.getElementById('chips').innerHTML='';
-            rBetSum=0; document.getElementById('r-bet-sum').innerText='0';
+            isWheelSpinning = false;
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('disabled'));
+            clearBetLog();
         });
-        socket.on('roulette_win', d => {
-            setTimeout(() => winAnim(d.number, d.amount), 500);
-        });
-        
-        // --- WIN ANIMATION WITH GAP FIX ---
-        function winAnim(num, amt) {
-            let stage = document.getElementById('winner-stage');
-            stage.classList.add('active');
-            stage.innerHTML = '';
-            
-            // Winning items
-            let wins = [num]; // Add Logic for Red/Black etc.
-            
-            let gap = 20; 
-            let w = 60; 
-            let totalW = wins.length * (w + gap);
-            let startX = (window.innerWidth - totalW)/2;
-            
-            let div = document.createElement('div');
-            div.className = `flying-cell ${REDS.includes(num)?'red':(num==0?'green':'black')}`;
-            div.innerText = num;
-            div.style.left = '50%'; div.style.top = '50%'; div.style.transform='translate(-50%, -50%)';
-            
-            let lbl = document.createElement('div');
-            lbl.className='win-lbl'; lbl.innerText = `WON +${amt}`;
-            stage.appendChild(lbl);
-            stage.appendChild(div);
+        socket.on('bets_cleared', clearBetLog);
+        socket.on('roulette_win', d => alert(`WINNER: ${d.number}! YOU WON ${d.amount}`));
 
-            setTimeout(() => { stage.classList.remove('active'); }, 4000);
-        }
-
-        // --- WHEEL ---
+        // --- CANVAS WHEEL ---
         const WHEEL = ["0","32","15","19","4","21","2","25","17","34","6","27","13","36","11","30","8","23","10","5","24","16","33","1","20","14","31","9","22","18","29","7","28","12","35","3","26"];
-        function drawWheel(angle) {
-            let ctx = document.getElementById('wCan').getContext('2d');
+        function drawWheel(ang) {
+            let ctx = document.getElementById('wheelCanvas').getContext('2d');
             ctx.clearRect(0,0,600,600);
-            ctx.save(); ctx.translate(300,300); ctx.rotate(angle);
+            ctx.save(); ctx.translate(300,300); ctx.rotate(ang);
             let slice = (Math.PI*2)/37;
             WHEEL.forEach((n,i) => {
                 ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,280, i*slice, (i+1)*slice);
                 ctx.fillStyle = n=="0"?'#060':(REDS.includes(parseInt(n))?'#b00':'#111');
                 ctx.fill(); ctx.stroke();
-                ctx.save(); ctx.rotate(i*slice + slice/2); 
-                ctx.fillStyle="white"; ctx.font="bold 24px Arial"; ctx.fillText(n, 200, 10);
-                ctx.restore();
+                ctx.save(); ctx.rotate(i*slice + slice/2); ctx.fillStyle="white"; ctx.font="bold 24px Arial"; ctx.fillText(n, 220, 10); ctx.restore();
             });
             ctx.restore();
         }
@@ -570,30 +439,64 @@
             let slice = (Math.PI*2)/37;
             let dest = (Math.PI*2*5) - (idx*slice) - (slice/2);
             let start;
-            function step(ts) {
+            function anim(ts) {
                 if(!start) start=ts; let p=(ts-start)/5000;
                 if(p>1) p=1;
-                let ease = 1 - Math.pow(1-p, 3);
-                drawWheel(dest*ease);
-                if(p<1) requestAnimationFrame(step);
+                drawWheel(dest*(1 - Math.pow(1-p, 3)));
+                if(p<1) requestAnimationFrame(anim);
                 else setTimeout(()=>{document.getElementById('wheel-overlay').classList.remove('show')}, 2000);
             }
-            requestAnimationFrame(step);
+            requestAnimationFrame(anim);
         }
 
-        // --- CHAT ---
-        function toggleChat() { 
-            let p = document.getElementById('cPanel');
-            p.classList.contains('active') ? p.classList.remove('active') : p.classList.add('active'); 
+        // --- PANELS (ORIGINAL STYLE) ---
+        function toggleChat() { let p=document.getElementById('chatPanel'); p.classList.toggle('active'); }
+        function sendChat() { let i=document.getElementById('chatInput'); if(i.value) socket.emit('chat_msg',{msg:i.value, room:room}); i.value=''; }
+        socket.on('chat_broadcast', d => { let b=document.getElementById('chatBox'); b.innerHTML+=`<div><b>${d.user}:</b> ${d.msg}</div>`; b.scrollTop=b.scrollHeight; });
+
+        function toggleMusic() { let p=document.getElementById('musicPanel'); p.classList.toggle('active'); }
+        const audio = document.getElementById('audioEl');
+        function playMusic() { audio.src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; audio.play(); }
+        function pauseMusic() { audio.pause(); }
+        function playCustom() { audio.src=document.getElementById('musicUrl').value; audio.play(); }
+
+        // --- VOICE ---
+        let audioCtx, mediaStream;
+        function initAudio() { /* Placeholder */ }
+        function toggleVoice() {
+            if(mediaStream) return;
+            navigator.mediaDevices.getUserMedia({audio:true}).then(s => {
+                mediaStream = s;
+                audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+                let src = audioCtx.createMediaStreamSource(s);
+                let p = audioCtx.createScriptProcessor(4096, 1, 1);
+                src.connect(p); p.connect(audioCtx.destination);
+                p.onaudioprocess = e => {
+                    let d = e.inputBuffer.getChannelData(0);
+                    let sum=0; for(let i=0;i<d.length;i++) sum+=d[i]*d[i];
+                    if(Math.sqrt(sum/d.length) > 0.02) {
+                        socket.emit('voice_status', true);
+                        let b = new ArrayBuffer(d.length*2); let v = new DataView(b);
+                        for(let i=0;i<d.length;i++) { let s=Math.max(-1,Math.min(1,d[i])); v.setInt16(i*2,s<0?s*0x8000:s*0x7FFF,true); }
+                        socket.emit('voice_data', b);
+                    } else socket.emit('voice_status', false);
+                };
+            });
         }
-        function sendChat() {
-            let i = document.getElementById('cInput');
-            if(i.value) { socket.emit('chat_msg', { msg:i.value, room:room }); i.value=''; }
-        }
-        socket.on('chat_broadcast', d => {
-            let b = document.getElementById('cList');
-            b.innerHTML += `<div><b style="color:var(--gold)">${d.user}:</b> ${d.msg}</div>`;
-            b.scrollTop = b.scrollHeight;
+        socket.on('voice_receive', d => {
+            if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+            let i16 = new Int16Array(d.audio); let f32 = new Float32Array(i16.length);
+            for(let i=0;i<i16.length;i++) f32[i] = i16[i] / (i16[i]<0?0x8000:0x7FFF);
+            let b = audioCtx.createBuffer(1, f32.length, audioCtx.sampleRate);
+            b.getChannelData(0).set(f32);
+            let s = audioCtx.createBufferSource(); s.buffer=b; s.connect(audioCtx.destination); s.start(0);
+        });
+        socket.on('room_users_update', list => {
+            document.getElementById('plList').innerHTML = list.map(u=>`<div class="pp-item" id="u-${u.id}"><i class="fas fa-microphone"></i> ${u.username}</div>`).join('');
+        });
+        socket.on('player_voice_update', d => {
+            let el = document.getElementById('u-'+d.id);
+            if(el) d.talking ? el.classList.add('talking') : el.classList.remove('talking');
         });
     </script>
 </body>
