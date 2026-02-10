@@ -34,7 +34,7 @@ function broadcastRoomList(room) {
 
 // --- GAME STATE ---
 let colorState = { status: 'BETTING', timeLeft: 20, bets: [] };
-let rouletteState = { status: 'BETTING', timeLeft: 40, bets: [] }; // Increased time for complex bets
+let rouletteState = { status: 'BETTING', timeLeft: 40, bets: [] };
 
 // COLOR GAME LOOP
 setInterval(() => {
@@ -99,7 +99,6 @@ function processRouletteWinners(winningNumber) {
     rouletteState.bets.forEach(bet => {
         if(bet.numbers.includes(winningNumber)) {
             let count = bet.numbers.length;
-            // Payouts: 1->35:1, 2->17:1, 3->11:1, 4->8:1, 6->5:1, 12->2:1, 18->1:1
             let payoutMult = count === 1 ? 36 : count === 2 ? 18 : count === 3 ? 12 : count === 4 ? 9 : count === 6 ? 6 : count === 12 ? 3 : 2;
             let win = bet.amount * payoutMult;
             if(users[bet.username]) {
@@ -113,7 +112,6 @@ function processRouletteWinners(winningNumber) {
 }
 
 io.on('connection', (socket) => {
-    // LOGIN / REGISTER
     socket.on('login', (data) => {
         if(users[data.username] && users[data.username].password === data.password) {
             joinRoom(socket, data.username, 'lobby');
@@ -136,7 +134,6 @@ io.on('connection', (socket) => {
         if(u) joinRoom(socket, u.username, room);
     });
 
-    // VOICE
     socket.on('voice_data', (blob) => {
         let u = activeSockets[socket.id];
         if(u && u.room !== 'lobby') socket.to(u.room).emit('voice_receive', { id: socket.id, audio: blob });
@@ -146,24 +143,16 @@ io.on('connection', (socket) => {
         if(u && u.room !== 'lobby') io.to(u.room).emit('player_voice_update', { id: socket.id, talking: isTalking });
     });
 
-    // CHAT (Public vs Support)
     socket.on('chat_msg', (data) => {
         let u = activeSockets[socket.id];
         if(u && data.msg) {
-            let type = data.type || 'public'; // 'public' or 'support'
+            let type = data.type || 'public';
             let msgObj = { user: u.username, msg: data.msg, type: type };
-            
-            if(type === 'support') {
-                // Send to user and Admins (Everyone receives support msgs in this demo for simplicity)
-                io.emit('chat_broadcast', msgObj); 
-            } else {
-                // Send to room
-                io.to(u.room).emit('chat_broadcast', msgObj);
-            }
+            if(type === 'support') io.emit('chat_broadcast', msgObj); 
+            else io.to(u.room).emit('chat_broadcast', msgObj);
         }
     });
 
-    // BETS
     socket.on('place_bet', (data) => {
         let u = activeSockets[socket.id];
         if(!u || colorState.status !== 'BETTING') return;
