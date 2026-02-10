@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* CORE */
         :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; }
         body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
@@ -23,33 +22,20 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; font-family:'Rajdhani'; font-weight:bold; }
         .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius:4px; }
 
-        /* SIDE PANELS (FIXED SIZE) */
-        .side-panel { 
-            position: fixed; top: 70px; width: 220px; height: 350px; /* Fixed Height */
-            background: rgba(15,15,15,0.95); border: 1px solid #444; 
-            display: none; flex-direction: column; z-index: 8000; 
-            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
+        /* PANELS */
+        .side-panel { position: fixed; top: 70px; width: 220px; height: 350px; background: rgba(15,15,15,0.95); border: 1px solid #444; display: none; flex-direction: column; z-index: 8000; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .side-panel.active { display: flex; }
-        
         #playerPanel { left: 15px; border-left: 3px solid var(--cyan); }
         #betPanel { right: 15px; border-right: 3px solid var(--gold); }
-        
         .panel-head { padding: 10px; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; display: flex; justify-content: space-between; border-radius: 12px 12px 0 0; }
         .panel-list { overflow-y: auto; padding: 5px; flex: 1; }
         .panel-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #222; font-size: 13px; align-items: center; }
         .pl-mic { font-size: 10px; color: #555; margin-right: 8px; width: 15px; text-align: center; }
         .panel-item.talking .pl-mic { color: var(--gold); animation: pulse 0.5s infinite; }
-        .panel-item.talking { color: white; text-shadow: 0 0 5px var(--gold); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
         /* UNIFIED LOWER RIGHT PANELS */
-        .lr-panel { 
-            position: fixed; bottom: 80px; right: 15px; width: 280px; 
-            background: rgba(15,15,15,0.95); border: 1px solid #444; 
-            border-radius: 12px; display: none; flex-direction: column; 
-            z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
+        .lr-panel { position: fixed; bottom: 80px; right: 15px; width: 280px; background: rgba(15,15,15,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .lr-panel.active { display: flex; }
 
         /* CHAT UI */
@@ -88,7 +74,7 @@
         .chip.chip-board::after { inset: 4px; } 
         .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
 
-        /* LOBBY & COLOR GAME */
+        /* LOBBY */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
         .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .game-card:hover { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 0 30px rgba(255,215,0,0.2); }
@@ -96,10 +82,10 @@
         .die { width: 90px; height: 90px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid rgba(255,255,255,0.1); background: #222; }
         .cg-btn { height: 80px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; border: 1px solid rgba(255,255,255,0.2); }
 
-        /* ROULETTE (BIGGER, FIXED) */
+        /* ROULETTE (FIXED UI) */
         #view-roulette { background: url('background.jpg') center/cover; }
         .r-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; }
-        .r-scaler { transform: scale(1.5); transform-origin: center center; margin-top: 10px; } /* BIGGER */
+        .r-scaler { transform: scale(1.5); transform-origin: center center; margin-top: 10px; } /* BIGGER TABLE */
         
         .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; width: fit-content; display: flex; flex-direction: column; align-items: center; }
         
@@ -110,12 +96,11 @@
         .r-hud-val { font-size: 28px; font-weight: bold; color: white; font-family: 'Oswald'; }
 
         /* History (MATCHING BORDER WIDTH) */
-        /* Grid width is approx 50 + (12*42) + 34 + gaps ~ 614px. */
-        /* r-grid width: 622px (calculated from cols+gaps+padding) */
-        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; padding: 0 5px; gap: 5px; margin-bottom: 8px; overflow: hidden; justify-content: flex-end; border: 1px solid #333; box-sizing: border-box; }
-        .hist-ball { width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 9px; box-shadow: 0 2px 4px black; color: white; flex-shrink: 0; }
+        /* Grid width approx 622px. History must span exactly that. */
+        .r-history { width: 622px; height: 32px; background: rgba(0,0,0,0.4); border-radius: 4px; display: flex; align-items: center; padding: 0 2px; gap: 4px; margin-bottom: 8px; overflow: hidden; justify-content: flex-start; border: 1px solid #333; box-sizing: border-box; }
+        .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; color: white; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
-        .hist-empty { background: rgba(255,255,255,0.1); box-shadow: none; }
+        .hist-empty { background: rgba(255,255,255,0.05); box-shadow: none; border:1px solid rgba(255,255,255,0.1); }
 
         /* Grid */
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; width: fit-content; }
@@ -123,6 +108,9 @@
         .cell:hover { background: rgba(255,255,255,0.2); }
         .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
         .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
+        
+        .hotspot-overlay { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
+        .hotspot { position: absolute; cursor: pointer; pointer-events: auto; z-index: 60; }
         
         /* Controls & Chips (Below Grid) */
         .r-controls-area { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; gap: 10px; }
@@ -216,7 +204,9 @@
                     <div class="r-history" id="rHistory"></div>
                     
                     <div class="r-grid" id="rGrid">
+                        <div class="hotspot-overlay" id="ghostOverlay"></div>
                         <div style="position:absolute; inset:0; z-index:50; pointer-events:none;" id="rOverlay"></div>
+                        
                         <div class="cell zone-0" id="cell-0">0</div>
                         <div class="cell" style="grid-column:14; grid-row:1; writing-mode:vertical-rl; font-size:10px;">2 to 1</div>
                         <div class="cell" style="grid-column:14; grid-row:2; writing-mode:vertical-rl; font-size:10px;">2 to 1</div>
@@ -266,7 +256,7 @@
         let boardChips = {}; // Key: "desc", Val: {amt, dom, nums, desc, relX, relY}
         const SCALE = 1.5; const REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
-        // AUTH
+        // AUTH & BASIC
         function login(){ socket.emit('login', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         function register(){ socket.emit('register', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         socket.on('login_success', d=>{ me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
@@ -298,7 +288,12 @@
         socket.on('player_voice_update', d=>{ let el=document.getElementById('u-'+d.id); if(el){ d.talking ? el.classList.add('talking') : el.classList.remove('talking'); } });
         
         let audioCtx, mediaStream, vMode='off';
-        function setVoice(m) { vMode=m; document.querySelectorAll('.vp-btn').forEach(b=>b.classList.remove('active')); document.getElementById('v-'+m).classList.add('active'); if(m!='off') initAudio(); }
+        function setVoice(m) { 
+            vMode=m; 
+            document.querySelectorAll('.vp-btn').forEach(b=>b.classList.remove('active')); 
+            document.getElementById('v-'+m).classList.add('active'); 
+            if(m!='off') initAudio();
+        }
         function initAudio() {
             if(mediaStream) return;
             navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
@@ -327,7 +322,6 @@
             if(bal<chip) return alert("Funds");
             
             // SMART CLICK DETECTION FOR CORNERS/SPLITS
-            // If click is on a grid cell, detect edges
             let mx, my;
             if(e.currentTarget) {
                 let cell = e.currentTarget;
@@ -337,19 +331,13 @@
                 let w = rect.width; let h = rect.height;
                 let edge = 0.25;
                 
-                // Adjust logic if user wants corners enabled
                 let n = nums[0]; // Base number
-                // Only if single number is clicked do we check edges
                 if(nums.length === 1 && typeof n === 'number') {
                     if(cx > w*(1-edge) && n%3!=0 && n<36) { nums=[n, n+1]; desc=`Split ${n},${n+1}`; } // Right
                     else if(cy > h*(1-edge) && n%3!=1) { nums=[n, n-1]; desc=`Split ${n},${n-1}`; } // Bottom
-                    // Simple corners: Top Right
-                    if(cx > w*(1-edge) && cy < h*edge && n<34 && n%3!=0) { nums=[n, n+1, n+3, n+4]; desc=`Corner ${n}`; }
+                    if(cx > w*(1-edge) && cy < h*edge && n<34 && n%3!=0) { nums=[n, n+1, n+3, n+4]; desc=`Corner ${n}`; } // TR Corner
                 }
-                
-                // Final Position
-                mx = rect.left + w/2;
-                my = rect.top + h/2;
+                mx = rect.left + w/2; my = rect.top + h/2; // Center for chip visual
             } else { mx = e.clientX; my = e.clientY; }
 
             let overlay = document.getElementById('rOverlay').getBoundingClientRect();
@@ -472,6 +460,29 @@
             h.prepend(createBall(c, n));
         });
 
+        // HOTSPOTS
+        function buildHotspots() {
+            const overlay = document.getElementById('ghostOverlay'); overlay.innerHTML='';
+            const W=42, H=42, GAP=2, OX=55+GAP, OY=5;
+            for(let c=0; c<12; c++) {
+                let x = OX + (c*(W+GAP));
+                let nT=(c*3)+3, nM=(c*3)+2, nB=(c*3)+1;
+                mkZone(x, OY-6, W, 12, [nT, nM, nB], "Street "+nB);
+                mkZone(x, OY+H-5, W, 10, [nT,nM], "Split "+nT+","+nM); mkZone(x, OY+(H*2)+GAP-5, W, 10, [nM,nB], "Split "+nM+","+nB); 
+                if(c<11) {
+                    mkZone(x+W-5, OY-6, 12, 12, [nT, nM, nB, nT+3, nM+3, nB+3], "Six Line");
+                    mkZone(x+W-5, OY+H-5, 10, 10, [nT,nM,nT+3,nM+3], "Corner"); mkZone(x+W-5, OY+(H*2)+GAP-5, 10, 10, [nM,nB,nM+3,nB+3], "Corner");
+                    mkZone(x+W-5, OY, 10, H, [nT,nT+3], "Split"); mkZone(x+W-5, OY+H+GAP, 10, H, [nM,nM+3], "Split"); mkZone(x+W-5, OY+(H+GAP)*2, 10, H, [nB,nB+3], "Split");
+                }
+            }
+            mkZone(5,5,50,(H+GAP)*3,[0], "0"); 
+        }
+        function mkZone(x,y,w,h,n,desc){ 
+            let d=document.createElement('div'); d.className='hotspot'; d.style.left=x+'px'; d.style.top=y+'px'; d.style.width=w+'px'; d.style.height=h+'px'; 
+            d.onclick=(e)=>placeChip(n, desc, e); 
+            document.getElementById('ghostOverlay').appendChild(d); 
+        }
+
         // CHAT, MUSIC, WHEEL
         function toggleChat() { togglePanel('chatPanel'); }
         function tabChat(t) { 
@@ -494,9 +505,9 @@
         });
         
         function toggleMusicUI() { togglePanel('musicPanel'); }
-        function toggleMusic() { if(audio.paused){ if(!audio.src)audio.src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; audio.play(); } else { audio.pause(); } }
-        function stopMusic() { audio.pause(); audio.currentTime=0; }
-        function playCustom() { audio.src=document.getElementById('musicUrl').value; audio.play(); }
+        function toggleMusic() { if(audio.paused){ if(!audio.src)audio.src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; audio.play(); document.getElementById('mpStatus').innerText="Playing"; } else { audio.pause(); } }
+        function stopMusic() { audio.pause(); audio.currentTime=0; document.getElementById('mpStatus').innerText="Stopped"; }
+        function playCustom() { audio.src=document.getElementById('musicUrl').value; audio.play(); document.getElementById('mpStatus').innerText="Custom"; }
         function setVolume(v) { audio.volume=v/100; }
 
         const cvs=document.getElementById('wheelCanvas'); const ctx=cvs.getContext('2d');
