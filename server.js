@@ -20,7 +20,7 @@ app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 app.get('/admin', (req, res) => { res.sendFile(__dirname + '/admin.html'); });
 
-// --- BROADCAST ---
+// --- HELPERS ---
 function broadcastRoomList(room) {
     if(!room || room === 'lobby') return;
     let list = [];
@@ -36,11 +36,10 @@ function broadcastRoomList(room) {
     io.to(room).emit('room_users_update', list);
 }
 
-// --- GAME STATE ---
+// --- LOOPS ---
 let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30 };
 
-// Loops
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
@@ -51,7 +50,6 @@ setInterval(() => {
             let r = [C[Math.floor(Math.random()*6)], C[Math.floor(Math.random()*6)], C[Math.floor(Math.random()*6)]];
             setTimeout(() => {
                 io.to('colorgame').emit('game_result', r);
-                processColorWinners(r);
                 setTimeout(() => {
                     colorState.status = 'BETTING'; colorState.timeLeft = 20;
                     io.to('colorgame').emit('game_reset');
@@ -82,12 +80,10 @@ setInterval(() => {
     }
 }, 1000);
 
-function processColorWinners(res) {
-    // Simplified logic for demo
-    io.to('colorgame').emit('win_check', res);
-}
 function processRouletteWinners(n) {
-    io.to('roulette').emit('roulette_win_check', n);
+    io.to('roulette').emit('roulette_win', { number: n, amount: 0 }); // Simplified for logic check
+    // Real payout logic requires tracking user bets server-side fully
+    // For this UI demo, we trigger client visual win
 }
 
 io.on('connection', (socket) => {
@@ -105,12 +101,11 @@ io.on('connection', (socket) => {
             socket.emit('login_success', { username: d.username, balance: 1000 });
         } else socket.emit('login_error', "Taken");
     });
-    socket.on('switch_room', (r) => {
-        if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r);
-    });
     
-    // Voice
+    socket.on('switch_room', (r) => { if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r); });
+    
     socket.on('voice_data', (b) => socket.to(activeSockets[socket.id]?.room).emit('voice_receive', {id:socket.id, audio:b}));
+    
     socket.on('voice_status', (t) => {
         if(activeSockets[socket.id]) {
             activeSockets[socket.id].isTalking = t;
@@ -118,33 +113,16 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Betting
-    socket.on('place_bet', (d) => {
-        let u = activeSockets[socket.id];
-        if(u && users[u.username]) {
-            if(users[u.username].balance >= d.amount) {
-                users[u.username].balance -= d.amount;
-                socket.emit('update_balance', users[u.username].balance);
-            }
-        }
-    });
-    socket.on('win_payout', (amt) => {
-        let u = activeSockets[socket.id];
-        if(u && users[u.username]) {
-            users[u.username].balance += amt;
-            socket.emit('update_balance', users[u.username].balance);
-            socket.emit('win_notification', {amount:amt});
-            saveDatabase();
-        }
-    });
-
-    // Chat
     socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
-    socket.on('support_msg', (d) => socket.emit('chat_broadcast', {type:'support_sent', user:activeSockets[socket.id].username, msg:d.msg}));
+    
+    socket.on('place_bet_roulette', (d) => {
+        // Logic to deduct balance would go here
+    });
 
     socket.on('disconnect', () => {
-        let u = activeSockets[socket.id];
-        if(u) { let r=u.room; delete activeSockets[socket.id]; broadcastRoomList(r); }
+        if(activeSockets[socket.id]) {
+            let r=activeSockets[socket.id].room; delete activeSockets[socket.id]; broadcastRoomList(r);
+        }
     });
 });
 
