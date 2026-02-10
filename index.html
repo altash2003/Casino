@@ -8,13 +8,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* CORE */
         :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; }
         body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
         *::-webkit-scrollbar { display: none; }
         .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; flex-direction:column; }
         .view-section.active { display: flex; }
-        .global-back { position: fixed; top: 15px; left: 15px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
+        .global-back { position: fixed; top: 15px; left: 15px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; transition:0.2s; }
+        .global-back:hover { border-color: var(--gold); color: var(--gold); }
 
         /* AUTH */
         #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
@@ -22,8 +24,8 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; font-family:'Rajdhani'; font-weight:bold; }
         .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius:4px; }
 
-        /* SIDE PANELS */
-        .side-panel { position: fixed; top: 70px; width: 220px; height: 350px; background: rgba(15,15,15,0.95); border: 1px solid #444; display: none; flex-direction: column; z-index: 8000; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        /* SIDE PANELS (FIXED SIZE) */
+        .side-panel { position: fixed; top: 80px; width: 220px; height: 350px; background: rgba(15,15,15,0.95); border: 1px solid #444; display: none; flex-direction: column; z-index: 8000; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .side-panel.active { display: flex; }
         #playerPanel { left: 15px; border-left: 3px solid var(--cyan); }
         #betPanel { right: 15px; border-right: 3px solid var(--gold); }
@@ -39,7 +41,7 @@
         .lr-panel { position: fixed; bottom: 80px; right: 15px; width: 280px; background: rgba(15,15,15,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .lr-panel.active { display: flex; }
 
-        /* CHAT */
+        /* CHAT UI */
         #chatPanel { height: 350px; }
         .chat-header { padding: 10px; text-align: center; font-weight: bold; background: #111; color: #888; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
         .chat-tabs { display: flex; border-bottom: 1px solid #333; background: #111; }
@@ -67,17 +69,16 @@
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.3); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 20px; height: 20px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; color: #333; }
-        
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
-        .chip.chip-board { width: 24px; height: 24px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; position: absolute; }
-        .chip.chip-board::after { inset: 3px; } 
-        .chip.chip-board .chip-label { width: 12px; height: 12px; font-size: 8px; border: 0.5px solid #ccc; }
+        .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; position: absolute; }
+        .chip.chip-board::after { inset: 4px; } 
+        .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
 
-        /* LOBBY */
+        /* LOBBY & COLOR GAME */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
         .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .game-card:hover { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 0 30px rgba(255,215,0,0.2); }
@@ -85,32 +86,37 @@
         .die { width: 90px; height: 90px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid rgba(255,255,255,0.1); background: #222; }
         .cg-btn { height: 80px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; border: 1px solid rgba(255,255,255,0.2); }
 
-        /* ROULETTE (FIXED UI) */
+        /* ROULETTE */
         #view-roulette { background: url('background.jpg') center/cover; }
         .r-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; }
-        .r-scaler { transform: scale(1.5); transform-origin: center center; margin-top: 20px; } 
+        .r-scaler { transform: scale(1.65); transform-origin: center center; margin-top: 20px; } /* BIGGER */
         .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; width: fit-content; display: flex; flex-direction: column; align-items: center; }
         
-        /* HUD (Floating Above) */
-        .r-hud { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 40px; background: rgba(0,0,0,0.85); padding: 10px 40px; border-radius: 30px; border: 1px solid #444; z-index: 9000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        /* HUD FIXED TOP */
+        .r-hud-top { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 40px; background: rgba(0,0,0,0.85); padding: 10px 40px; border-radius: 30px; border: 1px solid #444; z-index: 9000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .r-hud-box { text-align: center; }
         .r-hud-lbl { font-size: 10px; color: #888; letter-spacing: 2px; }
         .r-hud-val { font-size: 28px; font-weight: bold; color: white; font-family: 'Oswald'; }
-
-        /* History (WIDTH MATCHES GRID BORDER: 622px) */
+        
+        /* HISTORY MATCHING GRID BORDER WIDTH (622px) */
         .r-history { width: 622px; height: 32px; background: rgba(0,0,0,0.4); border-radius: 4px; display: flex; align-items: center; padding: 0 2px; gap: 4px; margin-bottom: 8px; overflow: hidden; justify-content: flex-start; border: 1px solid #333; box-sizing: border-box; }
         .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; color: white; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
         .hist-empty { background: rgba(255,255,255,0.05); box-shadow: none; border:1px solid rgba(255,255,255,0.1); color:transparent; }
 
-        /* Grid */
+        /* GRID */
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; width: fit-content; }
         .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; position: relative; z-index: 5; }
         .cell:hover { background: rgba(255,255,255,0.2); }
+        .cell.lit { box-shadow: inset 0 0 15px white; } /* Highlight */
         .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
         .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
         
-        /* Controls & Chips (Below Grid) */
+        .hotspot-overlay { position: absolute; inset: 0; z-index: 60; pointer-events: none; }
+        .hotspot { position: absolute; cursor: pointer; pointer-events: auto; z-index: 60; }
+        /* Debug: .hotspot { background: rgba(255,0,0,0.3); border:1px solid yellow; } */
+
+        /* CONTROLS */
         .r-controls-area { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; gap: 10px; }
         .btn-row { display: flex; gap: 10px; }
         .ctrl-btn { background: #111; border: 1px solid #444; color: #ccc; padding: 6px 15px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; }
@@ -119,6 +125,9 @@
         .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 5000; }
         .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: #ccc; transition: 0.2s; }
         .icon-btn:hover { color: white; border-color: var(--gold); }
+        
+        #muteBtn { position: absolute; top: 15px; right: 15px; z-index: 9000; background: rgba(0,0,0,0.6); color: #aaa; border: 1px solid #555; padding: 10px; border-radius: 50%; cursor: pointer; }
+        #muteBtn:hover { color: white; border-color: var(--gold); }
 
         #wheel-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; pointer-events: none; }
         #wheel-overlay.show { display: flex; }
@@ -138,9 +147,19 @@
         </div>
     </div>
 
+    <div id="muteBtn" onclick="toggleMasterMute()"><i class="fa fa-volume-up" id="muteIcon"></i></div>
+    <div class="r-hud-top" id="topHud">
+        <div class="r-hud-box"><div class="r-hud-lbl">BALANCE</div><div class="r-hud-val" id="hud-bal" style="color:var(--cyan)">0</div></div>
+        <div class="r-hud-box"><div class="r-hud-lbl">TIMER</div><div class="r-hud-val" id="hud-timer" style="color:var(--gold)">--</div></div>
+        <div class="r-hud-box"><div class="r-hud-lbl">STATUS</div><div class="r-hud-val" id="hud-status" style="font-size:18px; margin-top:5px;">LOBBY</div></div>
+    </div>
+
     <div id="playerPanel" class="side-panel"><div class="panel-head">PLAYERS</div><div class="panel-list" id="pList"></div></div>
-    
-    <div id="betPanel" class="side-panel"><div class="panel-head">CURRENT BETS</div><div class="panel-list" id="bList"></div><div style="padding:10px; font-size:12px; text-align:right; color:var(--gold); border-top:1px solid #333;">TOTAL: <span id="bTotal">0</span></div></div>
+    <div id="betPanel" class="side-panel">
+        <div class="panel-head">CURRENT BETS</div>
+        <div class="panel-list" id="bList"></div>
+        <div style="padding:10px; font-size:12px; text-align:right; color:var(--gold); border-top:1px solid #333;">TOTAL: <span id="bTotal">0</span></div>
+    </div>
 
     <div id="chatPanel" class="lr-panel">
         <div class="chat-header"><span id="chatTitle">CHAT</span><span onclick="closeAllPanels()" style="cursor:pointer">&times;</span></div>
@@ -159,7 +178,7 @@
         <div class="mp-controls"><button class="mp-btn" onclick="toggleMusic()">PLAY/PAUSE</button><button class="mp-btn" onclick="stopMusic()">STOP</button></div>
         <input class="mp-input" id="musicUrl" placeholder="MP3 URL...">
         <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
-        <div style="display:flex; align-items:center; gap:5px; margin-top:10px;"><i class="fa fa-volume-down" style="font-size:10px; color:#aaa;"></i><input type="range" class="vol-slider" min="0" max="100" value="20" onchange="setVolume(this.value)"></div>
+        <div style="display:flex; align-items:center; gap:5px; margin-top:10px;"><i class="fa fa-volume-down" style="font-size:10px; color:#aaa;"></i><input type="range" class="vol-slider" min="0" max="100" value="20" onchange="setVolume(this.value)"><i class="fa fa-volume-up" style="font-size:10px; color:#aaa;"></i></div>
     </div>
 
     <div id="voicePanel" class="lr-panel" style="padding:15px; height:auto;">
@@ -183,37 +202,24 @@
         </div>
     </div>
 
+    <div id="view-colorgame" class="view-section">
+        <div style="text-align:center; padding-top:50px;"><h1 style="color:white;">COLOR GAME</h1></div>
+    </div>
+
     <div id="view-roulette" class="view-section">
         <div id="wheel-overlay"><div class="wheelPanel"><canvas id="wheelCanvas" width="800" height="800"></canvas></div></div>
         
-        <div class="r-hud">
-            <div class="r-hud-box"><div class="r-hud-lbl">BALANCE</div><div class="r-hud-val" id="r-bal" style="color:var(--cyan)">0</div></div>
-            <div class="r-hud-box"><div class="r-hud-lbl">TIMER</div><div class="r-hud-val" id="r-timer" style="color:var(--gold)">30</div></div>
-            <div class="r-hud-box"><div class="r-hud-lbl">BET</div><div class="r-hud-val" id="r-bet-display">0</div></div>
-        </div>
-
         <div class="r-center">
             <div class="r-scaler">
                 <div class="r-board">
                     <div class="r-history" id="rHistory"></div>
                     
                     <div class="r-grid" id="rGrid">
-                        <div style="position:absolute; inset:0; z-index:50; pointer-events:none;" id="rOverlay"></div>
+                        <div class="hotspot-overlay" id="hotspotOverlay"></div>
+                        <div style="position:absolute; inset:0; z-index:55; pointer-events:none;" id="rOverlay"></div>
                         
                         <div class="cell zone-0" id="cell-0">0</div>
-                        <div class="cell" id="btn-row1" style="grid-column:14; grid-row:1; writing-mode:vertical-rl; font-size:10px;">2 to 1</div>
-                        <div class="cell" id="btn-row2" style="grid-column:14; grid-row:2; writing-mode:vertical-rl; font-size:10px;">2 to 1</div>
-                        <div class="cell" id="btn-row3" style="grid-column:14; grid-row:3; writing-mode:vertical-rl; font-size:10px;">2 to 1</div>
-                        <div class="cell" id="btn-doz1" style="grid-row:4; grid-column:2/6; font-size:10px;">1st 12</div>
-                        <div class="cell" id="btn-doz2" style="grid-row:4; grid-column:6/10; font-size:10px;">2nd 12</div>
-                        <div class="cell" id="btn-doz3" style="grid-row:4; grid-column:10/14; font-size:10px;">3rd 12</div>
-                        <div class="cell" id="btn-low" style="grid-row:5; grid-column:2/4; font-size:10px;">1-18</div>
-                        <div class="cell" id="btn-even" style="grid-row:5; grid-column:4/6; font-size:10px;">EVEN</div>
-                        <div class="cell" id="btn-red" style="grid-row:5; grid-column:6/8;"><div style="width:15px; height:15px; background:#d32f2f; transform:rotate(45deg);"></div></div>
-                        <div class="cell" id="btn-black" style="grid-row:5; grid-column:8/10;"><div style="width:15px; height:15px; background:#111; transform:rotate(45deg);"></div></div>
-                        <div class="cell" id="btn-odd" style="grid-row:5; grid-column:10/12; font-size:10px;">ODD</div>
-                        <div class="cell" id="btn-high" style="grid-row:5; grid-column:12/14; font-size:10px;">19-36</div>
-                    </div>
+                        </div>
 
                     <div class="r-controls-area">
                         <div class="btn-row">
@@ -241,30 +247,30 @@
         </div>
     </div>
 
-    <div id="view-colorgame" class="view-section">
-        <div style="text-align:center; padding-top:50px;"><h1 style="color:white;">COLOR GAME</h1></div>
-    </div>
-
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
         let me="", bal=0, room="lobby", chip=50;
         let isRolling=false, bets=[], lastBets=[];
         let boardChips = {}; 
-        const SCALE = 1.5; // SCALED UP
+        const SCALE = 1.65; // SCALED UP
         const REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
+        // AUTH & BASIC
         function login(){ socket.emit('login', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         function register(){ socket.emit('register', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         socket.on('login_success', d=>{ me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
         socket.on('update_balance', b=>{ bal=b; upd(); });
-        function upd(){ ['lobbyBal','r-bal'].forEach(id=>{ if(document.getElementById(id))document.getElementById(id).innerText=bal; }); document.getElementById('lobbyUser').innerText=me; }
+        function upd(){ 
+            ['lobbyBal','hud-bal'].forEach(id=>{ let el=document.getElementById(id); if(el)el.innerText=bal; }); 
+            document.getElementById('lobbyUser').innerText=me; 
+        }
 
         function enter(r) { 
             room=r; socket.emit('switch_room', r);
             document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
             document.getElementById('view-'+r).classList.add('active');
-            ['playerPanel','betPanel','backBtn'].forEach(i=>document.getElementById(i).style.display='flex');
+            ['playerPanel','betPanel','backBtn','topHud'].forEach(i=>{let e=document.getElementById(i); if(e)e.style.display='flex';});
             document.getElementById('chatTitle').innerText = r.toUpperCase() + " CHAT";
             if(r==='roulette') initR();
             initAudio();
@@ -273,16 +279,19 @@
             room='lobby'; socket.emit('switch_room', 'lobby');
             document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
             document.getElementById('view-lobby').classList.add('active');
-            ['playerPanel','betPanel','backBtn','chatPanel','musicPanel','voicePanel'].forEach(i=>document.getElementById(i).style.display='none');
+            ['playerPanel','betPanel','backBtn','chatPanel','musicPanel','voicePanel','topHud'].forEach(i=>document.getElementById(i).style.display='none');
         }
 
         function closeAllPanels() { document.querySelectorAll('.lr-panel').forEach(e=>e.classList.remove('active')); }
         function togglePanel(id) { let p=document.getElementById(id); if(p.classList.contains('active'))p.classList.remove('active'); else{ closeAllPanels(); p.classList.add('active'); } }
 
+        // VOICE & PLAYERS
         socket.on('room_users_update', l=>{ document.getElementById('pList').innerHTML=l.map(u=>`<div class="panel-item ${u.talking?'talking':''}" id="u-${u.id}"><div style="display:flex;align-items:center;"><span class="pl-mic"><i class="fa fa-microphone"></i></span> ${u.username}</div></div>`).join(''); });
         socket.on('player_voice_update', d=>{ let el=document.getElementById('u-'+d.id); if(el){ d.talking ? el.classList.add('talking') : el.classList.remove('talking'); } });
         
-        let audioCtx, mediaStream, vMode='off';
+        let audioCtx, mediaStream, vMode='off', muted=false;
+        function toggleMasterMute() { muted=!muted; document.getElementById('muteIcon').className = muted ? 'fa fa-volume-off' : 'fa fa-volume-up'; audio.muted=muted; }
+        
         function setVoice(m) { vMode=m; document.querySelectorAll('.vp-btn').forEach(b=>b.classList.remove('active')); document.getElementById('v-'+m).classList.add('active'); if(m!='off') initAudio(); }
         function initAudio() {
             if(mediaStream) return;
@@ -291,12 +300,11 @@
                 let src=audioCtx.createMediaStreamSource(s); let p=audioCtx.createScriptProcessor(4096,1,1);
                 src.connect(p); p.connect(audioCtx.destination);
                 p.onaudioprocess=e=>{
-                    if(vMode=='off') return;
+                    if(vMode=='off'||muted) return;
                     let d=e.inputBuffer.getChannelData(0); let sum=0; for(let i=0;i<d.length;i++)sum+=d[i]*d[i];
                     let vol=Math.sqrt(sum/d.length);
                     let speak=(vMode=='auto'&&vol>0.02)||(vMode=='ptt'&&spaceDown);
-                    let stat = document.getElementById('voiceStatus');
-                    let btn = document.getElementById('v-'+vMode);
+                    let stat=document.getElementById('voiceStatus'); let btn=document.getElementById('v-'+vMode);
                     if(speak) { socket.emit('voice_status', true); if(stat)stat.innerText="TRANSMITTING"; if(btn)btn.classList.add('talking'); }
                     else { socket.emit('voice_status', false); if(stat)stat.innerText="IDLE"; if(btn)btn.classList.remove('talking'); }
                 };
@@ -304,45 +312,19 @@
         }
         let spaceDown=false; window.onkeydown=e=>{if(e.code=='Space')spaceDown=true;}; window.onkeyup=e=>{if(e.code=='Space')spaceDown=false;};
 
+        // BETTING
         function setChip(v, el) { chip=v; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); if(el)el.classList.add('active'); }
         
-        // --- PRECISE BETTING LOGIC ---
-        function placeChip(nums, desc, e) {
+        function placeChip(nums, desc, mx, my) {
             if(isRolling) return alert("Wait");
             if(bal<chip) return alert("Funds");
             
-            let cell = e.currentTarget; 
-            let rect = cell.getBoundingClientRect(); // Visual rect on screen
-            
-            // Default center of target
-            let cx = rect.left + rect.width/2; 
-            let cy = rect.top + rect.height/2;
-
-            // Smart logic only for Single Numbers 1-36
-            if(nums.length === 1 && typeof nums[0] === 'number' && nums[0] > 0 && nums[0] <= 36) {
-                let n = nums[0];
-                let mx = e.clientX - rect.left;
-                let my = e.clientY - rect.top;
-                let w = rect.width, h = rect.height;
-                let edge = 0.25;
-
-                // Adjust logic:
-                // Right (Split)
-                if(mx > w*(1-edge) && n%3!=0) { nums=[n, n+1]; desc=`Split ${n},${n+1}`; cx = rect.right; }
-                // Bottom (Split)
-                else if(my > h*(1-edge) && n%3!=1) { nums=[n, n-1]; desc=`Split ${n},${n-1}`; cy = rect.bottom; }
-                // Top-Right (Corner)
-                else if(mx > w*(1-edge) && my < h*edge && n%3!=0 && n<34) { nums=[n, n+1, n+3, n+4]; desc=`Corner ${n}`; cx = rect.right; cy = rect.top; }
-                // Top (Split)
-                else if(my < h*edge && n%3!=0) { nums=[n, n+1]; desc=`Split ${n},${n+1}`; cy = rect.top; }
-            }
-
-            // Convert Screen Coords to Overlay Coords
+            // MATH FOR CENTER SNAP
             let overlay = document.getElementById('rOverlay').getBoundingClientRect();
-            let relX = (cx - overlay.left) / SCALE; 
-            let relY = (cy - overlay.top) / SCALE;
+            let relX = (mx - overlay.left) / SCALE; 
+            let relY = (my - overlay.top) / SCALE;
+            
             let key = desc;
-
             if(boardChips[key]) {
                 boardChips[key].amt += chip;
                 let c = boardChips[key];
@@ -359,7 +341,7 @@
                 boardChips[key] = { amt: chip, dom: d, nums: nums, desc: desc, relX: relX, relY: relY };
             }
             
-            socket.emit('place_bet', {amount:chip});
+            socket.emit('place_bet_roulette', {numbers:nums, amount:chip});
             renderBetList();
         }
 
@@ -375,7 +357,6 @@
                 total += b.amt;
             }
             document.getElementById('bTotal').innerText = total;
-            document.getElementById('r-bet-display').innerText = total;
         }
 
         function sendClear() { boardChips={}; document.getElementById('rOverlay').innerHTML=''; renderBetList(); socket.emit('roulette_clear'); }
@@ -384,8 +365,13 @@
             if(keys.length > 0) {
                 let lastKey = keys[keys.length-1];
                 let b = boardChips[lastKey];
+                let refund = b.amt;
                 b.dom.remove();
                 delete boardChips[lastKey];
+                // Manually refund visually, server sync via Re-clear/Rebet is safer but complex.
+                // Simple sync:
+                socket.emit('roulette_clear'); // Reset server
+                for(let k in boardChips) socket.emit('place_bet_roulette', {numbers:boardChips[k].nums, amount:boardChips[k].amt});
                 renderBetList();
             }
         }
@@ -393,13 +379,15 @@
             if(Object.keys(lastBets).length > 0) {
                 for(let k in lastBets) {
                     let old = lastBets[k];
-                    let d = document.createElement('div');
-                    d.className = `chip chip-board ${getChipClass(old.amt)}`;
-                    d.innerHTML = `<div class="chip-label">${formatChip(old.amt)}</div>`;
-                    d.style.left = old.relX + 'px'; d.style.top = old.relY + 'px'; d.style.transform = 'translate(-50%, -50%)';
-                    document.getElementById('rOverlay').appendChild(d);
-                    boardChips[k] = { ...old, dom: d };
-                    socket.emit('place_bet', {amount:old.amt});
+                    if(bal >= old.amt) {
+                        let d = document.createElement('div');
+                        d.className = `chip chip-board ${getChipClass(old.amt)}`;
+                        d.innerHTML = `<div class="chip-label">${formatChip(old.amt)}</div>`;
+                        d.style.left = old.relX + 'px'; d.style.top = old.relY + 'px'; d.style.transform = 'translate(-50%, -50%)';
+                        document.getElementById('rOverlay').appendChild(d);
+                        boardChips[k] = { ...old, dom: d };
+                        socket.emit('place_bet_roulette', {numbers:old.nums, amount:old.amt});
+                    }
                 }
                 renderBetList();
             }
@@ -412,38 +400,139 @@
                     b.amt += add;
                     b.dom.className = `chip chip-board ${getChipClass(b.amt)}`;
                     b.dom.innerHTML = `<div class="chip-label">${formatChip(b.amt)}</div>`;
-                    socket.emit('place_bet', {amount:add});
+                    socket.emit('place_bet_roulette', {numbers:b.nums, amount:add});
                 }
             }
             renderBetList();
         }
 
         socket.on('roulette_spin_start', n=>{ isRolling=true; lastBets=JSON.parse(JSON.stringify(boardChips, (key, value) => key === 'dom' ? undefined : value)); document.getElementById('wheel-overlay').classList.add('show'); spin(n); });
-        socket.on('roulette_new_round', ()=>{ isRolling=false; boardChips={}; renderBetList(); document.getElementById('rOverlay').innerHTML=''; });
-        
+        socket.on('roulette_new_round', ()=>{ isRolling=false; boardChips={}; renderBetList(); document.getElementById('rOverlay').innerHTML=''; document.getElementById('hud-status').innerText="BETTING"; });
+        socket.on('roulette_timer', t=>{ document.getElementById('hud-timer').innerText=t; if(t<=0)document.getElementById('hud-status').innerText="SPINNING"; });
+
+        // ROULETTE GENERATION
         function initR() {
             if(document.getElementById('cell-1')) return;
             let g = document.getElementById('rGrid');
+            
+            // Build Numbers
             for(let i=1; i<=36; i++) {
                 let r=(i%3===0)?1:(i%3===2?2:3); let c=Math.floor((i-1)/3)+2;
                 let cls=REDS.includes(i)?'red-cell':'black-cell';
                 let d=document.createElement('div'); d.className=`cell ${cls}`; d.id=`cell-${i}`; d.innerText=i; d.style.gridRow=r; d.style.gridColumn=c;
-                d.onclick=(e)=>placeChip([i], i.toString(), e);
                 g.appendChild(d);
             }
-            // Bind Outer Bets
-            const bind = (id, nums, desc) => { document.getElementById(id).onclick = (e) => placeChip(nums, desc, e); }
-            const range = (s,e) => Array.from({length:e-s+1},(_,i)=>s+i);
-            bind('btn-red', REDS, 'RED'); bind('btn-black', range(1,36).filter(x=>!REDS.includes(x)), 'BLACK');
-            bind('btn-even', range(1,36).filter(x=>x%2==0), 'EVEN'); bind('btn-odd', range(1,36).filter(x=>x%2!=0), 'ODD');
-            bind('btn-low', range(1,18), '1-18'); bind('btn-high', range(19,36), '19-36');
-            bind('btn-doz1', range(1,12), '1st 12'); bind('btn-doz2', range(13,24), '2nd 12'); bind('btn-doz3', range(25,36), '3rd 12');
-            bind('btn-row1', range(3,36,3), 'Row 1'); bind('btn-row2', range(2,36,3), 'Row 2'); bind('btn-row3', range(1,36,3), 'Row 3');
             
+            // Build Outer Cells (Labels)
+            const addCell = (id, txt, r, c, spR, spC, cls='') => {
+                let d = document.createElement('div'); d.id=id; d.innerText=txt; 
+                d.className=`cell ${cls}`; d.style.gridRow=`${r} / span ${spR}`; d.style.gridColumn=`${c} / span ${spC}`;
+                if(id.includes('row')) d.style.writingMode='vertical-rl';
+                g.appendChild(d);
+            };
+            addCell('btn-row1','2to1',1,14,1,1); addCell('btn-row2','2to1',2,14,1,1); addCell('btn-row3','2to1',3,14,1,1);
+            addCell('btn-doz1','1st 12',4,2,1,4); addCell('btn-doz2','2nd 12',4,6,1,4); addCell('btn-doz3','3rd 12',4,10,1,4);
+            addCell('btn-low','1-18',5,2,1,2); addCell('btn-even','EVEN',5,4,1,2); 
+            addCell('btn-red','',5,6,1,2,'red-cell'); addCell('btn-black','',5,8,1,2,'black-cell'); // Colors
+            addCell('btn-odd','ODD',5,10,1,2); addCell('btn-high','19-36',5,12,1,2);
+
             initHistory();
+            buildHotspots();
             drawWheel(0);
         }
-        
+
+        function buildHotspots() {
+            const overlay = document.getElementById('hotspotOverlay'); overlay.innerHTML='';
+            const W=42, H=42, GAP=2, OX=55+GAP, OY=5;
+            
+            // INTERNAL HOTSPOTS (Corners, Splits, Streets)
+            for(let c=0; c<12; c++) {
+                let x = OX + (c*(W+GAP));
+                let nT=(c*3)+3, nM=(c*3)+2, nB=(c*3)+1;
+                // Center Clicks (Cell Match) - Mapped via ID later, or explicit hotspot?
+                // Let's use explicit hotspots for everything to ensure layering is correct over gaps.
+                mkZone(x+5, OY+5, W-10, H-10, [nT], "Straight "+nT);
+                mkZone(x+5, OY+H+GAP+5, W-10, H-10, [nM], "Straight "+nM);
+                mkZone(x+5, OY+(H+GAP)*2+5, W-10, H-10, [nB], "Straight "+nB);
+                
+                // Vertical Splits
+                mkZone(x+5, OY+H-5, W-10, 10, [nT,nM], "Split"); mkZone(x+5, OY+(H*2)+GAP-5, W-10, 10, [nM,nB], "Split");
+                // Street (Top of Top)
+                mkZone(x, OY-5, W, 10, [nT,nM,nB], "Street");
+                
+                if(c<11) {
+                    // Horizontal Splits
+                    mkZone(x+W-5, OY+5, 10, H-10, [nT,nT+3], "Split"); mkZone(x+W-5, OY+H+GAP+5, 10, H-10, [nM,nM+3], "Split"); mkZone(x+W-5, OY+(H+GAP)*2+5, 10, H-10, [nB,nB+3], "Split");
+                    // Corners
+                    mkZone(x+W-5, OY+H-5, 10, 10, [nT,nM,nT+3,nM+3], "Corner"); mkZone(x+W-5, OY+(H*2)+GAP-5, 10, 10, [nM,nB,nM+3,nB+3], "Corner");
+                    // Six Line (Top Intersection)
+                    mkZone(x+W-5, OY-5, 10, 10, [nT,nM,nB,nT+3,nM+3,nB+3], "Six Line");
+                }
+            }
+            // Zero
+            mkZone(5, 5, 50, (H+GAP)*3, [0], "0");
+
+            // OUTER BETS - Use the DOM elements to create overlay zones
+            const range = (s,e)=>Array.from({length:e-s+1},(_,i)=>s+i);
+            const bind = (id, nums, desc) => {
+                let el = document.getElementById(id);
+                if(el) {
+                    let rect = el.getBoundingClientRect(); // Screen coords not useful for creating rel div
+                    // Use offsetTop/Left relative to grid container
+                    mkZone(el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight, nums, desc);
+                }
+            };
+            // Need a slight delay or ensure elements exist
+            setTimeout(() => {
+                bind('btn-red', REDS, 'RED'); bind('btn-black', range(1,36).filter(x=>!REDS.includes(x)), 'BLACK');
+                bind('btn-even', range(1,36).filter(x=>x%2==0), 'EVEN'); bind('btn-odd', range(1,36).filter(x=>x%2!=0), 'ODD');
+                bind('btn-low', range(1,18), '1-18'); bind('btn-high', range(19,36), '19-36');
+                bind('btn-doz1', range(1,12), '1st 12'); bind('btn-doz2', range(13,24), '2nd 12'); bind('btn-doz3', range(25,36), '3rd 12');
+                bind('btn-row1', range(3,36,3), 'Row 1'); bind('btn-row2', range(2,36,3), 'Row 2'); bind('btn-row3', range(1,36,3), 'Row 3');
+            }, 100);
+        }
+
+        function mkZone(x,y,w,h,n,desc){ 
+            let d=document.createElement('div'); d.className='hotspot'; d.style.left=x+'px'; d.style.top=y+'px'; d.style.width=w+'px'; d.style.height=h+'px'; 
+            d.onclick=(e)=>{ 
+                // Center calculation for chip visual
+                // Hotspot relative to grid
+                let cx = x + w/2; let cy = y + h/2;
+                // Add Grid Offset relative to Overlay (which spans whole grid)
+                // Since rOverlay and rGrid share context, cx/cy are correct for rOverlay.
+                // But placeChip expects screen coords if passed from event, OR we modify placeChip to accept raw relative coords.
+                // Let's modify placeChip to handle a "direct" flag.
+                placeChipDirect(n, desc, cx, cy);
+            };
+            d.onmouseenter=()=>{ n.forEach(num=> { let c=document.getElementById('cell-'+num); if(c)c.classList.add('lit'); }); };
+            d.onmouseleave=()=>{ n.forEach(num=> { let c=document.getElementById('cell-'+num); if(c)c.classList.remove('lit'); }); };
+            document.getElementById('hotspotOverlay').appendChild(d); 
+        }
+
+        function placeChipDirect(nums, desc, rx, ry) {
+            if(isRolling) return alert("Wait");
+            if(bal<chip) return alert("Funds");
+            
+            let key = desc;
+            if(boardChips[key]) {
+                boardChips[key].amt += chip;
+                let c = boardChips[key];
+                c.dom.className = `chip chip-board ${getChipClass(c.amt)}`;
+                c.dom.innerHTML = `<div class="chip-label">${formatChip(c.amt)}</div>`;
+            } else {
+                let d = document.createElement('div');
+                d.className = `chip chip-board ${getChipClass(chip)}`;
+                d.innerHTML = `<div class="chip-label">${formatChip(chip)}</div>`;
+                d.style.left = rx + 'px'; 
+                d.style.top = ry + 'px';
+                d.style.transform = 'translate(-50%, -50%)';
+                document.getElementById('rOverlay').appendChild(d);
+                boardChips[key] = { amt: chip, dom: d, nums: nums, desc: desc, relX: rx, relY: ry };
+            }
+            socket.emit('place_bet_roulette', {numbers:nums, amount:chip});
+            renderBetList();
+        }
+
         function initHistory() {
             let h = document.getElementById('rHistory'); h.innerHTML='';
             for(let i=0; i<23; i++) { h.appendChild(createBall('hist-empty')); }
@@ -453,7 +542,7 @@
         }
         socket.on('roulette_result_log', n=>{
             let h=document.getElementById('rHistory');
-            if(h.children.length>=23) h.removeChild(h.lastChild);
+            if(h.children.length>0) h.removeChild(h.lastChild);
             let c = n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black');
             h.prepend(createBall(c, n));
         });
