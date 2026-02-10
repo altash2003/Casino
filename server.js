@@ -19,7 +19,7 @@ let chatHistory = { colorgame: [], roulette: [] };
 app.use(express.static(__dirname));
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 
-// --- HELPERS ---
+// --- BROADCAST ---
 function broadcastRoomList(room) {
     if(!room || room === 'lobby') return;
     let list = [];
@@ -39,6 +39,7 @@ function broadcastRoomList(room) {
 let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30 };
 
+// Color Game
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
@@ -59,6 +60,7 @@ setInterval(() => {
     }
 }, 1000);
 
+// Roulette
 setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
@@ -81,7 +83,6 @@ setInterval(() => {
 
 function processRouletteWinners(n) {
     io.to('roulette').emit('roulette_win', { number: n });
-    // In a real app, calculate payouts here based on 'users' bets
 }
 
 io.on('connection', (socket) => {
@@ -110,30 +111,16 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('place_bet', (d) => {
+        let u = activeSockets[socket.id];
+        if(u && users[u.username]) {
+            users[u.username].balance -= d.amount;
+            socket.emit('update_balance', users[u.username].balance);
+        }
+    });
+    
     socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
     socket.on('support_msg', (d) => socket.emit('chat_broadcast', {type:'support_sent', user:activeSockets[socket.id].username, msg:d.msg}));
-    
-    socket.on('place_bet', (d) => {
-        // Color Game Logic
-        let u = activeSockets[socket.id];
-        if(u && users[u.username]) {
-            users[u.username].balance -= d.amount;
-            socket.emit('update_balance', users[u.username].balance);
-        }
-    });
-
-    socket.on('place_bet_roulette', (d) => {
-        // Roulette Logic
-        let u = activeSockets[socket.id];
-        if(u && users[u.username]) {
-            users[u.username].balance -= d.amount;
-            socket.emit('update_balance', users[u.username].balance);
-        }
-    });
-
-    socket.on('roulette_clear', () => { 
-        // Sync clear (refund logic omitted for brevity, add based on tracking) 
-    });
 
     socket.on('disconnect', () => {
         if(activeSockets[socket.id]) { let r=activeSockets[socket.id].room; delete activeSockets[socket.id]; broadcastRoomList(r); }
