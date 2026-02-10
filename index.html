@@ -19,7 +19,7 @@
         .view-section.active { display: flex; }
         .global-back { position: fixed; top: 10px; left: 10px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
 
-        /* --- YOUR ORIGINAL PANELS (Right Side) --- */
+        /* --- PANELS --- */
         .panel-position { position: fixed; bottom: 100px; right: 20px; width: 280px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .panel-position.active { display: flex; animation: slideUp 0.2s ease-out; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -30,13 +30,12 @@
         .chat-input-area { padding: 8px; border-top: 1px solid #333; display: flex; background: #1a1a1a; border-radius: 0 0 12px 12px; }
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 6px; font-size: 12px; outline:none; }
         
-        /* Music Panel (Original Style) */
         .music-player { height: auto; padding: 10px; }
         .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
         .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
         .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
 
-        /* --- LEFT PLAYER PANEL (New Feature) --- */
+        /* --- LEFT PLAYER PANEL --- */
         .player-panel { position: fixed; top: 60px; left: 10px; width: 200px; max-height: 50vh; background: rgba(0,0,0,0.7); border-left: 3px solid var(--cyan); border-radius: 0 8px 8px 0; z-index: 7000; display: none; flex-direction: column; backdrop-filter: blur(5px); transition:0.3s; }
         .player-panel.active { display: flex; }
         .pp-head { padding: 8px; font-size: 10px; color: var(--cyan); font-weight: bold; background: rgba(0,255,255,0.1); }
@@ -46,14 +45,14 @@
         .pp-item.talking i { color: var(--gold); animation: pulse 0.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
 
-        /* --- CURRENT BET PANEL (New Feature) --- */
+        /* --- CURRENT BET PANEL --- */
         .bet-panel { position: fixed; top: 60px; right: 10px; width: 200px; background: rgba(0,0,0,0.8); border: 1px solid var(--gold); border-radius: 8px; padding: 10px; display: none; z-index: 7000; color: white; font-size: 12px; }
         .bet-panel.active { display: block; }
         .bp-head { border-bottom: 1px solid #444; margin-bottom: 5px; padding-bottom: 5px; color: var(--gold); font-weight: bold; }
         .bp-list { max-height: 200px; overflow-y: auto; }
         .bp-item { display: flex; justify-content: space-between; margin-bottom: 2px; }
 
-        /* --- CHIPS (Restored Exact Values) --- */
+        /* --- CHIPS --- */
         .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); width: fit-content; margin: 10px auto; pointer-events: auto; }
         .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
         .chip:hover { transform: scale(1.1); }
@@ -61,13 +60,11 @@
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); }
         .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
-        
-        /* Specific Colors */
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
-        .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; } /* Red */
-        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; } /* Green */
-        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; } /* Blue */
-        .chip-100k { --c1: #262626; --c2: #444; --c3: #000; } /* Black */
+        .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
+        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
+        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
+        .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
 
         /* --- AUTH --- */
         #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
@@ -90,7 +87,7 @@
         .cg-bet-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
         .cg-btn { height: 80px; border: 1px solid #555; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; opacity: 0.9; transition: 0.2s; }
         .cg-btn:hover { opacity: 1; transform: scale(1.05); }
-        .cg-btn.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); } /* Disabled style */
+        .cg-btn.disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
 
         /* --- ROULETTE --- */
         #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); }
@@ -130,10 +127,18 @@
     <div id="authOverlay">
         <div class="auth-box">
             <h1 style="color:var(--gold); margin-bottom:20px;">GRAND CASINO</h1>
-            <input id="user" class="auth-inp" placeholder="USERNAME">
-            <input id="pass" class="auth-inp" type="password" placeholder="PASSWORD">
-            <button onclick="login()" style="width:100%; padding:10px; background:var(--gold); border:none; font-weight:bold; cursor:pointer;">ENTER</button>
-            <div id="loginErr" style="color:red; margin-top:10px;"></div>
+            <input id="user" class="auth-inp" placeholder="USERNAME" maxlength="12">
+            <input id="pass" class="auth-inp" type="password" placeholder="PASSWORD" maxlength="12">
+            
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button onclick="doLogin()" style="flex:1; padding:10px; background:var(--gold); border:none; font-weight:bold; cursor:pointer;">LOGIN</button>
+                <button onclick="doReg()" style="flex:1; padding:10px; background:transparent; border:1px solid #444; color:white; font-weight:bold; cursor:pointer;">REGISTER</button>
+            </div>
+            
+            <div id="loginErr" style="color:red; margin-top:15px; font-size:12px; min-height:15px;"></div>
+            <div style="font-size:10px; color:#555; margin-top:15px;">
+                User: 5-12 chars (A-Z, 0-9)<br>Pass: 5-12 chars
+            </div>
         </div>
     </div>
 
@@ -271,10 +276,35 @@
         const socket = io();
         let me="Guest", bal=0, room="lobby", chip=50;
         let isDiceRolling = false, isWheelSpinning = false;
-        let currentRoundBets = []; // For Current Bet Panel
+        let currentRoundBets = []; 
 
-        // --- AUTH ---
-        function login() { socket.emit('login', { username:document.getElementById('user').value, password:document.getElementById('pass').value }); }
+        // --- AUTH & VALIDATION ---
+        function doLogin() { 
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            socket.emit('login', { username: u, password: p }); 
+        }
+
+        function doReg() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const err = document.getElementById('loginErr');
+            
+            // Client Side Validation
+            const uReg = /^[a-zA-Z0-9]{5,12}$/;
+            if(!uReg.test(u)) {
+                err.innerText = "Invalid Username: 5-12 chars, alphanumeric only.";
+                return;
+            }
+            if(p.length < 5 || p.length > 12) {
+                err.innerText = "Invalid Password: 5-12 chars required.";
+                return;
+            }
+            
+            err.innerText = "Processing...";
+            socket.emit('register', { username: u, password: p }); 
+        }
+
         socket.on('login_success', d => { me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
         socket.on('login_error', m => document.getElementById('loginErr').innerText=m);
         socket.on('update_balance', b => { bal=b; upd(); });
@@ -329,7 +359,7 @@
 
         // --- DICE LOGIC ---
         function betCg(c) {
-            if(isDiceRolling) return alert("BETS CLOSED!"); // CHECK ROLLING
+            if(isDiceRolling) return alert("BETS CLOSED!"); 
             if(bal < chip) return alert("No funds");
             socket.emit('place_bet', {color:c, amount:chip});
             document.getElementById('b-'+c).innerText = parseInt(document.getElementById('b-'+c).innerText)+chip;
@@ -338,7 +368,7 @@
         socket.on('game_rolling', () => {
             isDiceRolling = true;
             document.getElementById('cg-status').innerText = "ROLLING...";
-            document.querySelectorAll('.cg-btn').forEach(b => b.classList.add('disabled')); // UI LOCK
+            document.querySelectorAll('.cg-btn').forEach(b => b.classList.add('disabled')); 
             let c = ['red','green','blue','yellow','pink','white'];
             window.rollInt = setInterval(() => { ['d1','d2','d3'].forEach(d => document.getElementById(d).className=`die ${c[Math.floor(Math.random()*6)]}`); }, 100);
         });
@@ -349,7 +379,7 @@
         });
         socket.on('game_reset', () => {
             isDiceRolling = false;
-            document.querySelectorAll('.cg-btn').forEach(b => b.classList.remove('disabled')); // UI UNLOCK
+            document.querySelectorAll('.cg-btn').forEach(b => b.classList.remove('disabled')); 
             document.querySelectorAll('.cg-btn span').forEach(s => s.innerText='0');
             document.getElementById('cg-status').innerText = "BETTING";
             clearBetLog();
@@ -394,11 +424,6 @@
             if(isWheelSpinning) return alert("BETS CLOSED");
             if(bal < chip) return alert("No Funds");
             socket.emit('place_bet_roulette', {numbers:nums, amount:chip});
-            
-            // Visual Chip on first number
-            let id = nums.length===1 ? 'btn-'+nums[0] : (nums.length===18?'btn-red':'btn-0'); // Fallback visual
-            // In a full implementation, you'd find the clicked element.
-            // Simplified: Add to Bet Log
             let desc = nums.length === 1 ? "Num "+nums[0] : (nums.length===18?"Color/Half":"Group");
             addBetLog(desc, chip);
         }
@@ -449,7 +474,7 @@
             requestAnimationFrame(anim);
         }
 
-        // --- PANELS (ORIGINAL STYLE) ---
+        // --- PANELS ---
         function toggleChat() { let p=document.getElementById('chatPanel'); p.classList.toggle('active'); }
         function sendChat() { let i=document.getElementById('chatInput'); if(i.value) socket.emit('chat_msg',{msg:i.value, room:room}); i.value=''; }
         socket.on('chat_broadcast', d => { let b=document.getElementById('chatBox'); b.innerHTML+=`<div><b>${d.user}:</b> ${d.msg}</div>`; b.scrollTop=b.scrollHeight; });
