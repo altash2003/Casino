@@ -100,7 +100,6 @@ io.on('connection', (socket) => {
     });
     socket.on('switch_room', (r) => { if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r); });
     
-    // Voice
     socket.on('voice_data', (b) => socket.to(activeSockets[socket.id]?.room).emit('voice_receive', {id:socket.id, audio:b}));
     socket.on('voice_status', (t) => {
         if(activeSockets[socket.id]) {
@@ -109,7 +108,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Betting
     socket.on('place_bet', (d) => {
         let u = activeSockets[socket.id];
         if(u && users[u.username]) {
@@ -120,7 +118,6 @@ io.on('connection', (socket) => {
         }
     });
     
-    // Chat
     socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
     socket.on('support_msg', (d) => socket.emit('chat_broadcast', {type:'support_sent', user:activeSockets[socket.id].username, msg:d.msg}));
 
