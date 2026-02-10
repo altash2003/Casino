@@ -6,115 +6,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
-        /* --- CORE --- */
+        /* --- GLOBAL RESET & NO SCROLLBARS --- */
         :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; }
         body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; }
         
+        /* Hide Scrollbars but allow scrolling */
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+        *::-webkit-scrollbar { display: none; }
+
         .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; flex-direction:column; }
         .view-section.active { display: flex; }
-
-        /* HIDE SCROLLBARS AS REQUESTED */
-        * { scrollbar-width: none; -ms-overflow-style: none; }
-        *::-webkit-scrollbar { display: none; }
+        .global-back { position: fixed; top: 15px; left: 15px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; transition:0.2s; }
+        .global-back:hover { background: var(--gold); color: black; border-color: var(--gold); }
 
         /* --- AUTH --- */
         #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-        .auth-box { background: #111; padding: 40px; border: 1px solid #333; text-align: center; border-radius: 12px; }
-        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; font-weight:bold; }
-        .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .auth-box { background: #111; padding: 40px; border: 1px solid #333; border-radius: 12px; text-align: center; width: 300px; box-shadow: 0 0 50px rgba(255,215,0,0.1); }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; font-family:'Rajdhani'; font-weight:bold; }
+        .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius:4px; }
 
-        /* --- PANELS (LEFT & RIGHT) --- */
+        /* --- PANELS (Unified Style) --- */
         .side-panel { 
-            position: fixed; top: 80px; width: 220px; max-height: 60vh; 
-            background: rgba(10,10,10,0.9); border: 1px solid #444; 
+            position: fixed; top: 70px; width: 220px; max-height: 60vh; 
+            background: rgba(15,15,15,0.95); border: 1px solid #444; 
             display: none; flex-direction: column; z-index: 8000; 
-            border-radius: 8px; backdrop-filter: blur(5px);
+            border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
         .side-panel.active { display: flex; }
         
-        #playerPanel { left: 10px; border-left: 3px solid var(--cyan); }
-        #betPanel { right: 10px; border-right: 3px solid var(--gold); }
+        /* Specific Panels */
+        #playerPanel { left: 15px; border-left: 3px solid var(--cyan); }
+        #betPanel { right: 15px; border-right: 3px solid var(--gold); }
         
-        .panel-head { padding: 10px; font-weight: bold; font-size: 12px; border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; }
+        .panel-head { padding: 10px; font-weight: bold; font-size: 12px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; display: flex; justify-content: space-between; }
         .panel-list { overflow-y: auto; padding: 5px; flex: 1; }
-        .panel-item { display: flex; justify-content: space-between; padding: 6px; border-bottom: 1px solid #222; font-size: 12px; align-items: center; }
-        .mic-icon { color: #555; font-size: 10px; margin-right: 5px; }
-        .mic-icon.talking { color: var(--gold); animation: pulse 0.5s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .panel-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #222; font-size: 13px; align-items: center; }
+        
+        /* Active Player Specifics */
+        .pl-mic { font-size: 10px; color: #555; margin-right: 8px; width: 15px; text-align: center; }
+        .panel-item.talking .pl-mic { color: var(--gold); animation: pulse 0.5s infinite; }
+        .panel-item.talking { color: white; text-shadow: 0 0 5px var(--gold); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
         /* --- CHAT BOX --- */
-        .chat-panel { position: fixed; bottom: 80px; right: 10px; width: 280px; height: 350px; background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; }
+        .chat-panel { position: fixed; bottom: 90px; right: 15px; width: 300px; height: 350px; background: rgba(15,15,15,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; }
         .chat-panel.active { display: flex; }
-        .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; }
-        .chat-tabs { display: flex; border-bottom: 1px solid #333; }
-        .chat-tab { flex: 1; padding: 8px; text-align: center; cursor: pointer; background: #111; color: #888; font-weight: bold; font-size: 10px; }
+        .chat-tabs { display: flex; border-bottom: 1px solid #333; background: #111; }
+        .chat-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; color: #666; font-weight: bold; font-size: 11px; }
         .chat-tab.active { background: #222; color: var(--gold); border-bottom: 2px solid var(--gold); }
-        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; }
+        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; font-size: 13px; }
         .chat-content.active { display: block; }
-        .chat-input-area { padding: 8px; border-top: 1px solid #333; display: none; background: #1a1a1a; }
+        .chat-input-area { padding: 8px; border-top: 1px solid #333; display: none; background: #1a1a1a; gap: 5px; }
         .chat-input-area.active { display: flex; }
-        
-        /* --- MUSIC PLAYER (FROM YOUR FILE) --- */
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; outline:none; border-radius: 4px; }
+
+        /* --- MUSIC PLAYER (Requested Design) --- */
         .music-player { 
-            position: fixed; bottom: 80px; left: 10px; width: 260px; height: auto; 
+            position: fixed; bottom: 90px; left: 15px; width: 260px; height: auto; 
             background: rgba(20,20,20,0.95); border: 1px solid #444; border-radius: 12px; 
-            padding: 10px; z-index: 8000; display: none; flex-direction: column;
+            padding: 15px; z-index: 8000; display: none; flex-direction: column; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
         .music-player.active { display: flex; }
-        .mp-title { font-size: 11px; color: var(--gold); margin-bottom: 5px; font-weight: bold; display: flex; justify-content: space-between; }
-        .mp-controls { display: flex; gap: 5px; margin-bottom: 5px; }
-        .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 5px; }
-        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 4px; box-sizing: border-box; font-size: 10px; margin-bottom: 5px; }
-        .mp-status { font-size: 10px; color: var(--cyan); margin-bottom:5px; white-space:nowrap; overflow:hidden; }
-        .vol-slider { width: 100%; height: 4px; background: #333; outline: none; -webkit-appearance: none; }
-        
+        .mp-title { font-size: 11px; color: var(--gold); margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; }
+        .mp-controls { display: flex; gap: 5px; margin-bottom: 10px; }
+        .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 8px; border-radius: 4px; transition: 0.2s; }
+        .mp-btn:hover { background: #444; border-color: var(--gold); }
+        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 8px; box-sizing: border-box; font-size: 11px; margin-bottom: 10px; border-radius: 4px; }
+        .mp-status { font-size: 10px; color: var(--cyan); margin-bottom: 5px; white-space:nowrap; overflow:hidden; }
+        .vol-slider { width: 100%; height: 4px; background: #333; outline: none; -webkit-appearance: none; border-radius: 2px; }
+        .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: var(--gold); border-radius: 50%; cursor: pointer; }
+
         /* --- VOICE CONTROLS --- */
         .voice-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; background: rgba(0,0,0,0.8); padding: 8px 20px; border-radius: 30px; border: 1px solid #444; z-index: 9000; }
-        .vb-btn { font-size: 11px; padding: 6px 12px; border-radius: 15px; cursor: pointer; border: 1px solid #555; color: #aaa; background: #222; display: flex; gap: 5px; align-items: center; }
+        .vb-btn { font-size: 11px; padding: 6px 15px; border-radius: 15px; cursor: pointer; border: 1px solid #555; color: #aaa; background: #222; display: flex; gap: 5px; align-items: center; transition: 0.2s; }
         .vb-btn.active { color: var(--gold); border-color: var(--gold); background: rgba(255,215,0,0.1); }
-        .vb-btn.talking { background: var(--gold); color: black; border-color: var(--gold); }
+        .vb-btn.talking { background: var(--gold); color: black; border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
 
-        /* --- CHIPS (EXACT) --- */
-        .chips-bar { display: flex; gap: 8px; padding: 6px 15px; background: rgba(0,0,0,0.4); border-radius: 40px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; pointer-events: auto; }
-        .chip { width: 34px; height: 34px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
-        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; }
-        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
-        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
-        .chip-label { position: relative; z-index: 10; width: 18px; height: 18px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 8px; font-weight: 800; color: #333; }
-        .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; } .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
-        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; } .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
+        /* --- CHIPS (Restored) --- */
+        .chips-bar { display: flex; gap: 10px; padding: 8px 20px; background: rgba(0,0,0,0.5); border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; pointer-events: auto; }
+        .chip { width: 40px; height: 40px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
+        .chip.active { transform: scale(1.2) translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.7); z-index: 10; border: 2px solid white; }
+        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
+        .chip::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.3); }
+        .chip-label { position: relative; z-index: 2; width: 20px; height: 20px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; color: #333; }
+        
+        .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
+        .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
+        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
+        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
-        /* BOARD CHIP */
-        .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; position:absolute; }
+        
+        /* Board Chip */
+        .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; position: absolute; }
         .chip.chip-board::after { inset: 4px; } 
         .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
 
-        /* --- ROULETTE TABLE (EXACT) --- */
-        .r-scaler { transform: scale(1.25); transform-origin: center center; margin-top:20px; }
-        .r-table-wrapper { position: relative; background-color: #01431E; padding: 15px; border-radius: 20px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; }
-        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 8px; background: rgba(0,0,0,0.2); position: relative; }
-        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); z-index: 5; position: relative; color: white; }
-        .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
-        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 10px 0 0 10px; }
-        
-        .hotspot { position: absolute; z-index: 60; cursor: pointer; pointer-events: auto; background: transparent; }
-        .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+        /* --- LOBBY --- */
+        #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
+        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+        .game-card:hover { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 0 30px rgba(255,215,0,0.2); }
+        .gc-count { position: absolute; bottom: 20px; font-size: 12px; color: #888; }
 
-        /* LOBBY & COLOR GAME BASICS */
-        #view-lobby { background: url('background.jpg') center/cover; justify-content: center; align-items: center; gap: 30px; }
-        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        #view-colorgame { background: url('background.jpg') center/cover; flex-direction:column; justify-content:center; align-items:center; }
-        .die { width: 90px; height: 90px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 3px solid rgba(255,255,255,0.2); background: #222; }
+        /* --- COLOR GAME --- */
+        #view-colorgame { background: url('background.jpg') center/cover; }
+        .cg-main { display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: space-between; padding-bottom: 20px; width: 100%; }
+        .cg-hud { display: flex; gap: 40px; background: rgba(0,0,0,0.7); padding: 15px 40px; border-radius: 0 0 30px 30px; border: 1px solid #333; border-top: none; }
+        .hud-item { text-align: center; }
+        .hud-item label { font-size: 10px; color: #888; letter-spacing: 1px; }
+        .hud-item div { font-size: 24px; font-weight: bold; color: white; }
+        
+        .cg-dice-row { display: flex; gap: 20px; justify-content: center; margin: 40px; }
+        .die { width: 90px; height: 90px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid rgba(255,255,255,0.1); background: #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .die.red { background: #d32f2f; } .die.green { background: #388e3c; } .die.blue { background: #1976d2; }
         .die.pink { background: #e91e63; } .die.white { background: #eee; color:black; } .die.yellow { background: #fbc02d; color:black; }
+        
+        .cg-bet-area { background: rgba(0,0,0,0.6); padding: 20px; border-radius: 20px; border: 1px solid #444; width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 15px; }
+        .cg-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+        .cg-btn { height: 80px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; border: 1px solid rgba(255,255,255,0.2); transition: 0.2s; }
+        .cg-btn:hover { transform: translateY(-5px); opacity: 1; }
 
-        /* FLOAT ICONS */
+        /* --- ROULETTE --- */
+        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); }
+        .r-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; }
+        
+        .r-scaler { transform: scale(1.25); transform-origin: center center; }
+        .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; width: fit-content; }
+        
+        /* THE GRID */
+        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; }
+        
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; position: relative; z-index: 5; }
+        .cell:hover { background: rgba(255,255,255,0.2); }
+        .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
+        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
+        
+        /* Click Overlay */
+        .hotspot-overlay { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
+        .hotspot { position: absolute; cursor: pointer; pointer-events: auto; z-index: 60; }
+        
+        /* Bottom Controls */
         .icon-controls { position: absolute; bottom: 20px; right: 20px; display: flex; gap: 15px; z-index: 5000; }
-        .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: white; }
+        .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: #ccc; transition: 0.2s; }
+        .icon-btn:hover { color: white; border-color: var(--gold); }
 
-        /* WHEEL POP */
+        /* Wheel */
         #wheel-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; pointer-events: none; }
         #wheel-overlay.show { display: flex; }
         .wheelPanel { filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
@@ -124,7 +162,7 @@
 
     <div id="authOverlay">
         <div class="auth-box">
-            <h1 style="color:var(--gold)">GRAND CASINO</h1>
+            <h1 style="color:var(--gold); margin-bottom:20px;">GRAND CASINO</h1>
             <input id="u" class="auth-input" placeholder="USERNAME" maxlength="12">
             <input id="p" class="auth-input" type="password" placeholder="PASSWORD" maxlength="12">
             <button onclick="login()" class="auth-btn">ENTER</button>
@@ -134,17 +172,17 @@
     </div>
 
     <div id="playerPanel" class="side-panel">
-        <div class="panel-head">PLAYERS</div>
+        <div class="panel-head">PLAYERS IN ROOM</div>
         <div class="panel-list" id="pList"></div>
     </div>
 
     <div id="betPanel" class="side-panel">
-        <div class="panel-head">BETS</div>
+        <div class="panel-head">CURRENT BETS</div>
         <div class="panel-list" id="bList"></div>
-        <div style="padding:10px; font-size:12px; text-align:right;">TOTAL: <span id="bTotal" style="color:var(--gold)">0</span></div>
+        <div style="padding:10px; text-align:right; font-size:12px; color:var(--gold); border-top:1px solid #333;">TOTAL: <span id="bTotal">0</span></div>
     </div>
 
-    <div class="chat-panel" id="chatPanel">
+    <div id="chatPanel" class="chat-panel">
         <div class="chat-header">
             <span>COMMS</span>
             <span onclick="toggleChat()" style="cursor:pointer">&times;</span>
@@ -156,27 +194,27 @@
         <div class="chat-content active" id="content-public"></div>
         <div class="chat-content" id="content-support"></div>
         <div class="chat-input-area active" id="input-public">
-            <input id="chatIn" class="chat-input" placeholder="Public msg...">
-            <button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px; font-weight:bold;">></button>
+            <input id="chatIn" class="chat-input" placeholder="Type message...">
+            <button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px; font-weight:bold; border-radius:4px;">></button>
         </div>
         <div class="chat-input-area" id="input-support">
-            <input id="supportIn" class="chat-input" placeholder="Msg Admin...">
-            <button onclick="sendChat('support')" style="background:var(--cyan); border:none; padding:0 10px; font-weight:bold;">></button>
+            <input id="supportIn" class="chat-input" placeholder="Message Admin...">
+            <button onclick="sendChat('support')" style="background:var(--cyan); border:none; padding:0 10px; font-weight:bold; border-radius:4px;">></button>
         </div>
     </div>
 
-    <div class="music-player" id="musicPlayer">
+    <div id="musicPlayer" class="music-player">
         <div class="mp-title">
             <span>CASINO DJ</span>
-            <span onclick="toggleMusicUI()" style="cursor:pointer;">x</span>
+            <span onclick="toggleMusicUI()" style="cursor:pointer;">&times;</span>
         </div>
         <div class="mp-controls">
             <button class="mp-btn" onclick="toggleMusic()"><i class="fa fa-play"></i> / <i class="fa fa-pause"></i></button>
             <button class="mp-btn" onclick="stopMusic()"><i class="fa fa-stop"></i></button>
         </div>
-        <input class="mp-input" id="musicUrl" placeholder="MP3 URL here...">
+        <input class="mp-input" id="musicUrl" placeholder="MP3 URL...">
         <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
-        <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
+        <div style="display:flex; align-items:center; gap:5px; margin-top:10px;">
             <i class="fa fa-volume-down" style="font-size:10px; color:#aaa;"></i>
             <input type="range" class="vol-slider" min="0" max="100" step="5" value="20" onchange="setVolume(this.value)">
             <i class="fa fa-volume-up" style="font-size:10px; color:#aaa;"></i>
@@ -185,44 +223,56 @@
         <audio id="audioEl" loop></audio>
     </div>
 
-    <div class="voice-bar" id="voiceBar">
+    <div id="voiceBar" class="voice-bar">
         <div class="vb-btn" id="v-off" onclick="setVoice('off')">OFF</div>
-        <div class="vb-btn" id="v-ptt" onclick="setVoice('ptt')">PTT (Space)</div>
+        <div class="vb-btn" id="v-ptt" onclick="setVoice('ptt')"><i class="fas fa-microphone"></i> PTT (Space)</div>
         <div class="vb-btn" id="v-auto" onclick="setVoice('auto')">AUTO</div>
     </div>
 
-    <button onclick="lobby()" id="backBtn" style="position:fixed; top:10px; left:10px; display:none; z-index:9000; background:rgba(0,0,0,0.6); color:white; border:1px solid #555; padding:5px 15px; cursor:pointer;">← LOBBY</button>
+    <button class="global-back" id="backBtn" onclick="lobby()">← LOBBY</button>
 
     <div id="view-lobby" class="view-section active">
         <h1 style="font-size:80px; color:var(--gold); text-shadow:0 0 30px black; margin:0;">GRAND CASINO</h1>
         <div style="margin-bottom:30px; font-size:20px;">
-            <span id="myName" style="color:var(--gold); font-weight:bold;">Guest</span> | 
-            <span id="myBal" style="color:var(--cyan); font-weight:bold;">0</span>
+            <span id="lobbyUser" style="color:var(--gold)">Guest</span> | 
+            <span id="lobbyBal" style="color:var(--cyan)">0</span>
         </div>
         <div style="display:flex; gap:40px;">
-            <div class="game-card" onclick="enter('colorgame')"><div style="font-size:50px">🎨</div><h2>COLOR</h2></div>
-            <div class="game-card" onclick="enter('roulette')"><div style="font-size:50px">🎡</div><h2>ROULETTE</h2></div>
+            <div class="game-card" onclick="enter('colorgame')">
+                <div style="font-size:50px">🎨</div><h2 style="color:#ccc;">COLOR</h2>
+                <div class="gc-count" id="count-colorgame">0 Playing</div>
+            </div>
+            <div class="game-card" onclick="enter('roulette')">
+                <div style="font-size:50px">🎡</div><h2 style="color:#ccc;">ROULETTE</h2>
+                <div class="gc-count" id="count-roulette">0 Playing</div>
+            </div>
         </div>
     </div>
 
     <div id="view-colorgame" class="view-section">
-        <div style="text-align:center; margin-top:20px;">
-            <div style="font-size:10px; color:#aaa; letter-spacing:2px;">STATUS</div>
-            <div style="font-size:24px; font-weight:bold; color:var(--gold);"><span id="cg-status">BETTING</span> <span id="cg-timer">20</span></div>
-        </div>
-        <div style="flex:1; display:flex; justify-content:center; align-items:center; gap:20px;">
-            <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
-        </div>
-        <div class="cg-bet-panel">
-            <div class="chips-bar">
-                <div class="chip chip-50 active" onclick="setChip(50, this)"><div class="chip-label">50</div></div>
-                <div class="chip chip-200" onclick="setChip(200, this)"><div class="chip-label">200</div></div>
-                <div class="chip chip-1k" onclick="setChip(1000, this)"><div class="chip-label">1K</div></div>
-                <div class="chip chip-10k" onclick="setChip(10000, this)"><div class="chip-label">10K</div></div>
-                <div class="chip chip-100k" onclick="setChip(100000, this)"><div class="chip-label">100K</div></div>
+        <div class="cg-main">
+            <div class="cg-hud">
+                <div class="hud-item"><label>BALANCE</label><div id="cg-balance" style="color:var(--cyan)">0</div></div>
+                <div class="hud-item"><label>TIMER</label><div id="cg-timer" style="color:var(--gold)">20</div></div>
+                <div class="hud-item"><label>BET</label><div id="cg-bet-total">0</div></div>
             </div>
-            <div class="cg-bet-grid" id="cg-grid">
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <div id="cg-status" style="font-size:24px; color:#aaa; letter-spacing:2px; margin-bottom:20px;">BETS OPEN</div>
+                <div class="cg-dice-row">
+                    <div id="d1" class="die">?</div><div id="d2" class="die">?</div><div id="d3" class="die">?</div>
                 </div>
+            </div>
+            <div class="cg-bet-area">
+                <div class="chips-bar">
+                    <div class="chip chip-50 active" onclick="setChip(50, this)"><div class="chip-label">50</div></div>
+                    <div class="chip chip-200" onclick="setChip(200, this)"><div class="chip-label">200</div></div>
+                    <div class="chip chip-1k" onclick="setChip(1000, this)"><div class="chip-label">1K</div></div>
+                    <div class="chip chip-10k" onclick="setChip(10000, this)"><div class="chip-label">10K</div></div>
+                    <div class="chip chip-100k" onclick="setChip(100000, this)"><div class="chip-label">100K</div></div>
+                </div>
+                <div class="cg-grid" id="cg-grid">
+                    </div>
+            </div>
         </div>
         <div class="icon-controls">
             <div class="icon-btn" onclick="toggleMusicUI()"><i class="fa fa-music"></i></div>
@@ -231,17 +281,18 @@
     </div>
 
     <div id="view-roulette" class="view-section">
-        <div id="wheel-overlay"><div class="wheelPanel"><div class="stage"><div class="pointer"></div><canvas id="wheelCanvas" width="800" height="800"></canvas></div></div></div>
+        <div id="wheel-overlay"><div class="wheelPanel"><canvas id="wheelCanvas" width="800" height="800"></canvas></div></div>
         
-        <div class="r-main-area">
-            <div style="text-align:center; margin-bottom:10px;">
-                <span id="r-status" style="font-weight:bold; color:var(--gold)">BETTING</span> <span id="r-timer" style="font-size:20px;">30</span> | BAL: <span id="r-bal" style="color:var(--cyan)">0</span>
+        <div class="r-center">
+            <div style="text-align:center; margin-bottom:15px; display:flex; gap:30px;">
+                <div><span style="font-size:10px; color:#888;">STATUS</span><br><span id="r-status" style="font-weight:bold; color:var(--gold); font-size:20px;">BETTING</span> <span id="r-timer" style="font-size:20px;">30</span></div>
+                <div><span style="font-size:10px; color:#888;">BALANCE</span><br><span id="r-bal" style="color:var(--cyan); font-size:20px; font-weight:bold;">0</span></div>
             </div>
 
             <div class="r-scaler">
-                <div class="r-table-wrapper">
+                <div class="r-board">
                     <div class="r-grid" id="rGrid">
-                        <div class="ghost-overlay" id="ghostOverlay"></div>
+                        <div class="hotspot-overlay" id="ghostOverlay"></div>
                         <div style="position:absolute; inset:0; z-index:50; pointer-events:none;" id="rOverlay"></div>
                         
                         <div class="cell zone-0" id="cell-0">0</div>
@@ -285,12 +336,12 @@
         const SCALE = 1.25;
 
         // AUTH
-        function login() { socket.emit('login', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
-        function register() { socket.emit('register', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
+        function login(){ socket.emit('login', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
+        function register(){ socket.emit('register', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         socket.on('login_success', d=>{ me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
         socket.on('login_error', m=>document.getElementById('authErr').innerText=m);
         socket.on('update_balance', b=>{ bal=b; upd(); });
-        function upd(){ ['myBal','r-bal'].forEach(i=>document.getElementById(i).innerText=bal); document.getElementById('myName').innerText=me; }
+        function upd(){ ['lobbyBal','cg-balance','r-bal'].forEach(id=>document.getElementById(id).innerText=bal); document.getElementById('lobbyUser').innerText=me; }
 
         // NAVIGATION
         function enter(r) { 
@@ -325,8 +376,23 @@
         socket.on('chat_broadcast', d => {
             let box = document.getElementById(d.type.includes('support') ? 'content-support' : 'content-public');
             let col = d.type.includes('support') ? 'var(--cyan)' : 'var(--gold)';
-            box.innerHTML += `<div style="margin-bottom:5px; font-size:12px;"><b style="color:${col}">${d.user}:</b> ${d.msg}</div>`;
+            box.innerHTML += `<div style="margin-bottom:5px;"><b style="color:${col}">${d.user}:</b> ${d.msg}</div>`;
             box.scrollTop = box.scrollHeight;
+        });
+
+        // PLAYERS PANEL
+        socket.on('room_users_update', l=>{ 
+            document.getElementById('pList').innerHTML=l.map(u=>`<div class="panel-item" id="u-${u.id}"><div style="display:flex;align-items:center;"><span class="pl-mic"><i class="fa fa-microphone"></i></span> ${u.username}</div></div>`).join(''); 
+        });
+        socket.on('player_voice_update', d=>{ 
+            let el=document.getElementById('u-'+d.id); 
+            if(el){ 
+                d.talking ? el.classList.add('talking') : el.classList.remove('talking'); 
+            } 
+        });
+        socket.on('lobby_counts', c=>{
+            document.getElementById('count-colorgame').innerText = (c.colorgame||0)+" Playing";
+            document.getElementById('count-roulette').innerText = (c.roulette||0)+" Playing";
         });
 
         // MUSIC
@@ -336,10 +402,6 @@
         function stopMusic() { audio.pause(); audio.currentTime=0; document.getElementById('mpStatus').innerText="Stopped"; }
         function playCustom() { audio.src=document.getElementById('musicUrl').value; audio.play(); document.getElementById('mpStatus').innerText="Custom"; }
         function setVolume(v) { audio.volume=v/100; }
-
-        // PLAYERS
-        socket.on('room_users_update', l=>{ document.getElementById('pList').innerHTML=l.map(u=>`<div class="panel-item" id="u-${u.id}"><span class="mic-icon"><i class="fa fa-microphone"></i></span> ${u.username}</div>`).join(''); });
-        socket.on('player_voice_update', d=>{ let el=document.getElementById('u-'+d.id); if(el){ let mic=el.querySelector('.mic-icon'); d.talking?mic.classList.add('talking'):mic.classList.remove('talking'); } });
 
         // CHIPS
         function setChip(v, el) { chip=v; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); if(el)el.classList.add('active'); }
@@ -362,74 +424,49 @@
 
         function buildHotspots() {
             const overlay = document.getElementById('ghostOverlay'); overlay.innerHTML='';
-            // Numbers
+            // Numbers & Splits
             const W=42, H=42, GAP=2, OX=55+GAP, OY=5;
             for(let c=0; c<12; c++) {
                 let x = OX + (c*(W+GAP));
                 let nT=(c*3)+3, nM=(c*3)+2, nB=(c*3)+1;
-                mkZone(x+8, OY+8, W-16, H-16, [nT], overlay); 
-                mkZone(x+8, OY+H+GAP+8, W-16, H-16, [nM], overlay); 
-                mkZone(x+8, OY+(H+GAP)*2+8, W-16, H-16, [nB], overlay);
+                // Center
+                mkZone(x+8, OY+8, W-16, H-16, [nT]); mkZone(x+8, OY+H+GAP+8, W-16, H-16, [nM]); mkZone(x+8, OY+(H+GAP)*2+8, W-16, H-16, [nB]);
+                // Vertical Split
+                mkZone(x, OY+H-5, W, 10, [nT,nM]); mkZone(x, OY+(H*2)+GAP-5, W, 10, [nM,nB]); 
+                // Horizontal & Corners
+                if(c<11) {
+                    mkZone(x+W-5, OY, 10, H, [nT,nT+3]); mkZone(x+W-5, OY+H+GAP, 10, H, [nM,nM+3]); mkZone(x+W-5, OY+(H+GAP)*2, 10, H, [nB,nB+3]);
+                    mkZone(x+W-5, OY+H-5, 10, 10, [nT,nM,nT+3,nM+3]); mkZone(x+W-5, OY+(H*2)+GAP-5, 10, 10, [nM,nB,nM+3,nB+3]);
+                }
             }
-            // Add other zones logic here or rely on CSS grid clicks? 
-            // Better to rely on "Smart Click" on grid logic from previous turn if grid matches:
-            // But user asked for "bettable just like file".
-            // Let's implement simple "Click Center = Bet" for all cells via Loop.
-            // And use the "Smart Bet" logic for Splits on the grid.
-            // Since I populated the grid cells with IDs, let's attach click listeners to the ghost overlay for precision.
-            // Actually, simply attaching clicks to the visual cells + a math handler for edges is best.
+            mkZone(5,5,50,(H+GAP)*3,[0]); // Zero
             
-            // Re-implementing SMART BET handler on the grid container:
-            document.getElementById('rGrid').onmousedown = (e) => {
-                let rect = e.target.getBoundingClientRect();
-                // Check if we clicked a CELL or just the grid gap
-                if(e.target.classList.contains('cell')) {
-                    // Logic for splits
-                    let n = parseInt(e.target.innerText);
-                    if(!isNaN(n)) handleSmartBet(n, e, e.target);
-                    else {
-                        // Clicked an outside bet text
-                        // Map text to bet
-                        let t = e.target.innerText;
-                        let nums=[];
-                        if(t=='EVEN') nums=range(1,36).filter(x=>x%2==0);
-                        else if(t=='ODD') nums=range(1,36).filter(x=>x%2!=0);
-                        else if(t=='1-18') nums=range(1,18);
-                        else if(t=='19-36') nums=range(19,36);
-                        // ... simplified mapping
-                        if(nums.length>0) placeChip(nums, t, e.clientX, e.clientY);
-                    }
+            // Outside
+            const range = (s,e) => Array.from({length:e-s+1},(_,i)=>s+i);
+            const singles = (id, nums) => { 
+                let el = document.getElementById(id);
+                if(el) {
+                    // Create overlay div over the label cell
+                    let d = document.createElement('div'); d.className='hotspot';
+                    d.style.left = el.offsetLeft + 'px'; d.style.top = el.offsetTop + 'px';
+                    d.style.width = el.offsetWidth + 'px'; d.style.height = el.offsetHeight + 'px';
+                    d.onclick = (e) => placeChip(nums, id, e.clientX, e.clientY);
+                    overlay.appendChild(d);
                 }
             };
+            singles('btn-red', REDS); singles('btn-black', range(1,36).filter(x=>!REDS.includes(x)));
+            singles('btn-even', range(1,36).filter(x=>x%2===0)); singles('btn-odd', range(1,36).filter(x=>x%2!==0));
+            // ... (Add other mappings like Dozens if needed)
         }
-        function mkZone(x,y,w,h,n,p){ let d=document.createElement('div'); d.className='hotspot'; d.style.left=x+'px'; d.style.top=y+'px'; d.style.width=w+'px'; d.style.height=h+'px'; d.onclick=(e)=>placeChip(n,""+n,e.clientX,e.clientY); p.appendChild(d); }
-        function range(s,e){return Array.from({length:e-s+1},(_,i)=>s+i);}
-
-        function handleSmartBet(n, e, el) {
-            let rect = el.getBoundingClientRect();
-            // SCALED OFFSETS: The click coordinates are screen space.
-            // The rect is screen space (already scaled).
-            // So x inside element is simple subtraction.
-            let x = e.clientX - rect.left;
-            let y = e.clientY - rect.top;
-            let w = rect.width, h = rect.height;
-            
-            let nums = [n]; let desc = ""+n;
-            
-            if(x > w*0.75 && n<34) { nums=[n, n+3]; desc=`Split ${n},${n+3}`; }
-            else if(y < h*0.25 && n%3!=0) { nums=[n, n+1]; desc=`Split ${n},${n+1}`; }
-            else if(y > h*0.75 && n%3!=1) { nums=[n, n-1]; desc=`Split ${n},${n-1}`; }
-            
-            placeChip(nums, desc, e.clientX, e.clientY);
-        }
+        function mkZone(x,y,w,h,n){ let d=document.createElement('div'); d.className='hotspot'; d.style.left=x+'px'; d.style.top=y+'px'; d.style.width=w+'px'; d.style.height=h+'px'; d.onclick=(e)=>placeChip(n,""+n,e.clientX,e.clientY); document.getElementById('ghostOverlay').appendChild(d); }
 
         function placeChip(nums, desc, mx, my) {
             if(isRolling) return alert("Wait");
             if(bal<chip) return alert("Funds");
             
-            // Adjust position to be relative to rOverlay, correcting for Scale
+            // MATH FIX: Correct for Scale
             let overlay = document.getElementById('rOverlay').getBoundingClientRect();
-            // Relative to overlay Top-Left
+            // Coordinates relative to the Top-Left of the overlay
             let relX = (mx - overlay.left) / SCALE; 
             let relY = (my - overlay.top) / SCALE;
 
@@ -437,7 +474,7 @@
             let cls = chip==50?'chip-50':(chip==200?'chip-200':(chip==1000?'chip-1k':(chip==10000?'chip-10k':'chip-100k')));
             c.className = `chip chip-board ${cls}`;
             c.innerHTML = `<div class="chip-label">${chip>=1000?chip/1000+'k':chip}</div>`;
-            c.style.left = (relX - 16) + 'px'; // Center 32px chip
+            c.style.left = (relX - 16) + 'px'; 
             c.style.top = (relY - 16) + 'px';
             document.getElementById('rOverlay').appendChild(c);
 
@@ -456,12 +493,12 @@
         // COLOR GAME
         const CG_C = ['RED','GREEN','BLUE','YELLOW','PINK','WHITE'];
         const CG_H = {'RED':'#d32f2f','GREEN':'#388e3c','BLUE':'#1976d2','YELLOW':'#fbc02d','PINK':'#e91e63','WHITE':'#eee'};
-        let ch=''; CG_C.forEach(c=>{ ch+=`<div class="cg-bet-card" style="background:${CG_H[c]}; color:black; font-weight:bold; align-items:center; justify-content:center;" onclick="betCg('${c}')">${c}<span id="b-${c}" style="background:rgba(255,255,255,0.8); padding:2px 5px; border-radius:4px; margin-top:5px;">0</span></div>`; });
+        let ch=''; CG_C.forEach(c=>{ ch+=`<div class="cg-btn" style="background:${CG_H[c]};" onclick="betCg('${c}')"><div style="color:black; font-weight:bold;">${c}</div><div id="b-${c}" style="background:rgba(255,255,255,0.8); padding:2px 5px; border-radius:4px; margin-top:10px; color:black; font-weight:bold;">0</div></div>`; });
         document.getElementById('cg-grid').innerHTML=ch;
         function betCg(c){ if(bal<chip)return; socket.emit('place_bet',{color:c, amount:chip}); document.getElementById('b-'+c).innerText=parseInt(document.getElementById('b-'+c).innerText)+chip; }
         socket.on('game_rolling', ()=>{ document.getElementById('cg-status').innerText="ROLLING"; });
         socket.on('game_result', r=>{ ['d1','d2','d3'].forEach((d,i)=>document.getElementById(d).className=`die ${r[i].toLowerCase()}`); document.getElementById('cg-status').innerText="RESULT"; });
-        socket.on('game_reset', ()=>{ document.getElementById('cg-status').innerHTML=`BETTING <span id="cg-timer">20</span>`; CG_C.forEach(c=>document.getElementById('b-'+c).innerText='0'); });
+        socket.on('game_reset', ()=>{ document.getElementById('cg-status').innerText="BETS OPEN"; CG_C.forEach(c=>document.getElementById('b-'+c).innerText='0'); });
         socket.on('timer_update', t=> { if(document.getElementById('cg-timer')) document.getElementById('cg-timer').innerText=t; });
 
         // WHEEL
@@ -500,6 +537,9 @@
             });
         }
         let spaceDown=false; window.onkeydown=e=>{if(e.code=='Space')spaceDown=true;}; window.onkeyup=e=>{if(e.code=='Space')spaceDown=false;};
+        
+        socket.on('win_notification', d => alert(`WIN! +${d.amount}`));
+        socket.on('roulette_win', d => alert(`ROULETTE WIN! ${d.number} (+${d.amount})`));
     </script>
 </body>
 </html>
