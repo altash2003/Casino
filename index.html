@@ -23,49 +23,50 @@
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; box-sizing:border-box; font-family:'Rajdhani'; font-weight:bold; }
         .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius:4px; }
 
-        /* UNIFIED LOWER-RIGHT PANELS */
-        .lr-panel { position: fixed; bottom: 90px; right: 15px; width: 280px; background: rgba(15,15,15,0.95); border: 1px solid #444; border-radius: 12px; display: none; flex-direction: column; z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-        .lr-panel.active { display: flex; }
+        /* SIDE PANELS (FIXED SIZE) */
+        .side-panel { 
+            position: fixed; top: 70px; width: 220px; height: 350px; /* Fixed Height */
+            background: rgba(15,15,15,0.95); border: 1px solid #444; 
+            display: none; flex-direction: column; z-index: 8000; 
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .side-panel.active { display: flex; }
         
-        /* PLAYER PANEL (LEFT) */
-        #playerPanel { position: fixed; top: 70px; left: 15px; width: 200px; max-height: 60vh; background: rgba(15,15,15,0.95); border-left: 3px solid var(--cyan); display: none; flex-direction: column; z-index: 8000; border-radius: 8px; }
-        #playerPanel.active { display: flex; }
-        .panel-head { padding: 10px; font-weight: bold; font-size: 12px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; display: flex; justify-content: space-between; }
+        #playerPanel { left: 15px; border-left: 3px solid var(--cyan); }
+        #betPanel { right: 15px; border-right: 3px solid var(--gold); }
+        
+        .panel-head { padding: 10px; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; display: flex; justify-content: space-between; border-radius: 12px 12px 0 0; }
         .panel-list { overflow-y: auto; padding: 5px; flex: 1; }
         .panel-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #222; font-size: 13px; align-items: center; }
         .pl-mic { font-size: 10px; color: #555; margin-right: 8px; width: 15px; text-align: center; }
-        .pl-mic.talking { color: var(--gold); text-shadow: 0 0 5px var(--gold); animation: pulse 0.5s infinite; }
+        .panel-item.talking .pl-mic { color: var(--gold); animation: pulse 0.5s infinite; }
+        .panel-item.talking { color: white; text-shadow: 0 0 5px var(--gold); }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
-        /* BET PANEL (RIGHT) */
-        #betPanel { position: fixed; top: 70px; right: 15px; width: 200px; max-height: 60vh; background: rgba(15,15,15,0.95); border-right: 3px solid var(--gold); display: none; flex-direction: column; z-index: 8000; border-radius: 8px; }
-        #betPanel.active { display: flex; }
+        /* UNIFIED LOWER RIGHT PANELS */
+        .lr-panel { 
+            position: fixed; bottom: 80px; right: 15px; width: 280px; 
+            background: rgba(15,15,15,0.95); border: 1px solid #444; 
+            border-radius: 12px; display: none; flex-direction: column; 
+            z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .lr-panel.active { display: flex; }
 
-        /* CHAT */
+        /* CHAT UI */
         #chatPanel { height: 350px; }
-        .chat-header { padding: 8px; text-align: center; font-weight: bold; background: #111; color: #888; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; }
+        .chat-header { padding: 10px; text-align: center; font-weight: bold; background: #111; color: #888; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
         .chat-tabs { display: flex; border-bottom: 1px solid #333; background: #111; }
         .chat-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; color: #666; font-weight: bold; font-size: 11px; }
         .chat-tab.active { background: #222; color: var(--gold); border-bottom: 2px solid var(--gold); }
         .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; font-size: 13px; }
         .chat-content.active { display: block; }
-        .chat-input-area { padding: 8px; border-top: 1px solid #333; display: none; background: #1a1a1a; gap: 5px; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #333; display: none; background: #1a1a1a; gap: 5px; border-radius: 0 0 12px 12px; }
         .chat-input-area.active { display: flex; }
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; outline:none; border-radius: 4px; }
 
-        /* MUSIC */
-        #musicPanel { height: auto; padding: 15px; }
-        .mp-title { font-size: 11px; color: var(--gold); margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; }
-        .mp-controls { display: flex; gap: 5px; margin-bottom: 10px; }
-        .mp-btn { background: #333; border: 1px solid #555; color: white; flex: 1; cursor: pointer; font-size: 10px; padding: 8px; border-radius: 4px; transition: 0.2s; }
-        .mp-btn:hover { background: #444; border-color: var(--gold); }
-        .mp-input { width: 100%; background: #222; border: 1px solid #444; color: #aaa; padding: 8px; box-sizing: border-box; font-size: 11px; margin-bottom: 10px; border-radius: 4px; }
-        .vol-slider { width: 100%; height: 4px; background: #333; outline: none; -webkit-appearance: none; border-radius: 2px; }
-        .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: var(--gold); border-radius: 50%; cursor: pointer; }
-
-        /* VOICE SETTINGS PANEL */
-        #voicePanel { height: auto; padding: 15px; }
-        .vp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; color: #ccc; }
+        /* MUSIC & VOICE UI */
+        .mp-title { font-size: 12px; color: var(--gold); margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .vp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 5px 0; border-bottom: 1px solid #333; }
         .vp-btn { background: #222; border: 1px solid #555; color: #888; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 10px; }
         .vp-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.1); }
         .vp-btn.talking { background: var(--gold); color: black; box-shadow: 0 0 10px var(--gold); }
@@ -74,53 +75,54 @@
         .chips-bar { display: flex; gap: 10px; padding: 8px 20px; background: rgba(0,0,0,0.5); border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; pointer-events: auto; }
         .chip { width: 40px; height: 40px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
         .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: none; }
-        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); z-index: 1; }
+        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.3); z-index: 2; }
         .chip-label { position: relative; z-index: 10; width: 20px; height: 20px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 800; color: #333; }
+        
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
-        
         .chip.chip-board { width: 32px; height: 32px; box-shadow: 0 3px 6px rgba(0,0,0,0.8); pointer-events: none; z-index: 200; position: absolute; }
         .chip.chip-board::after { inset: 4px; } 
         .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
 
-        /* LOBBY */
+        /* LOBBY & COLOR GAME */
         #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
-        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .game-card:hover { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 0 30px rgba(255,215,0,0.2); }
-        .gc-count { position: absolute; bottom: 20px; font-size: 12px; color: #888; }
+        #view-colorgame { background: url('background.jpg') center/cover; flex-direction:column; justify-content:center; align-items:center; }
+        .die { width: 90px; height: 90px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid rgba(255,255,255,0.1); background: #222; }
+        .cg-btn { height: 80px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; border: 1px solid rgba(255,255,255,0.2); }
 
-        /* ROULETTE */
-        #view-roulette { background-color: #05140a; background-image: radial-gradient(circle at 50% 50%, #012b13 0%, #000000 100%); }
+        /* ROULETTE (BIGGER, FIXED) */
+        #view-roulette { background: url('background.jpg') center/cover; }
         .r-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; }
-        .r-scaler { transform: scale(1.4); transform-origin: center center; margin-top: 10px; } /* BIGGER TABLE */
+        .r-scaler { transform: scale(1.5); transform-origin: center center; margin-top: 10px; } /* BIGGER */
         
         .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; width: fit-content; display: flex; flex-direction: column; align-items: center; }
         
-        /* HUD */
-        .r-hud { display: flex; gap: 30px; margin-bottom: 20px; }
+        /* HUD (Floating Above Table) */
+        .r-hud { display: flex; gap: 40px; margin-bottom: 20px; background: rgba(0,0,0,0.7); padding: 10px 30px; border-radius: 30px; border: 1px solid #444; }
         .r-hud-box { text-align: center; }
-        .r-hud-lbl { font-size: 10px; color: #888; letter-spacing: 1px; }
-        .r-hud-val { font-size: 24px; font-weight: bold; color: white; font-family: 'Oswald'; }
+        .r-hud-lbl { font-size: 10px; color: #888; letter-spacing: 2px; }
+        .r-hud-val { font-size: 28px; font-weight: bold; color: white; font-family: 'Oswald'; }
 
-        /* History */
-        .r-history { width: 590px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; padding: 0 2px; gap: 4px; margin-bottom: 8px; overflow: hidden; justify-content: flex-start; border: 1px solid #333; }
+        /* History (MATCHING BORDER WIDTH) */
+        /* Grid width is approx 50 + (12*42) + 34 + gaps ~ 614px. */
+        /* r-grid width: 622px (calculated from cols+gaps+padding) */
+        .r-history { width: 622px; height: 30px; background: rgba(0,0,0,0.3); border-radius: 4px; display: flex; align-items: center; padding: 0 5px; gap: 5px; margin-bottom: 8px; overflow: hidden; justify-content: flex-end; border: 1px solid #333; box-sizing: border-box; }
         .hist-ball { width: 22px; height: 22px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 9px; box-shadow: 0 2px 4px black; color: white; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
         .hist-empty { background: rgba(255,255,255,0.1); box-shadow: none; }
 
         /* Grid */
-        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; }
+        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; width: fit-content; }
         .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; position: relative; z-index: 5; }
         .cell:hover { background: rgba(255,255,255,0.2); }
         .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
         .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
-        
-        .hotspot-overlay { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
-        .hotspot { position: absolute; cursor: pointer; pointer-events: auto; z-index: 60; }
         
         /* Controls & Chips (Below Grid) */
         .r-controls-area { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; gap: 10px; }
@@ -152,7 +154,7 @@
 
     <div id="playerPanel" class="side-panel"><div class="panel-head">PLAYERS</div><div class="panel-list" id="pList"></div></div>
     
-    <div id="betPanel" class="side-panel"><div class="panel-head">BETS</div><div class="panel-list" id="bList"></div><div style="padding:10px; font-size:12px; text-align:right; color:var(--gold);">TOTAL: <span id="bTotal">0</span></div></div>
+    <div id="betPanel" class="side-panel"><div class="panel-head">CURRENT BETS</div><div class="panel-list" id="bList"></div><div style="padding:10px; font-size:12px; text-align:right; color:var(--gold); border-top:1px solid #333;">TOTAL: <span id="bTotal">0</span></div></div>
 
     <div id="chatPanel" class="lr-panel">
         <div class="chat-header"><span id="chatTitle">CHAT</span><span onclick="closeAllPanels()" style="cursor:pointer">&times;</span></div>
@@ -162,8 +164,8 @@
         </div>
         <div class="chat-content active" id="content-public"></div>
         <div class="chat-content" id="content-support"></div>
-        <div class="chat-input-area active" id="input-public"><input id="chatIn" class="chat-input" placeholder="Type message..."><button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px; font-weight:bold;">></button></div>
-        <div class="chat-input-area" id="input-support"><input id="supportIn" class="chat-input" placeholder="Message Admin..."><button onclick="sendChat('support')" style="background:var(--cyan); border:none; padding:0 10px; font-weight:bold;">></button></div>
+        <div class="chat-input-area active" id="input-public"><input id="chatIn" class="chat-input" placeholder="Type..."><button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px;">></button></div>
+        <div class="chat-input-area" id="input-support"><input id="supportIn" class="chat-input" placeholder="Msg Admin..."><button onclick="sendChat('support')" style="background:var(--cyan); border:none; padding:0 10px;">></button></div>
     </div>
 
     <div id="musicPanel" class="lr-panel" style="padding:15px; height:auto;">
@@ -186,12 +188,12 @@
 
     <button class="global-back" id="backBtn" onclick="lobby()">← LOBBY</button>
 
-    <div id="view-lobby" class="view-section active" style="background:url('background.jpg') center/cover; justify-content:center; align-items:center;">
+    <div id="view-lobby" class="view-section active">
         <h1 style="font-size:80px; color:var(--gold); margin-bottom:20px;">GRAND CASINO</h1>
         <div style="margin-bottom:30px; font-size:20px;"><span id="lobbyUser" style="color:var(--gold)">Guest</span> | <span id="lobbyBal" style="color:var(--cyan)">0</span></div>
         <div style="display:flex; gap:40px;">
-            <div class="game-card" onclick="enter('colorgame')"><h2 style="color:#ccc;">COLOR</h2></div>
-            <div class="game-card" onclick="enter('roulette')"><h2 style="color:#ccc;">ROULETTE</h2></div>
+            <div class="game-card" onclick="enter('colorgame')"><div style="font-size:50px">🎨</div><h2 style="color:#ccc;">COLOR</h2></div>
+            <div class="game-card" onclick="enter('roulette')"><div style="font-size:50px">🎡</div><h2 style="color:#ccc;">ROULETTE</h2></div>
         </div>
     </div>
 
@@ -214,22 +216,20 @@
                     <div class="r-history" id="rHistory"></div>
                     
                     <div class="r-grid" id="rGrid">
-                        <div class="hotspot-overlay" id="ghostOverlay"></div>
                         <div style="position:absolute; inset:0; z-index:50; pointer-events:none;" id="rOverlay"></div>
-                        
-                        <div class="cell zone-0" id="cell-0" onclick="placeChip([0], '0', event)">0</div>
-                        <div class="cell" style="grid-column:14; grid-row:1; writing-mode:vertical-rl; font-size:10px;" onclick="placeChip(getArr('row1'),'Row 1',event)">2to1</div>
-                        <div class="cell" style="grid-column:14; grid-row:2; writing-mode:vertical-rl; font-size:10px;" onclick="placeChip(getArr('row2'),'Row 2',event)">2to1</div>
-                        <div class="cell" style="grid-column:14; grid-row:3; writing-mode:vertical-rl; font-size:10px;" onclick="placeChip(getArr('row3'),'Row 3',event)">2to1</div>
-                        <div class="cell" style="grid-row:4; grid-column:2/6; font-size:10px;" onclick="placeChip(getArr('1st12'),'1st 12',event)">1st 12</div>
-                        <div class="cell" style="grid-row:4; grid-column:6/10; font-size:10px;" onclick="placeChip(getArr('2nd12'),'2nd 12',event)">2nd 12</div>
-                        <div class="cell" style="grid-row:4; grid-column:10/14; font-size:10px;" onclick="placeChip(getArr('3rd12'),'3rd 12',event)">3rd 12</div>
-                        <div class="cell" style="grid-row:5; grid-column:2/4; font-size:10px;" onclick="placeChip(getArr('1-18'),'1-18',event)">1-18</div>
-                        <div class="cell" style="grid-row:5; grid-column:4/6; font-size:10px;" onclick="placeChip(getArr('even'),'EVEN',event)">EVEN</div>
-                        <div class="cell" style="grid-row:5; grid-column:6/8;" onclick="placeChip(getArr('red'),'RED',event)"><div style="width:15px; height:15px; background:#d32f2f; transform:rotate(45deg);"></div></div>
-                        <div class="cell" style="grid-row:5; grid-column:8/10;" onclick="placeChip(getArr('black'),'BLACK',event)"><div style="width:15px; height:15px; background:#111; transform:rotate(45deg);"></div></div>
-                        <div class="cell" style="grid-row:5; grid-column:10/12; font-size:10px;" onclick="placeChip(getArr('odd'),'ODD',event)">ODD</div>
-                        <div class="cell" style="grid-row:5; grid-column:12/14; font-size:10px;" onclick="placeChip(getArr('19-36'),'19-36',event)">19-36</div>
+                        <div class="cell zone-0" id="cell-0">0</div>
+                        <div class="cell" style="grid-column:14; grid-row:1; writing-mode:vertical-rl; font-size:10px;">2 to 1</div>
+                        <div class="cell" style="grid-column:14; grid-row:2; writing-mode:vertical-rl; font-size:10px;">2 to 1</div>
+                        <div class="cell" style="grid-column:14; grid-row:3; writing-mode:vertical-rl; font-size:10px;">2 to 1</div>
+                        <div class="cell" style="grid-row:4; grid-column:2/6; font-size:10px;">1st 12</div>
+                        <div class="cell" style="grid-row:4; grid-column:6/10; font-size:10px;">2nd 12</div>
+                        <div class="cell" style="grid-row:4; grid-column:10/14; font-size:10px;">3rd 12</div>
+                        <div class="cell" style="grid-row:5; grid-column:2/4; font-size:10px;">1-18</div>
+                        <div class="cell" style="grid-row:5; grid-column:4/6; font-size:10px;">EVEN</div>
+                        <div class="cell" style="grid-row:5; grid-column:6/8;"><div style="width:15px; height:15px; background:#d32f2f; transform:rotate(45deg);"></div></div>
+                        <div class="cell" style="grid-row:5; grid-column:8/10;"><div style="width:15px; height:15px; background:#111; transform:rotate(45deg);"></div></div>
+                        <div class="cell" style="grid-row:5; grid-column:10/12; font-size:10px;">ODD</div>
+                        <div class="cell" style="grid-row:5; grid-column:12/14; font-size:10px;">19-36</div>
                     </div>
 
                     <div class="r-controls-area">
@@ -262,16 +262,16 @@
     <script>
         const socket = io();
         let me="", bal=0, room="lobby", chip=50;
-        let isRolling=false, lastBets={};
+        let isRolling=false, bets=[], lastBets=[];
         let boardChips = {}; // Key: "desc", Val: {amt, dom, nums, desc, relX, relY}
-        const SCALE = 1.4; const REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+        const SCALE = 1.5; const REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
-        // AUTH & BASIC
+        // AUTH
         function login(){ socket.emit('login', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         function register(){ socket.emit('register', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
         socket.on('login_success', d=>{ me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
         socket.on('update_balance', b=>{ bal=b; upd(); });
-        function upd(){ ['lobbyBal','r-bal'].forEach(id=>{ let el=document.getElementById(id); if(el)el.innerText=bal; }); document.getElementById('lobbyUser').innerText=me; }
+        function upd(){ ['lobbyBal','r-bal'].forEach(id=>{ if(document.getElementById(id))document.getElementById(id).innerText=bal; }); document.getElementById('lobbyUser').innerText=me; }
 
         function enter(r) { 
             room=r; socket.emit('switch_room', r);
@@ -298,12 +298,7 @@
         socket.on('player_voice_update', d=>{ let el=document.getElementById('u-'+d.id); if(el){ d.talking ? el.classList.add('talking') : el.classList.remove('talking'); } });
         
         let audioCtx, mediaStream, vMode='off';
-        function setVoice(m) { 
-            vMode=m; 
-            document.querySelectorAll('.vp-btn').forEach(b=>b.classList.remove('active')); 
-            document.getElementById('v-'+m).classList.add('active'); 
-            if(m!='off') initAudio();
-        }
+        function setVoice(m) { vMode=m; document.querySelectorAll('.vp-btn').forEach(b=>b.classList.remove('active')); document.getElementById('v-'+m).classList.add('active'); if(m!='off') initAudio(); }
         function initAudio() {
             if(mediaStream) return;
             navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
@@ -315,18 +310,10 @@
                     let d=e.inputBuffer.getChannelData(0); let sum=0; for(let i=0;i<d.length;i++)sum+=d[i]*d[i];
                     let vol=Math.sqrt(sum/d.length);
                     let speak=(vMode=='auto'&&vol>0.02)||(vMode=='ptt'&&spaceDown);
-                    
                     let stat = document.getElementById('voiceStatus');
                     let btn = document.getElementById('v-'+vMode);
-                    if(speak) { 
-                        socket.emit('voice_status', true); 
-                        if(stat) { stat.innerText="TRANSMITTING"; stat.style.color="var(--gold)"; }
-                        if(btn) btn.classList.add('talking');
-                    } else { 
-                        socket.emit('voice_status', false); 
-                        if(stat) { stat.innerText="IDLE"; stat.style.color="#555"; }
-                        if(btn) btn.classList.remove('talking');
-                    }
+                    if(speak) { socket.emit('voice_status', true); if(stat)stat.innerText="TRANSMITTING"; if(btn)btn.classList.add('talking'); }
+                    else { socket.emit('voice_status', false); if(stat)stat.innerText="IDLE"; if(btn)btn.classList.remove('talking'); }
                 };
             });
         }
@@ -339,21 +326,36 @@
             if(isRolling) return alert("Wait");
             if(bal<chip) return alert("Funds");
             
-            // CENTER LOGIC
+            // SMART CLICK DETECTION FOR CORNERS/SPLITS
+            // If click is on a grid cell, detect edges
             let mx, my;
-            if(e.currentTarget) { // Clicked specific cell
+            if(e.currentTarget) {
                 let cell = e.currentTarget;
-                let cRect = cell.getBoundingClientRect();
-                mx = cRect.left + cRect.width/2;
-                my = cRect.top + cRect.height/2;
-            } else { // Hotspot
-                mx = e.clientX; my = e.clientY;
-            }
+                let rect = cell.getBoundingClientRect();
+                let cx = e.clientX - rect.left;
+                let cy = e.clientY - rect.top;
+                let w = rect.width; let h = rect.height;
+                let edge = 0.25;
+                
+                // Adjust logic if user wants corners enabled
+                let n = nums[0]; // Base number
+                // Only if single number is clicked do we check edges
+                if(nums.length === 1 && typeof n === 'number') {
+                    if(cx > w*(1-edge) && n%3!=0 && n<36) { nums=[n, n+1]; desc=`Split ${n},${n+1}`; } // Right
+                    else if(cy > h*(1-edge) && n%3!=1) { nums=[n, n-1]; desc=`Split ${n},${n-1}`; } // Bottom
+                    // Simple corners: Top Right
+                    if(cx > w*(1-edge) && cy < h*edge && n<34 && n%3!=0) { nums=[n, n+1, n+3, n+4]; desc=`Corner ${n}`; }
+                }
+                
+                // Final Position
+                mx = rect.left + w/2;
+                my = rect.top + h/2;
+            } else { mx = e.clientX; my = e.clientY; }
 
             let overlay = document.getElementById('rOverlay').getBoundingClientRect();
             let relX = (mx - overlay.left) / SCALE; 
             let relY = (my - overlay.top) / SCALE;
-            let key = desc; // Stack by description
+            let key = desc;
 
             if(boardChips[key]) {
                 boardChips[key].amt += chip;
@@ -371,7 +373,7 @@
                 boardChips[key] = { amt: chip, dom: d, nums: nums, desc: desc, relX: relX, relY: relY };
             }
             
-            socket.emit('place_bet', {amount:chip}); // Simple bal deduct
+            socket.emit('place_bet', {amount:chip});
             renderBetList();
         }
 
@@ -395,8 +397,7 @@
             let keys = Object.keys(boardChips);
             if(keys.length > 0) {
                 let lastKey = keys[keys.length-1];
-                let b = boardChips[lastKey];
-                b.dom.remove();
+                boardChips[lastKey].dom.remove();
                 delete boardChips[lastKey];
                 renderBetList();
             }
@@ -445,7 +446,6 @@
                 g.appendChild(d);
             }
             initHistory();
-            buildHotspots();
             drawWheel(0);
         }
         function getArr(t) {
@@ -472,29 +472,6 @@
             h.prepend(createBall(c, n));
         });
 
-        // HOTSPOTS
-        function buildHotspots() {
-            const overlay = document.getElementById('ghostOverlay'); overlay.innerHTML='';
-            const W=42, H=42, GAP=2, OX=55+GAP, OY=5;
-            for(let c=0; c<12; c++) {
-                let x = OX + (c*(W+GAP));
-                let nT=(c*3)+3, nM=(c*3)+2, nB=(c*3)+1;
-                mkZone(x, OY-6, W, 12, [nT, nM, nB], "Street "+nB);
-                mkZone(x, OY+H-5, W, 10, [nT,nM], "Split "+nT+","+nM); mkZone(x, OY+(H*2)+GAP-5, W, 10, [nM,nB], "Split "+nM+","+nB); 
-                if(c<11) {
-                    mkZone(x+W-5, OY-6, 12, 12, [nT, nM, nB, nT+3, nM+3, nB+3], "Six Line");
-                    mkZone(x+W-5, OY+H-5, 10, 10, [nT,nM,nT+3,nM+3], "Corner"); mkZone(x+W-5, OY+(H*2)+GAP-5, 10, 10, [nM,nB,nM+3,nB+3], "Corner");
-                    mkZone(x+W-5, OY, 10, H, [nT,nT+3], "Split"); mkZone(x+W-5, OY+H+GAP, 10, H, [nM,nM+3], "Split"); mkZone(x+W-5, OY+(H+GAP)*2, 10, H, [nB,nB+3], "Split");
-                }
-            }
-            mkZone(5,5,50,(H+GAP)*3,[0], "0"); 
-        }
-        function mkZone(x,y,w,h,n,desc){ 
-            let d=document.createElement('div'); d.className='hotspot'; d.style.left=x+'px'; d.style.top=y+'px'; d.style.width=w+'px'; d.style.height=h+'px'; 
-            d.onclick=(e)=>placeChip(n, desc, e); 
-            document.getElementById('ghostOverlay').appendChild(d); 
-        }
-
         // CHAT, MUSIC, WHEEL
         function toggleChat() { togglePanel('chatPanel'); }
         function tabChat(t) { 
@@ -517,9 +494,9 @@
         });
         
         function toggleMusicUI() { togglePanel('musicPanel'); }
-        function toggleMusic() { if(audio.paused){ if(!audio.src)audio.src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; audio.play(); document.getElementById('mpStatus').innerText="Playing"; } else { audio.pause(); } }
-        function stopMusic() { audio.pause(); audio.currentTime=0; document.getElementById('mpStatus').innerText="Stopped"; }
-        function playCustom() { audio.src=document.getElementById('musicUrl').value; audio.play(); document.getElementById('mpStatus').innerText="Custom"; }
+        function toggleMusic() { if(audio.paused){ if(!audio.src)audio.src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; audio.play(); } else { audio.pause(); } }
+        function stopMusic() { audio.pause(); audio.currentTime=0; }
+        function playCustom() { audio.src=document.getElementById('musicUrl').value; audio.play(); }
         function setVolume(v) { audio.volume=v/100; }
 
         const cvs=document.getElementById('wheelCanvas'); const ctx=cvs.getContext('2d');
