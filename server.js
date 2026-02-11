@@ -5,16 +5,27 @@ const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { maxHttpBufferSize: 1e8 });
+// Increase buffer for slower connections
+const io = new Server(server, { 
+    cors: { origin: "*" },
+    maxHttpBufferSize: 1e8 
+});
 
 const DB_FILE = 'database.json';
 let users = {};
+
 // Load Database
-if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } }
+if (fs.existsSync(DB_FILE)) { 
+    try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } 
+}
 function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
 
 let activeSockets = {}; 
+
+// Serve static files
 app.use(express.static(__dirname));
+
+// Route for the main page
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 
 function broadcastRoomList(room) {
@@ -72,7 +83,8 @@ setInterval(() => {
             colorState.status = 'ROLLING';
             io.to('colorgame').emit('game_rolling');
             setTimeout(() => {
-                io.to('colorgame').emit('game_result', ['RED','RED','RED']);
+                let r = ['RED','RED','RED']; 
+                io.to('colorgame').emit('game_result', r);
                 setTimeout(() => {
                     colorState.status = 'BETTING'; colorState.timeLeft = 20;
                     io.to('colorgame').emit('game_reset');
@@ -157,5 +169,6 @@ function joinRoom(socket, username, room) {
     broadcastRoomList(room);
 }
 
+// RAILWAY REQUIRES THIS LINE EXACTLY:
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Casino running on ${PORT}`));
