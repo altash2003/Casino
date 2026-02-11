@@ -9,6 +9,7 @@ const io = new Server(server, { maxHttpBufferSize: 1e8 });
 
 const DB_FILE = 'database.json';
 let users = {};
+// Load Database
 if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } }
 function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
 
@@ -36,18 +37,22 @@ setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
         io.to('roulette').emit('roulette_timer', rouletteState.timeLeft);
+        
         if(rouletteState.timeLeft <= 0) {
             rouletteState.status = 'LOCKED';
             io.to('roulette').emit('roulette_state', 'LOCKED');
+            
             setTimeout(() => {
                 io.to('roulette').emit('roulette_state', 'CLOSED');
                 setTimeout(() => {
                     rouletteState.status = 'SPINNING';
                     let n = Math.floor(Math.random() * 37);
                     io.to('roulette').emit('roulette_spin_start', n);
+                    
                     setTimeout(() => {
                         io.to('roulette').emit('roulette_result_log', n);
                         processRouletteWinners(n);
+                        
                         setTimeout(() => {
                             rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
                             io.to('roulette').emit('roulette_new_round');
@@ -59,7 +64,7 @@ setInterval(() => {
     }
 }, 1000);
 
-// Color Game Loop
+// Color Loop
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
@@ -67,8 +72,7 @@ setInterval(() => {
             colorState.status = 'ROLLING';
             io.to('colorgame').emit('game_rolling');
             setTimeout(() => {
-                let r = ['RED','RED','RED']; 
-                io.to('colorgame').emit('game_result', r);
+                io.to('colorgame').emit('game_result', ['RED','RED','RED']);
                 setTimeout(() => {
                     colorState.status = 'BETTING'; colorState.timeLeft = 20;
                     io.to('colorgame').emit('game_reset');
@@ -106,11 +110,11 @@ io.on('connection', (socket) => {
         if(users[d.username] && users[d.username].password === d.password) {
             joinRoom(socket, d.username, 'lobby');
             socket.emit('login_success', { username: d.username, balance: users[d.username].balance });
-        } else socket.emit('login_error', "Invalid");
+        } else socket.emit('login_error', "Invalid Credentials");
     });
     socket.on('register', (d) => {
         if(!users[d.username]) { users[d.username] = { password: d.password, balance: 1000 }; saveDatabase(); joinRoom(socket, d.username, 'lobby'); socket.emit('login_success', { username: d.username, balance: 1000 }); } 
-        else socket.emit('login_error', "Taken");
+        else socket.emit('login_error', "Username Taken");
     });
     socket.on('switch_room', (r) => { if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r); });
     socket.on('voice_data', (b) => socket.to(activeSockets[socket.id]?.room).emit('voice_receive', {id:socket.id, audio:b}));
@@ -123,14 +127,14 @@ io.on('connection', (socket) => {
             if(d.amount > 0 && users[u.username].balance < d.amount) return;
             users[u.username].balance -= d.amount;
             if(d.amount > 0) rouletteState.bets.push({ socketId: socket.id, username: u.username, numbers: d.numbers, amount: d.amount });
-            else { /* Undo logic handled by refund */ }
+            // Undo logic handled by just refunding balance for simplicity here
             socket.emit('update_balance', users[u.username].balance);
         }
     });
 
     socket.on('roulette_clear', () => {
         let u = activeSockets[socket.id];
-        if(!u) return;
+        if(!u || rouletteState.status !== 'BETTING') return;
         let myBets = rouletteState.bets.filter(b => b.socketId === socket.id);
         let total = myBets.reduce((a,b)=>a+b.amount,0);
         if(total > 0 && users[u.username]) {
