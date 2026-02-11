@@ -13,36 +13,32 @@
         * { -ms-overflow-style: none; scrollbar-width: none; box-sizing: border-box; }
         *::-webkit-scrollbar { display: none; }
         
-        /* SECURITY: NO SELECT */
-        body { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
-
         .global-back { position: fixed; top: 15px; left: 15px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; }
-        
         #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
         .auth-box { background: #111; padding: 40px; border: 1px solid #333; border-radius: 12px; text-align: center; width: 300px; }
         .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; font-weight:bold; }
         .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius:4px; }
 
-        /* --- PANELS FIXED LAYOUT --- */
+        /* PANELS */
         .side-panel { position: fixed; width: 300px; background: var(--panel-bg); border: 1px solid #444; display: none; flex-direction: column; z-index: 8000; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .side-panel.active { display: flex; }
+        
+        #playerPanel { top: 120px; left: 15px; height: 350px; border-left: 3px solid var(--cyan); }
+        #chatPanel { bottom: 80px; left: 15px; height: 300px; border-left: 3px solid var(--gold); }
+        #betPanel { top: 120px; right: 15px; height: 350px; border-right: 3px solid var(--gold); }
+        #voicePanel { top: 480px; right: 15px; height: 120px; border-right: 3px solid var(--cyan); }
+        #musicPanel { bottom: 80px; right: 15px; height: 140px; border-right: 3px solid var(--cyan); }
+
         .panel-head { padding: 10px; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; color: #aaa; display: flex; justify-content: space-between; }
         .panel-tab { flex:1; text-align:center; cursor:pointer; color:#666; padding:5px; }
         .panel-tab.active { color:white; border-bottom:2px solid var(--gold); }
         .panel-list { overflow-y: auto; padding: 5px; flex: 1; }
         .panel-item { display: flex; justify-content: space-between; padding: 6px; border-bottom: 1px solid #222; font-size: 13px; align-items: center; }
-        
-        /* Left Column (Table Top to Mid, Mid to Bottom) */
-        #playerPanel { top: 120px; left: 15px; height: 350px; border-left: 3px solid var(--cyan); }
-        #chatPanel { top: 480px; left: 15px; height: 350px; border-left: 3px solid var(--gold); }
-        
-        /* Right Column */
-        #betPanel { top: 120px; right: 15px; height: 350px; border-right: 3px solid var(--gold); }
-        #voicePanel { top: 480px; right: 15px; height: 120px; border-right: 3px solid var(--cyan); }
-        #musicPanel { top: 610px; right: 15px; height: 140px; border-right: 3px solid var(--cyan); }
+        .pl-mic { font-size: 10px; color: #555; margin-right: 8px; }
+        .panel-item.talking .pl-mic { color: var(--gold); animation: pulse 0.5s infinite; text-shadow:0 0 5px var(--gold); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
-        /* CHAT */
-        .chat-tabs { display: flex; border-bottom: 1px solid #333; background: #111; }
+        /* CHAT UI */
         .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; font-size: 13px; }
         .chat-content.active { display: block; }
         .chat-input-area { padding: 10px; border-top: 1px solid #333; display: none; background: #1a1a1a; gap: 5px; }
@@ -50,28 +46,43 @@
         .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; outline:none; }
 
         /* MUSIC/VOICE */
-        .vp-row { display: flex; justify-content: space-around; padding: 10px; }
-        .vp-btn { background: #222; border: 1px solid #555; color: #888; padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 10px; }
-        .vp-btn.active { border-color: var(--gold); color: var(--gold); }
         .mp-controls { display:flex; gap:5px; padding:10px; }
         .mp-btn { flex:1; background: #333; border: 1px solid #555; color: white; padding: 8px; cursor: pointer; }
+        .vp-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; }
+        .vp-btn { background: #222; border: 1px solid #555; color: #888; padding: 5px 15px; border-radius: 15px; cursor: pointer; font-size: 10px; }
+        .vp-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.1); }
 
         /* CHIPS (EXACT CLONES) */
         .chips-bar { display: flex; gap: 10px; padding: 8px 20px; background: rgba(0,0,0,0.5); border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; pointer-events: auto; }
-        .chip { width: 45px; height: 45px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; }
+        /* Common Chip Style */
+        .chip { 
+            width: 45px; height: 45px; border-radius: 50%; position: relative; cursor: pointer; 
+            transition: transform 0.1s; box-shadow: 0 4px 8px rgba(0,0,0,0.6); 
+            display: flex; justify-content: center; align-items: center; 
+        }
         .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.8); }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
         .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.3); z-index: 2; }
-        /* CENTERED TEXT & UPPERCASE */
-        .chip-label { position: relative; z-index: 10; width: 22px; height: 22px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; color: #333; font-size: 9px; font-weight: 900; text-transform:uppercase; display:flex; justify-content:center; align-items:center; }
+        /* Label */
+        .chip-label { 
+            position: relative; z-index: 10; width: 22px; height: 22px; background: #fdfbf7; 
+            border-radius: 50%; border: 1px solid #d4d4d4; color: #333; 
+            font-size: 9px; font-weight: 900; text-transform:uppercase; 
+            display:flex; justify-content:center; align-items:center; 
+        }
         
+        /* Chip Colors */
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
         
-        .chip.chip-board { width: 36px; height: 36px; pointer-events: none; z-index: 200; position: absolute; box-shadow: 0 4px 8px rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; }
+        /* Board Chip */
+        .chip.chip-board { 
+            width: 36px; height: 36px; pointer-events: none; z-index: 200; position: absolute; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.8); 
+        }
         .chip.chip-board::after { inset: 4px; } 
         .chip.chip-board .chip-label { width: 18px; height: 18px; font-size: 8px; }
 
@@ -83,15 +94,14 @@
         /* ROULETTE */
         #view-roulette { background: url('background.jpg') center/cover; }
         .r-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; transition: filter 0.3s; }
-        .r-center.blur { filter: blur(8px); pointer-events: none; }
+        .r-center.blur { filter: blur(8px); }
         .r-scaler { transform: scale(1.65); transform-origin: center center; margin-top: 20px; } 
         .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; width: fit-content; display: flex; flex-direction: column; align-items: center; }
         
-        /* HUD FIXED TOP CENTERED */
+        /* HUD FIXED TOP SEPARATED */
         .r-hud { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 40px; z-index: 9000; }
         .r-hud-panel { background: rgba(0,0,0,0.85); padding: 5px 20px; border-radius: 20px; border: 1px solid #444; text-align: center; box-shadow: 0 5px 15px black; height:60px; display:flex; flex-direction:column; justify-content:center; }
-        /* FIXED WIDTHS AS REQUESTED */
-        .r-hud-panel.bal, .r-hud-panel.status { width: 250px; } 
+        .r-hud-panel.bal, .r-hud-panel.status { width: 250px; }
         .r-hud-panel.timer { width: 100px; border: 1px solid var(--gold); }
         .r-hud-lbl { font-size: 10px; color: #888; letter-spacing: 2px; }
         .r-hud-val { font-size: 28px; font-weight: bold; color: white; font-family: 'Oswald'; }
@@ -100,7 +110,7 @@
         .r-history { width: 628px; height: 32px; background: rgba(0,0,0,0.4); border-radius: 4px; display: flex; align-items: center; padding: 0 2px; gap: 4px; margin-bottom: 8px; overflow: hidden; justify-content: center; border: none; }
         .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; color: white; flex-shrink: 0; }
         .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
-        .hist-empty { background: rgba(255,255,255,0.05); }
+        .hist-empty { background: rgba(255,255,255,0.05); box-shadow: none; border:1px solid rgba(255,255,255,0.1); color:transparent; }
 
         /* Grid */
         .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; width: fit-content; }
@@ -110,14 +120,12 @@
         .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
         
         .hotspot-overlay { position: absolute; inset: 0; z-index: 60; pointer-events: none; }
-        /* INVISIBLE CLICKABLE ZONES */
         .hotspot { position: absolute; cursor: pointer; pointer-events: auto; z-index: 60; background: transparent; }
         .hotspot:hover { background: rgba(255,255,255,0.1); }
 
-        /* Controls Area */
+        /* Controls Area - BUTTONS FIX */
         .r-controls-area { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; gap: 10px; z-index: 200; position:relative; }
         .btn-row { display: flex; gap: 10px; }
-        /* High Z-Index for Buttons */
         .ctrl-btn { background: #111; border: 1px solid #444; color: #ccc; padding: 6px 15px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; pointer-events: auto; z-index: 201; position:relative; }
         .ctrl-btn:hover { background: #222; color: white; border-color: var(--gold); }
 
@@ -126,7 +134,6 @@
         .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: #ccc; transition: 0.2s; }
         .icon-btn:hover { color: white; border-color: var(--gold); }
         
-        /* Mute Button (Static Icon Top Right) */
         #muteBtn { position: absolute; top: 15px; right: 20px; z-index: 9000; cursor: pointer; color: #888; font-size: 24px; transition:0.2s; }
         #muteBtn:hover { color:white; }
 
@@ -169,8 +176,7 @@
 
     <div id="playerPanel" class="side-panel">
         <div class="panel-head">
-            <div class="panel-tab active" onclick="tabPlayer('players')">PLAYERS</div>
-            <div class="panel-tab" onclick="tabPlayer('staff')">STAFF</div>
+            <div class="panel-tab active" onclick="tabPlayer('players')">PLAYERS / STAFF</div>
         </div>
         <div class="panel-list" id="pList"></div>
     </div>
@@ -181,14 +187,16 @@
             <div class="panel-tab" onclick="tabChat('support')">SUPPORT</div>
         </div>
         <div class="chat-content active" id="content-public"></div><div class="chat-content" id="content-support"></div>
-        <div class="chat-input-area"><input id="chatIn" class="chat-input" placeholder="Type..."><button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px;">></button></div>
+        <div class="chat-input-area active" id="input-public"><input id="chatIn" class="chat-input" placeholder="Type..."><button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px;">></button></div>
+        <div class="chat-input-area" id="input-support"><input id="supportIn" class="chat-input" placeholder="Msg Admin..."><button onclick="sendChat('support')" style="background:var(--cyan); border:none; padding:0 10px;">></button></div>
     </div>
 
     <div id="betPanel" class="side-panel"><div class="panel-head"><div style="flex:1; text-align:center;">CURRENT BETS</div></div><div class="panel-list" id="bList"></div><div style="padding:10px; font-size:12px; text-align:right; color:var(--gold); border-top:1px solid #333;">TOTAL: <span id="bTotal">0</span></div></div>
-
+    
     <div id="voicePanel" class="side-panel">
         <div class="panel-head"><div style="flex:1; text-align:center;">VOICE SETTINGS</div></div>
         <div class="vp-row"><button class="vp-btn" id="v-off" onclick="setVoice('off')">OFF</button><button class="vp-btn" id="v-ptt" onclick="setVoice('ptt')">PTT</button><button class="vp-btn" id="v-auto" onclick="setVoice('auto')">AUTO</button></div>
+        <div style="text-align:center; font-size:10px; color:#555;" id="voiceStatus">IDLE</div>
     </div>
 
     <div id="musicPanel" class="side-panel">
@@ -252,14 +260,12 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // SECURITY
         document.addEventListener('contextmenu', e=>e.preventDefault());
         document.onkeydown = (e) => { if(e.keyCode==123 || (e.ctrlKey && e.shiftKey && e.keyCode==73)) return false; };
 
         const socket = io();
         let me="", bal=0, room="lobby", chip=50;
-        let isRolling=false, bets=[], lastBets=[];
-        let boardChips = {}; 
+        let isRolling=false, bets=[], lastBets=[], boardChips={}; 
         const SCALE = 1.65; const REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
 
         function login(){ socket.emit('login', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
@@ -395,8 +401,7 @@
             document.getElementById('wheel-overlay').classList.add('show'); spin(n); 
         });
         socket.on('roulette_new_round', ()=>{ 
-            isRolling=false; 
-            for(let k in boardChips) boardChips[k].dom.remove(); boardChips={}; renderBetList();
+            isRolling=false; sendClear(); 
             document.getElementById('hud-status').innerText="BETTING"; 
             document.getElementById('rContainer').classList.remove('blur'); 
             document.getElementById('win-overlay-stage').classList.remove('active'); 
@@ -492,7 +497,7 @@
                 
                 let html = `<div class="winning-line">`;
                 let wins = [];
-                wins.push({txt:n, cls:REDS.includes(n)?'red-cell':'black-cell'}); // Number
+                wins.push({txt:n, cls:REDS.includes(n)?'red-cell':'black-cell'}); 
                 if(n!=0) {
                     wins.push({txt:n%2==0?'EVEN':'ODD', cls:'black-cell'});
                     wins.push({txt:REDS.includes(n)?'RED':'BLACK', cls:REDS.includes(n)?'red-cell':'black-cell'});
@@ -528,6 +533,7 @@
                         setTimeout(()=>{ coin.remove(); }, 1500);
                     }, 1000);
                 }
+
             }, 500); 
         });
 
