@@ -14,15 +14,13 @@
             margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw; 
             background: #050505 url('background.jpg') center/cover no-repeat; 
             font-family: 'Rajdhani', sans-serif; user-select: none; color: white; 
-            touch-action: none; /* Disables browser zooming */
+            touch-action: none; 
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        /* Disable Scrollbars */
         ::-webkit-scrollbar { display: none; }
 
-        /* --- 2. AUTH SCREEN (PREMIUM UI) --- */
-        #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 10000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        /* --- 2. AUTH SCREEN --- */
+        #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 20000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(15px); transition: opacity 0.5s; }
         .auth-card { 
             background: linear-gradient(145deg, #111, #000); 
             padding: 50px; width: 360px; border: 1px solid #333; border-top: 4px solid var(--gold); 
@@ -45,11 +43,25 @@
         .auth-sub-btn { background: transparent; border: 1px solid #444; color: #888; font-size: 12px; margin-top: 10px; padding: 10px; width: 100%; cursor: pointer; border-radius: 4px; }
         .auth-sub-btn:hover { color: white; border-color: white; }
 
-        /* --- 3. MAIN GRID LAYOUT (THE FIX) --- */
+        /* --- 3. LOBBY VIEW (THE FIX) --- */
+        #view-lobby { 
+            position: fixed; inset: 0; z-index: 15000; background: #050505; 
+            display: none; flex-direction: column; justify-content: center; align-items: center; gap: 30px;
+        }
+        #view-lobby.active { display: flex; }
+        .lobby-title { font-size: 100px; color: var(--gold); margin-bottom: 40px; text-shadow: 0 0 50px rgba(255,215,0,0.3); font-family: 'Oswald'; }
+        .game-card { 
+            width: 260px; height: 360px; background: rgba(20,20,20,0.9); border: 2px solid #333; 
+            border-radius: 20px; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; cursor: pointer; transition: 0.3s; 
+        }
+        .game-card:hover { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 0 40px rgba(255,215,0,0.2); }
+
+        /* --- 4. GAME GRID LAYOUT --- */
         #app-container { display: none; width: 100%; height: 100%; grid-template-rows: 80px 1fr 80px; }
         #app-container.active { display: grid; }
 
-        /* HEADER (HUD) */
+        /* HUD */
         .hud-bar { 
             grid-row: 1; display: flex; justify-content: center; align-items: center; gap: 40px; 
             padding-top: 10px; z-index: 50; 
@@ -65,10 +77,10 @@
         .hud-lbl { font-size: 10px; color: #888; letter-spacing: 3px; font-weight: 700; }
         .hud-val { font-size: 28px; font-weight: 700; font-family: 'Oswald'; color: white; }
 
-        /* MAIN CONTENT STAGE */
+        /* STAGE */
         .stage-area { 
             grid-row: 2; display: grid; 
-            grid-template-columns: 320px 1fr 320px; /* Left Sidebar, Center Table, Right Sidebar */
+            grid-template-columns: 320px 1fr 320px; 
             padding: 10px 20px; gap: 20px; height: 100%; overflow: hidden;
         }
 
@@ -86,15 +98,13 @@
         }
         .panel-content { flex: 1; overflow-y: auto; padding: 10px; position: relative; }
 
-        /* Left Side Specifics */
+        /* Panels Specifics */
         #panel-players { border-left: 3px solid var(--cyan); flex: 1; }
-        #panel-chat { border-left: 3px solid var(--gold); flex: 1; } /* Takes remaining height */
-
-        /* Right Side Specifics */
-        #panel-bets { border-right: 3px solid var(--gold); flex: 1.2; } /* Slightly taller */
+        #panel-chat { border-left: 3px solid var(--gold); flex: 1; }
+        #panel-bets { border-right: 3px solid var(--gold); flex: 1.2; }
         #panel-media { border-right: 3px solid var(--cyan); flex: 0.8; display: flex; flex-direction: column; } 
 
-        /* CHAT UI */
+        /* CHAT */
         .chat-tabs { display: flex; background: #111; border-bottom: 1px solid #333; }
         .chat-tab { flex: 1; text-align: center; padding: 10px; font-size: 11px; font-weight: bold; cursor: pointer; color: #555; }
         .chat-tab.active { background: #222; color: var(--gold); border-bottom: 2px solid var(--gold); }
@@ -102,138 +112,64 @@
         .chat-input-row { display: flex; border-top: 1px solid #333; background: #151515; padding: 8px; gap: 5px; }
         .chat-in { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 5px 10px; outline: none; border-radius: 4px; }
 
-        /* CENTER STAGE (ROULETTE) */
-        .center-stage { 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            position: relative; 
-        }
-        /* Blur Effect Class */
-        .center-stage.blur-active .r-board, 
-        .center-stage.blur-active .r-history { filter: blur(15px); transition: filter 0.5s; }
+        /* CENTER STAGE */
+        .center-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .center-stage.blur-active .r-board, .center-stage.blur-active .r-history { filter: blur(15px); transition: filter 0.5s; }
 
         .r-scaler { transform: scale(1.5); transform-origin: center center; } 
-        .r-board { 
-            position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; 
-            border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 30px 60px black; 
-        }
-
-        .r-grid { 
-            display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; 
-            grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; 
-            border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); 
-        }
-        .cell { 
-            display: flex; justify-content: center; align-items: center; font-weight: 700; 
-            font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; 
-            position: relative; z-index: 5; transition: 0.1s;
-        }
+        .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 30px 60px black; }
+        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); }
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; position: relative; z-index: 5; transition: 0.1s; }
         .cell:active { transform: scale(0.95); background: white; color: black; }
         .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
         .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
 
-        /* FOOTER (CHIPS & CONTROLS) */
+        /* FOOTER */
         .footer-bar { grid-row: 3; display: flex; align-items: center; justify-content: center; position: relative; z-index: 100; pointer-events: none; }
         
-        /* CHIPS (PIXEL PERFECT) */
-        .chips-container { 
-            pointer-events: auto; background: rgba(0,0,0,0.6); padding: 10px 30px; 
-            border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 15px; 
-            backdrop-filter: blur(5px);
-        }
-        .chip { 
-            width: 50px; height: 50px; border-radius: 50%; cursor: pointer; position: relative; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.2s; 
-            display: flex; justify-content: center; align-items: center;
-        }
+        /* CHIPS & CONTROLS */
+        .chips-container { pointer-events: auto; background: rgba(0,0,0,0.6); padding: 10px 30px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 15px; backdrop-filter: blur(5px); }
+        .chip { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.2s; display: flex; justify-content: center; align-items: center; }
         .chip:hover { transform: translateY(-5px); }
         .chip.active { transform: translateY(-10px) scale(1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.8); border: 2px solid white; }
-        
-        /* Inner Design */
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
         .chip::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
-        .chip-text { 
-            position: relative; z-index: 10; width: 24px; height: 24px; background: #fdfbf7; 
-            border-radius: 50%; border: 1px solid #d4d4d4; color: #333; font-size: 10px; 
-            font-weight: 900; display: flex; justify-content: center; align-items: center; 
-            font-family: 'Arial', sans-serif; text-transform: uppercase;
-        }
+        .chip-text { position: relative; z-index: 10; width: 24px; height: 24px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; color: #333; font-size: 10px; font-weight: 900; display: flex; justify-content: center; align-items: center; font-family: 'Arial', sans-serif; text-transform: uppercase; }
 
-        /* CHIP COLORS */
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
 
-        /* BOARD CHIPS (EXACT CLONES) */
-        .board-chip { 
-            width: 36px; height: 36px; position: absolute; pointer-events: none; z-index: 100;
-            border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-        }
+        /* BOARD CHIPS */
+        .board-chip { width: 36px; height: 36px; position: absolute; pointer-events: none; z-index: 100; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
         .board-chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
         .board-chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
         .board-chip .chip-text { width: 18px; height: 18px; font-size: 8px; }
 
-        /* LOWER LEFT CONTROLS */
-        .ll-controls { 
-            position: absolute; bottom: 20px; left: 20px; display: flex; gap: 15px; 
-            pointer-events: auto; z-index: 200;
-        }
-        .circle-btn { 
-            width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; 
-            display: flex; justify-content: center; align-items: center; color: #aaa; 
-            cursor: pointer; transition: 0.2s; font-size: 18px;
-        }
+        .ll-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 15px; pointer-events: auto; z-index: 200; }
+        .circle-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; color: #aaa; cursor: pointer; transition: 0.2s; font-size: 18px; }
         .circle-btn:hover, .circle-btn.active { color: white; border-color: var(--gold); background: #333; }
 
-        /* BUTTONS ON TABLE (Undo/Clear) */
         .table-actions { position: absolute; bottom: -50px; display: flex; gap: 10px; width: 100%; justify-content: center; }
-        .action-btn { 
-            background: #111; border: 1px solid #444; color: #ccc; padding: 6px 15px; 
-            font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; pointer-events: auto;
-        }
+        .action-btn { background: #111; border: 1px solid #444; color: #ccc; padding: 6px 15px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; pointer-events: auto; }
         .action-btn:hover { border-color: var(--gold); color: white; }
 
-        /* OVERLAYS */
         .hotspot { position: absolute; z-index: 50; cursor: pointer; } 
-        /* Important: Z-index 50 is below chips (100) and buttons */
 
         /* WIN ANIMATION */
         #win-stage { position: fixed; inset: 0; z-index: 9000; pointer-events: none; display: flex; justify-content: center; align-items: center; }
         .winning-cluster { display: flex; gap: 10px; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .winning-cluster.show { opacity: 1; }
-        /* Clone looks exactly like table cell */
-        .win-cell { 
-            width: 60px; height: 60px; border: 2px solid var(--gold); color: white; 
-            display: flex; justify-content: center; align-items: center; font-weight: bold; 
-            font-size: 18px; border-radius: 8px; position: relative; box-shadow: 0 0 20px var(--gold);
-        }
-        .win-amount-popup {
-            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
-            background: var(--gold); color: black; font-weight: 900; font-size: 14px;
-            padding: 4px 8px; border-radius: 4px; white-space: nowrap; box-shadow: 0 5px 10px black;
-            animation: popUp 0.5s ease-out;
-        }
+        .win-cell { width: 60px; height: 60px; border: 2px solid var(--gold); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; border-radius: 8px; position: relative; box-shadow: 0 0 20px var(--gold); }
+        .win-amount-popup { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: var(--gold); color: black; font-weight: 900; font-size: 14px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; box-shadow: 0 5px 10px black; animation: popUp 0.5s ease-out; }
         @keyframes popUp { 0% { transform: translate(-50%, 10px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
-        
-        .flying-coin {
-            position: fixed; width: 40px; height: 40px; background: gold; border-radius: 50%;
-            border: 4px solid orange; display: flex; justify-content: center; align-items: center;
-            font-weight: bold; color: black; z-index: 10000; box-shadow: 0 0 20px yellow;
-            transition: all 1s ease-in-out;
-        }
+        .flying-coin { position: fixed; width: 40px; height: 40px; background: gold; border-radius: 50%; border: 4px solid orange; display: flex; justify-content: center; align-items: center; font-weight: bold; color: black; z-index: 10000; box-shadow: 0 0 20px yellow; transition: all 1s ease-in-out; }
 
-        /* LOBBY SPECIFIC */
-        #view-lobby { display: none; }
-        #view-lobby.active { display: flex; }
-        .lobby-title { font-size: 100px; color: var(--gold); margin-bottom: 40px; text-shadow: 0 0 50px rgba(255,215,0,0.3); font-family: 'Oswald'; }
-
-        /* MUTE BUTTON */
         #masterMute { position: fixed; top: 20px; right: 20px; z-index: 10000; font-size: 24px; color: #666; cursor: pointer; }
         #masterMute:hover { color: white; }
-
-        /* HELPER FOR HIDDEN ELEMENTS IN LOBBY */
+        
         .game-only { display: none !important; }
         body.in-game .game-only { display: flex !important; }
     </style>
@@ -256,18 +192,9 @@
     <div id="app-container">
         
         <div class="hud-bar game-only">
-            <div class="hud-panel bal">
-                <div class="hud-lbl">BALANCE</div>
-                <div class="hud-val" id="hud-bal">0</div>
-            </div>
-            <div class="hud-panel timer">
-                <div class="hud-lbl">TIMER</div>
-                <div class="hud-val" id="hud-timer" style="color:var(--gold)">--</div>
-            </div>
-            <div class="hud-panel status">
-                <div class="hud-lbl">STATUS</div>
-                <div class="hud-val" id="hud-status">LOBBY</div>
-            </div>
+            <div class="hud-panel bal"><div class="hud-lbl">BALANCE</div><div class="hud-val" id="hud-bal">0</div></div>
+            <div class="hud-panel timer"><div class="hud-lbl">TIMER</div><div class="hud-val" id="hud-timer" style="color:var(--gold)">--</div></div>
+            <div class="hud-panel status"><div class="hud-lbl">STATUS</div><div class="hud-val" id="hud-status">LOBBY</div></div>
         </div>
 
         <div class="stage-area game-only">
@@ -279,7 +206,8 @@
                     </div>
                     <div class="panel-content" id="pList"></div>
                 </div>
-                <div class="panel" id="panel-chat" style="display:none;"> <div class="panel-head">
+                <div class="panel" id="panel-chat" style="display:none;">
+                    <div class="panel-head">
                         <div class="panel-tab active">PUBLIC</div>
                         <div class="panel-tab">SUPPORT</div>
                     </div>
@@ -295,13 +223,11 @@
                 <div class="r-scaler">
                     <div class="r-board">
                         <div class="r-history" id="rHistory" style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;"></div>
-                        
                         <div class="r-grid" id="rGrid">
                             <div class="hotspot-overlay" id="hotspotOverlay"></div>
                             <div style="position:absolute; inset:0; pointer-events:none;" id="chipLayer"></div>
                             <div class="cell zone-0" id="cell-0" onclick="clickCell(0)">0</div>
-                            </div>
-
+                        </div>
                         <div class="table-actions">
                             <div class="action-btn" onclick="sendUndo()">UNDO</div>
                             <div class="action-btn" onclick="sendClear()">CLEAR</div>
@@ -317,21 +243,21 @@
                     <div class="panel-content" id="betList"></div>
                     <div style="padding:10px; text-align:right; font-size:12px; color:var(--gold); border-top:1px solid #333;">TOTAL: <span id="betTotal">0</span></div>
                 </div>
-                
                 <div class="panel" id="panel-media" style="background:transparent; border:none; box-shadow:none; gap:15px;">
                     <div class="panel" id="p-voice" style="display:none; height:120px; flex:none;">
                         <div class="panel-head">VOICE</div>
-                        <div class="vp-row">
-                            <button class="vp-btn active">OFF</button>
-                            <button class="vp-btn">PTT</button>
-                            <button class="vp-btn">AUTO</button>
+                        <div class="panel-content">
+                            <div class="vp-row" style="display:flex; justify-content:space-around;">
+                                <button class="action-btn">OFF</button><button class="action-btn">PTT</button><button class="action-btn">AUTO</button>
+                            </div>
                         </div>
                     </div>
                     <div class="panel" id="p-music" style="display:none; height:120px; flex:none;">
                         <div class="panel-head">DJ</div>
-                        <div class="mp-controls">
-                            <button class="mp-btn">PLAY</button>
-                            <button class="mp-btn">STOP</button>
+                        <div class="panel-content">
+                            <div class="mp-controls" style="display:flex; gap:10px;">
+                                <button class="action-btn" style="flex:1">PLAY</button><button class="action-btn" style="flex:1">STOP</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -344,7 +270,6 @@
                 <div class="circle-btn" onclick="togglePanel('p-voice')"><i class="fa fa-microphone"></i></div>
                 <div class="circle-btn" onclick="togglePanel('p-music')"><i class="fa fa-music"></i></div>
             </div>
-
             <div class="chips-container">
                 <div class="chip chip-50 active" onclick="selChip(50, this)"><div class="chip-label">50</div></div>
                 <div class="chip chip-200" onclick="selChip(200, this)"><div class="chip-label">200</div></div>
@@ -357,14 +282,8 @@
         <div id="view-lobby" class="view-section active">
             <div class="lobby-title">GRAND CASINO</div>
             <div style="display:flex; gap:50px;">
-                <div class="game-card" onclick="enterGame('colorgame')">
-                    <i class="fa fa-palette" style="font-size:60px; color:#aaa; margin-bottom:20px;"></i>
-                    <h2>COLOR GAME</h2>
-                </div>
-                <div class="game-card" onclick="enterGame('roulette')">
-                    <i class="fa fa-life-ring" style="font-size:60px; color:#aaa; margin-bottom:20px;"></i>
-                    <h2>ROULETTE</h2>
-                </div>
+                <div class="game-card" onclick="enterGame('colorgame')"><h2>COLOR GAME</h2></div>
+                <div class="game-card" onclick="enterGame('roulette')"><h2>ROULETTE</h2></div>
             </div>
         </div>
 
@@ -375,35 +294,27 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // --- 1. SECURITY & CONFIG ---
         document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) e.preventDefault();
-        });
-        
-        // Prevent Zoom
-        document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
+        document.addEventListener('keydown', e => { if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) e.preventDefault(); });
+        document.addEventListener('gesturestart', e => e.preventDefault());
 
         const socket = io();
         let me = "", bal = 0, currentChip = 50;
         let myBets = [], isLocked = false;
         
-        // --- 2. AUTHENTICATION ---
         function login() { 
             let u = document.getElementById('u').value;
             if(!u) return;
-            me = u; bal = 10000; // Mock Login
+            me = u; bal = 10000; 
             document.getElementById('authOverlay').style.display = 'none';
-            document.body.classList.add('in-lobby');
+            document.getElementById('view-lobby').classList.add('active'); // Ensure Lobby is shown
             updateHUD();
         }
-        function register() { login(); } // Mock
+        function register() { login(); }
         function updateHUD() {
             document.getElementById('hud-bal').innerText = bal.toLocaleString();
-            document.getElementById('lobbyUser').innerText = me; // If lobby had one
         }
 
-        // --- 3. NAVIGATION ---
         function enterGame(game) {
             document.getElementById('view-lobby').classList.remove('active');
             document.getElementById('app-container').classList.add('active');
@@ -416,35 +327,24 @@
             el.style.display = (el.style.display === 'none') ? 'flex' : 'none';
         }
 
-        // --- 4. ROULETTE LOGIC ---
         function initRoulette() {
             let grid = document.getElementById('rGrid');
-            if(grid.children.length > 5) return; // Already init
+            if(grid.children.length > 5) return; 
 
-            // Build Grid Numbers
             const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
             for(let i=1; i<=36; i++) {
                 let cell = document.createElement('div');
                 cell.className = `cell ${REDS.includes(i) ? 'red-cell' : 'black-cell'}`;
                 cell.id = `cell-${i}`;
                 cell.innerText = i;
-                
-                // Grid Placement
                 let r = (i%3===0)?1:(i%3===2?2:3); 
                 let c = Math.floor((i-1)/3)+2;
                 cell.style.gridRow = r; cell.style.gridColumn = c;
-                
                 grid.appendChild(cell);
             }
-            
-            // Outer Cells (Rows, Dozens) - Simplified Layout for Demo
-            // In a real app, map these to grid areas carefully. 
-            // For now, we attach click events to hotspots.
-            
             buildHotspots();
         }
 
-        // --- 5. BETTING SYSTEM (Precise Physics) ---
         function selChip(val, el) {
             currentChip = val;
             document.querySelectorAll('.footer-bar .chip').forEach(c => c.classList.remove('active'));
@@ -455,22 +355,18 @@
             const overlay = document.getElementById('hotspotOverlay');
             const W = 42, H = 42, GAP = 2, OX = 55 + GAP, OY = 5;
             
-            // Helper to make a hotspot
             const mk = (x, y, w, h, nums, type) => {
                 let d = document.createElement('div');
                 d.className = 'hotspot';
                 d.style.left = x+'px'; d.style.top = y+'px';
                 d.style.width = w+'px'; d.style.height = h+'px';
-                
                 d.onclick = () => placeBet(nums, type, x + w/2, y + h/2);
                 overlay.appendChild(d);
             };
 
-            // Generate Spots (Simplified subset for demo)
             for(let i=1; i<=36; i++) {
                 let r = (i%3===0)?1:(i%3===2?2:3); 
                 let c = Math.floor((i-1)/3);
-                // Center Spot
                 mk(OX + (c*(W+GAP)) + 5, OY + ((r-1)*(H+GAP)) + 5, 32, 32, [i], "Straight");
             }
         }
@@ -479,20 +375,16 @@
             if(isLocked) return alert("BETS CLOSED");
             if(bal < currentChip) return alert("INSUFFICIENT FUNDS");
 
-            // Server Logic (Mock)
             bal -= currentChip;
             updateHUD();
             
-            // Visual Chip (Exact Clone)
             let chip = document.createElement('div');
             chip.className = `board-chip ${getChipClass(currentChip)}`;
-            // Center exactly
-            chip.style.left = (cx - 18) + 'px'; // 18 is half of 36px width
+            chip.style.left = (cx - 18) + 'px';
             chip.style.top = (cy - 18) + 'px';
             chip.innerHTML = `<div class="chip-text">${fmt(currentChip)}</div>`;
             
             document.getElementById('chipLayer').appendChild(chip);
-            
             myBets.push({ dom: chip, amt: currentChip, nums: nums, type: type });
             updateBetList();
         }
@@ -504,10 +396,7 @@
             if(v===10000) return 'chip-10k';
             return 'chip-100k';
         }
-        function fmt(v) {
-            if(v >= 1000) return (v/1000) + 'K';
-            return v;
-        }
+        function fmt(v) { if(v >= 1000) return (v/1000) + 'K'; return v; }
 
         function updateBetList() {
             let list = document.getElementById('betList');
@@ -517,7 +406,6 @@
             document.getElementById('betTotal').innerText = myBets.reduce((a,b)=>a+b.amt,0);
         }
 
-        // --- 6. ACTIONS ---
         function sendClear() {
             if(isLocked) return;
             bal += myBets.reduce((a,b)=>a+b.amt,0);
@@ -533,20 +421,14 @@
             updateHUD(); updateBetList();
         }
 
-        // --- 7. GAME LOOP & ANIMATION ---
         socket.on('roulette_timer', t => {
             document.getElementById('hud-timer').innerText = t;
-            if(t <= 0) {
-                isLocked = true;
-                document.getElementById('hud-status').innerText = "LOCKED";
-            }
+            if(t <= 0) { isLocked = true; document.getElementById('hud-status').innerText = "LOCKED"; }
         });
 
         socket.on('roulette_spin_start', n => {
-            // Spin Wheel Animation (Canvas logic implied)
             document.getElementById('wheel-overlay').classList.add('show');
             setTimeout(() => {
-                // WIN SEQUENCE START
                 document.getElementById('wheel-overlay').classList.remove('show');
                 doWinAnimation(n);
             }, 4000);
@@ -559,31 +441,24 @@
             const cluster = document.getElementById('winCluster');
             cluster.innerHTML = '';
             
-            // Create Clones
             const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
             let isRed = REDS.includes(n);
             let colorCls = isRed ? 'red-cell' : (n===0 ? 'zone-0' : 'black-cell');
             
-            // 1. The Number
             cluster.innerHTML += `<div class="win-cell ${colorCls}">${n}</div>`;
-            // 2. Color (if not 0)
             if(n!==0) cluster.innerHTML += `<div class="win-cell ${colorCls}" style="font-size:12px">${isRed?'RED':'BLACK'}</div>`;
-            // 3. Even/Odd
             if(n!==0) cluster.innerHTML += `<div class="win-cell black-cell" style="font-size:12px">${n%2==0?'EVEN':'ODD'}</div>`;
 
-            // Check if user won
             let totalWin = 0;
             myBets.forEach(b => {
                 if(b.nums.includes(n)) {
-                    let win = b.amt * 36; // Simplified Straight payout
+                    let win = b.amt * 36; 
                     totalWin += win;
                 }
             });
 
             if(totalWin > 0) {
                 cluster.innerHTML += `<div class="win-amount-popup">+${totalWin}</div>`;
-                
-                // Coin Fly
                 setTimeout(() => {
                     let coin = document.createElement('div');
                     coin.className = 'flying-coin';
@@ -592,41 +467,33 @@
                     document.body.appendChild(coin);
                     
                     let target = document.getElementById('hud-bal').getBoundingClientRect();
-                    
-                    // Fly Math
                     requestAnimationFrame(() => {
                         coin.style.left = target.left + 'px';
                         coin.style.top = target.top + 'px';
                         coin.style.opacity = 0;
                     });
-                    
-                    setTimeout(() => { 
-                        bal += totalWin; updateHUD(); coin.remove(); 
-                    }, 1000);
+                    setTimeout(() => { bal += totalWin; updateHUD(); coin.remove(); }, 1000);
                 }, 1000);
             }
 
-            document.getElementById('win-stage').style.pointerEvents = 'auto'; // Block clicks
+            document.getElementById('win-stage').style.pointerEvents = 'auto'; 
             cluster.classList.add('show');
 
-            // RESET
             setTimeout(() => {
                 cluster.classList.remove('show');
                 stage.classList.remove('blur-active');
                 isLocked = false;
-                sendClear(); // Clear chips for next round
+                sendClear(); 
                 document.getElementById('hud-status').innerText = "BETTING";
             }, 4000);
         }
 
-        // --- 8. AUDIO ---
         let audioMuted = false;
         function toggleMute() {
             audioMuted = !audioMuted;
             document.getElementById('masterMute').className = audioMuted ? 'fa fa-volume-off' : 'fa fa-volume-up';
         }
 
-        // Basic Wheel Drawing (Placeholder for visual)
         const ctx = document.getElementById('wheelCanvas').getContext('2d');
         ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(400,400,300,0,Math.PI*2); ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#fff'; ctx.font = '30px Arial'; ctx.fillText("WHEEL", 350, 400);
