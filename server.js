@@ -27,7 +27,7 @@ function broadcastRoomList(room) {
     io.to(room).emit('room_users_update', list);
 }
 
-// --- GAME STATE ---
+// --- GAME LOOPS ---
 let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30, bets: [] };
 
@@ -36,26 +36,18 @@ setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
         io.to('roulette').emit('roulette_timer', rouletteState.timeLeft);
-        
         if(rouletteState.timeLeft <= 0) {
             rouletteState.status = 'LOCKED';
             io.to('roulette').emit('roulette_state', 'LOCKED');
-            
-            // 0.5s Rest
             setTimeout(() => {
                 io.to('roulette').emit('roulette_state', 'CLOSED');
-                
-                // 0.5s Lock -> Spin
                 setTimeout(() => {
                     rouletteState.status = 'SPINNING';
                     let n = Math.floor(Math.random() * 37);
                     io.to('roulette').emit('roulette_spin_start', n);
-                    
-                    // 4s Spin + 5s Animations + 1s Reset
                     setTimeout(() => {
                         io.to('roulette').emit('roulette_result_log', n);
                         processRouletteWinners(n);
-                        
                         setTimeout(() => {
                             rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
                             io.to('roulette').emit('roulette_new_round');
@@ -91,32 +83,20 @@ function processRouletteWinners(n) {
     let totalWins = {};
     rouletteState.bets.forEach(b => {
         if(b.numbers.includes(n)) {
-            // Real Payouts
-            let count = b.numbers.length;
-            let mult = 0;
-            if(count === 1) mult = 35;       // Straight
-            else if(count === 2) mult = 17;  // Split
-            else if(count === 3) mult = 11;  // Street
-            else if(count === 4) mult = 8;   // Corner
-            else if(count === 6) mult = 5;   // Six Line
-            else if(count === 12) mult = 2;  // Dozens/Columns
-            else if(count === 18) mult = 1;  // Even/Odd/Red/Black
-            
-            // Total return = Bet + (Bet * Mult)
-            let winAmount = b.amount + (b.amount * mult);
-            
+            let mult = 36 / b.numbers.length;
+            let win = b.amount * mult;
             if(!totalWins[b.socketId]) totalWins[b.socketId] = 0;
-            totalWins[b.socketId] += winAmount;
-            
-            if(users[b.username]) users[b.username].balance += winAmount;
+            totalWins[b.socketId] += win;
+            if(users[b.username]) users[b.username].balance += win;
         }
     });
     saveDatabase();
-    
-    // Broadcast updates
     for(let sid in totalWins) {
-        io.to(sid).emit('update_balance', users[activeSockets[sid]?.username]?.balance || 0);
-        io.to(sid).emit('my_win_total', totalWins[sid]);
+        let u = activeSockets[sid];
+        if(u) {
+            io.to(sid).emit('update_balance', users[u.username].balance);
+            io.to(sid).emit('my_win_total', totalWins[sid]);
+        }
     }
     io.to('roulette').emit('roulette_win', { number: n });
 }
@@ -126,11 +106,11 @@ io.on('connection', (socket) => {
         if(users[d.username] && users[d.username].password === d.password) {
             joinRoom(socket, d.username, 'lobby');
             socket.emit('login_success', { username: d.username, balance: users[d.username].balance });
-        } else socket.emit('login_error', "Invalid Credentials");
+        } else socket.emit('login_error', "Invalid");
     });
     socket.on('register', (d) => {
         if(!users[d.username]) { users[d.username] = { password: d.password, balance: 1000 }; saveDatabase(); joinRoom(socket, d.username, 'lobby'); socket.emit('login_success', { username: d.username, balance: 1000 }); } 
-        else socket.emit('login_error', "Username Taken");
+        else socket.emit('login_error', "Taken");
     });
     socket.on('switch_room', (r) => { if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r); });
     socket.on('voice_data', (b) => socket.to(activeSockets[socket.id]?.room).emit('voice_receive', {id:socket.id, audio:b}));
@@ -139,13 +119,11 @@ io.on('connection', (socket) => {
 
     socket.on('place_bet_roulette', (d) => {
         let u = activeSockets[socket.id];
-        // d.amount is negative for refund
         if(u && users[u.username]) {
             if(d.amount > 0 && users[u.username].balance < d.amount) return;
-            users[u.username].balance -= d.amount; // Subtract bet OR Add negative(refund)
-            
+            users[u.username].balance -= d.amount;
             if(d.amount > 0) rouletteState.bets.push({ socketId: socket.id, username: u.username, numbers: d.numbers, amount: d.amount });
-            // Note: Complex unstacking logic for undo on server side omitted for brevity, but balance is refunded
+            else { /* Undo logic handled by refund */ }
             socket.emit('update_balance', users[u.username].balance);
         }
     });
@@ -153,7 +131,6 @@ io.on('connection', (socket) => {
     socket.on('roulette_clear', () => {
         let u = activeSockets[socket.id];
         if(!u) return;
-        // Refund all bets for this user
         let myBets = rouletteState.bets.filter(b => b.socketId === socket.id);
         let total = myBets.reduce((a,b)=>a+b.amount,0);
         if(total > 0 && users[u.username]) {
