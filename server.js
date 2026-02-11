@@ -28,7 +28,7 @@ function broadcastRoomList(room) {
 }
 
 // --- GAME LOOPS ---
-let colorState = { status: 'BETTING', timeLeft: 20, bets: [] };
+let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30, bets: [] };
 
 // Roulette Loop
@@ -39,28 +39,24 @@ setInterval(() => {
         
         if(rouletteState.timeLeft <= 0) {
             rouletteState.status = 'LOCKED';
-            io.to('roulette').emit('roulette_state', 'LOCKED'); 
+            io.to('roulette').emit('roulette_state', 'LOCKED');
             
             setTimeout(() => {
-                io.to('roulette').emit('roulette_state', 'CLOSED');
+                rouletteState.status = 'SPINNING';
+                let n = Math.floor(Math.random() * 37);
+                io.to('roulette').emit('roulette_spin_start', n);
                 
+                // Spin(4s) + Rest(1s) + Anim(4s) + Reset(1s) = 10s Total
                 setTimeout(() => {
-                    rouletteState.status = 'SPINNING';
-                    let n = Math.floor(Math.random() * 37);
-                    io.to('roulette').emit('roulette_spin_start', n);
+                    io.to('roulette').emit('roulette_result_log', n);
+                    processRouletteWinners(n);
                     
-                    // 4s Spin + 1s Pause + 3s Anim + 1s Reset
                     setTimeout(() => {
-                        io.to('roulette').emit('roulette_result_log', n);
-                        processRouletteWinners(n);
-                        
-                        setTimeout(() => {
-                            rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
-                            io.to('roulette').emit('roulette_new_round');
-                        }, 5000); 
-                    }, 4500); 
-                }, 500);
-            }, 500);
+                        rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
+                        io.to('roulette').emit('roulette_new_round');
+                    }, 5000); 
+                }, 4500);
+            }, 1000);
         }
     }
 }, 1000);
@@ -97,7 +93,8 @@ function processRouletteWinners(n) {
         }
     });
     saveDatabase();
-    // Broadcast updates
+    
+    // Broadcast
     for(let sid in totalWins) {
         let u = activeSockets[sid];
         if(u) {
@@ -124,20 +121,22 @@ io.on('connection', (socket) => {
     socket.on('voice_status', (t) => { if(activeSockets[socket.id]) { activeSockets[socket.id].isTalking = t; io.to(activeSockets[socket.id].room).emit('player_voice_update', {id:socket.id, talking:t}); } });
     socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
 
-    // BETTING & REFUNDS
+    // BETTING
     socket.on('place_bet_roulette', (d) => {
         let u = activeSockets[socket.id];
-        // Allow negative amounts for refunds/undo
+        // Handle negative amounts for Undo/Refund
         if(u && users[u.username] && (rouletteState.status === 'BETTING' || d.amount < 0)) {
-            if(d.amount > 0 && users[u.username].balance < d.amount) return; // Check funds for pos bet
+            if(d.amount > 0 && users[u.username].balance < d.amount) return;
             
-            users[u.username].balance -= d.amount; // Subtract bet OR Add negative (refund)
+            users[u.username].balance -= d.amount; // If amount is negative, this adds balance
             
             if(d.amount > 0) {
                 rouletteState.bets.push({ socketId: socket.id, username: u.username, numbers: d.numbers, amount: d.amount });
             } else {
-                // Undo logic handled by client removing, server just refunds money here
-                // Complex undo requires ID tracking, simplified to refund balance
+                // Remove last bet matching these numbers (Simple stack pop logic for undo)
+                // Note: Production would use unique bet IDs
+                let idx = rouletteState.bets.map(b => b.socketId).lastIndexOf(socket.id);
+                if(idx > -1) rouletteState.bets.splice(idx, 1);
             }
             socket.emit('update_balance', users[u.username].balance);
         }
