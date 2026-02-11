@@ -8,152 +8,179 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* --- CORE RESET --- */
-        :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; --dark: #0a0a0a; --glass: rgba(12,12,12,0.98); }
+        /* --- 1. CORE RESET & VARIABLES --- */
+        :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; --dark: #0a0a0a; --glass: rgba(12,12,12,0.95); }
+        
         body { 
             margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw; 
-            background: linear-gradient(135deg, #050505 0%, #111 100%); /* Fallback BG */
+            background: linear-gradient(135deg, #050505 0%, #1a1a1a 100%); 
             font-family: 'Rajdhani', sans-serif; user-select: none; color: white; 
-            touch-action: none; 
+            /* REMOVED touch-action: none from here to fix inputs */
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { display: none; }
 
-        /* --- AUTH SCREEN (GLASSMORPHISM) --- */
+        /* --- 2. AUTH SCREEN (FIXED) --- */
         #view-auth { 
             position: fixed; inset: 0; z-index: 20000; display: flex; 
-            justify-content: center; align-items: center; background: url('background.jpg') center/cover;
+            justify-content: center; align-items: center; 
+            background: url('background.jpg') center/cover;
+            pointer-events: auto; /* Ensure clicks work */
         }
-        #view-auth::before { content:''; position:absolute; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); }
+        /* Dark overlay */
+        #view-auth::before { content:''; position:absolute; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(20px); z-index:-1; }
         
         .auth-card { 
-            position: relative; width: 380px; background: rgba(0,0,0,0.8); 
+            position: relative; width: 380px; background: rgba(20,20,20,0.95); 
             border: 1px solid var(--gold); border-radius: 16px; padding: 40px; 
-            text-align: center; box-shadow: 0 0 50px rgba(255, 215, 0, 0.1); 
+            text-align: center; box-shadow: 0 0 100px rgba(255, 215, 0, 0.15); 
         }
-        .auth-logo { font-family: 'Oswald'; font-size: 48px; color: var(--gold); margin-bottom: 30px; letter-spacing: 2px; }
-        .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #333; }
-        .auth-tab { flex: 1; padding: 10px; cursor: pointer; color: #666; font-weight: bold; transition:0.3s; }
-        .auth-tab.active { color: white; border-bottom: 2px solid var(--gold); }
+        .auth-logo { font-family: 'Oswald'; font-size: 50px; color: var(--gold); margin-bottom: 30px; letter-spacing: 3px; text-shadow: 0 0 20px rgba(255,215,0,0.4); }
         
+        /* TABS */
+        .auth-tabs { display: flex; margin-bottom: 25px; border-bottom: 2px solid #333; }
+        .auth-tab { flex: 1; padding: 15px; cursor: pointer; color: #666; font-weight: 800; transition:0.3s; font-size:14px; letter-spacing:1px; }
+        .auth-tab:hover { color: #aaa; }
+        .auth-tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); background: linear-gradient(to top, rgba(255,215,0,0.1), transparent); }
+        
+        /* INPUTS - Explicitly allow select */
         .auth-input { 
-            width: 100%; padding: 15px; margin: 10px 0; background: #151515; border: 1px solid #333; 
-            color: white; font-family: 'Rajdhani'; font-weight: bold; text-align: center; font-size: 16px; 
+            width: 100%; padding: 15px; margin: 10px 0; background: #111; border: 1px solid #333; 
+            color: white; font-family: 'Rajdhani'; font-weight: bold; text-align: center; font-size: 18px; 
             border-radius: 6px; outline: none; transition: 0.3s;
+            pointer-events: auto; user-select: text; /* Allow typing */
         }
-        .auth-input:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
+        .auth-input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
+        
+        /* BUTTON */
         .auth-btn { 
-            width: 100%; padding: 15px; margin-top: 20px; background: var(--gold); border: none; 
-            font-family: 'Oswald'; font-size: 18px; cursor: pointer; color: black; border-radius: 6px; 
-            transition: 0.2s; 
+            width: 100%; padding: 15px; margin-top: 25px; background: var(--gold); border: none; 
+            font-family: 'Oswald'; font-size: 20px; cursor: pointer; color: black; border-radius: 6px; 
+            transition: 0.2s; pointer-events: auto;
         }
         .auth-btn:hover { background: white; transform: scale(1.02); }
 
-        /* --- LOBBY VIEW --- */
+        /* --- 3. LOBBY VIEW --- */
         #view-lobby { 
-            position: fixed; inset: 0; z-index: 15000; display: none; 
-            flex-direction: column; justify-content: center; align-items: center; 
-            background: linear-gradient(135deg, #050505 0%, #151515 100%);
+            position: fixed; inset: 0; z-index: 15000; background: linear-gradient(135deg, #050505 0%, #111 100%); 
+            display: none; flex-direction: column; justify-content: center; align-items: center; gap: 30px;
         }
-        .lobby-title { font-size: 80px; color: var(--gold); margin-bottom: 50px; font-family: 'Oswald'; text-shadow: 0 0 30px rgba(255,215,0,0.3); }
+        /* Override display when active */
+        #view-lobby.active { display: flex !important; }
+        
+        .lobby-title { font-size: 100px; color: var(--gold); margin-bottom: 40px; font-family: 'Oswald'; text-shadow: 0 0 50px rgba(255,215,0,0.3); }
         .game-card { 
-            width: 280px; height: 380px; background: rgba(20,20,20,0.6); border: 2px solid #333; 
+            width: 280px; height: 380px; background: rgba(30,30,30,0.8); border: 2px solid #333; 
             border-radius: 20px; display: flex; flex-direction: column; align-items: center; 
             justify-content: center; cursor: pointer; transition: 0.3s; margin: 0 20px;
         }
         .game-card:hover { border-color: var(--gold); transform: translateY(-15px); box-shadow: 0 0 50px rgba(255,215,0,0.2); }
 
-        /* --- GAME CONTAINER (GRID) --- */
-        #view-game { display: none; width: 100%; height: 100%; grid-template-rows: 80px 1fr 80px; position:relative; z-index:5000; }
-        
+        /* --- 4. GAME GRID LAYOUT --- */
+        #app-container { 
+            display: none; width: 100%; height: 100%; grid-template-rows: 80px 1fr 80px; 
+            /* TOUCH ACTION NONE MOVED HERE TO PREVENT ZOOM IN GAME ONLY */
+            touch-action: none; 
+        }
+        #app-container.active { display: grid !important; }
+
         /* HUD */
-        .hud-bar { grid-row: 1; display: flex; justify-content: center; align-items: center; gap: 30px; padding-top: 10px; }
+        .hud-bar { grid-row: 1; display: flex; justify-content: center; align-items: center; gap: 40px; padding-top: 10px; z-index: 50; }
         .hud-panel { 
             background: var(--glass); border: 1px solid #333; border-radius: 12px; height: 60px; 
             display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            box-shadow: 0 5px 20px black; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         }
-        .hud-panel.bal, .hud-panel.status { width: 220px; }
-        .hud-panel.bal { border-left: 4px solid var(--cyan); }
-        .hud-panel.status { border-right: 4px solid var(--gold); }
+        .hud-panel.bal { width: 250px; border-left: 4px solid var(--cyan); }
+        .hud-panel.status { width: 250px; border-right: 4px solid var(--gold); }
         .hud-panel.timer { width: 100px; border: 1px solid var(--gold); }
         .hud-lbl { font-size: 10px; color: #888; letter-spacing: 2px; font-weight: 700; }
-        .hud-val { font-size: 24px; font-family: 'Oswald'; color: white; }
+        .hud-val { font-size: 26px; font-weight: 700; font-family: 'Oswald'; color: white; }
 
         /* STAGE */
         .stage-area { grid-row: 2; display: grid; grid-template-columns: 320px 1fr 320px; padding: 10px 20px; gap: 20px; height: 100%; overflow: hidden; }
         
-        /* SIDEBARS */
+        /* PANELS */
         .sidebar-col { display: flex; flex-direction: column; gap: 15px; height: 100%; }
         .panel { 
-            background: var(--glass); border: 1px solid #333; border-radius: 12px; flex: 1; display: flex; 
-            flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            background: var(--glass); border: 1px solid #333; border-radius: 12px; 
+            display: flex; flex-direction: column; overflow: hidden; flex: 1; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         }
-        .panel-head { padding: 12px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #333; font-family: 'Oswald'; font-size: 14px; color: #aaa; display: flex; justify-content: space-between; }
+        .panel-head { padding: 12px; background: rgba(255,255,255,0.03); border-bottom: 1px solid #333; font-family: 'Oswald'; font-size: 14px; color: #aaa; display: flex; justify-content: space-between; }
         .panel-tab { padding: 0 10px; cursor: pointer; } .panel-tab.active { color: white; border-bottom: 2px solid var(--gold); }
-        .panel-content { flex: 1; overflow-y: auto; padding: 10px; }
-        
-        /* Left Column Specifics */
-        #p-players { border-left: 3px solid var(--cyan); }
-        #p-chat { border-left: 3px solid var(--gold); }
-        /* Right Column Specifics */
+        .panel-content { flex: 1; overflow-y: auto; padding: 10px; position: relative; }
+        .panel-item { display: flex; justify-content: space-between; padding: 6px; border-bottom: 1px solid #222; font-size: 13px; }
+
+        /* Specific Panels */
+        #p-players { border-left: 3px solid var(--cyan); flex: 1; }
+        #p-chat { border-left: 3px solid var(--gold); flex: 1; }
         #p-bets { flex: 1.2; border-right: 3px solid var(--gold); }
-        #p-media { flex: 0.8; background: transparent; border: none; box-shadow: none; gap: 10px; display: flex; flex-direction: column; }
+        #p-media { flex: 0.8; background: transparent; border: none; box-shadow: none; gap: 10px; display: flex; flex-direction: column; } 
         #sub-voice { height: 120px; background: var(--glass); border: 1px solid #333; border-right: 3px solid var(--cyan); border-radius: 12px; }
         #sub-music { height: 140px; background: var(--glass); border: 1px solid #333; border-right: 3px solid var(--cyan); border-radius: 12px; }
 
-        /* FOOTER */
-        .footer-bar { grid-row: 3; display: flex; align-items: center; justify-content: center; position: relative; pointer-events: none; }
-        .ll-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 15px; pointer-events: auto; }
-        .circle-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; color: #aaa; cursor: pointer; transition: 0.2s; font-size: 18px; }
-        .circle-btn:hover { color: white; border-color: var(--gold); }
+        /* INPUTS */
+        .chat-input-row { padding: 10px; border-top: 1px solid #333; background: #1a1a1a; display:flex; gap:5px; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 5px 10px; outline: none; border-radius: 4px; pointer-events: auto; user-select: text; }
 
-        /* CHIPS (EXACT CLONES) */
+        /* CENTER STAGE */
+        .center-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .center-stage.blur-active .r-board, .center-stage.blur-active .r-history { filter: blur(15px); transition: filter 0.5s; }
+
+        .r-scaler { transform: scale(1.5); transform-origin: center center; } 
+        .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 30px 60px black; }
+        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); }
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; position: relative; z-index: 5; transition: 0.1s; }
+        .cell:active { transform: scale(0.95); background: white; color: black; }
+        .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; } .zone-0 { grid-column: 1; grid-row: 1 / 4; background: #016D29; border-radius: 6px 0 0 6px; }
+
+        /* FOOTER */
+        .footer-bar { grid-row: 3; display: flex; align-items: center; justify-content: center; position: relative; z-index: 100; pointer-events: none; }
+        
         .chips-container { pointer-events: auto; background: rgba(0,0,0,0.6); padding: 10px 30px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); display: flex; gap: 15px; backdrop-filter: blur(5px); }
-        .chip { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; transition: transform 0.1s; }
-        .chip.active { transform: translateY(-10px) scale(1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+        .chip { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.5); transition: 0.2s; display: flex; justify-content: center; align-items: center; }
+        .chip:hover { transform: translateY(-5px); }
+        .chip.active { transform: translateY(-10px) scale(1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.8); border: 2px solid white; }
         .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
         .chip::after { content: ''; position: absolute; inset: 5px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
-        .chip-text { position: relative; z-index: 10; width: 24px; height: 24px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; color: #333; font-size: 10px; font-weight: 900; text-transform: uppercase; display: flex; justify-content: center; align-items: center; font-family: 'Arial'; }
-        
+        .chip-text { position: relative; z-index: 10; width: 24px; height: 24px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; color: #333; font-size: 10px; font-weight: 900; display: flex; justify-content: center; align-items: center; font-family: 'Arial', sans-serif; text-transform: uppercase; }
+
         .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
         .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
         .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
         .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
         .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
 
-        /* TABLE */
-        .center-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .r-board { position: relative; background: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 30px 60px black; transform: scale(1.5); transform-origin: center center; }
-        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); }
-        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; position: relative; z-index: 5; }
-        .cell.lit { background: rgba(255,255,255,0.3); }
-        .red-cell { background: #d32f2f; } .black-cell { background: #222; } .zone-0 { grid-column: 1; grid-row: 1 / 4; background: #016D29; border-radius: 6px 0 0 6px; }
-        
-        .hotspot { position: absolute; z-index: 50; cursor: pointer; } /* Behind Chips (100) and Buttons (200) */
-        
-        /* CHIP ON BOARD */
         .board-chip { width: 36px; height: 36px; position: absolute; pointer-events: none; z-index: 100; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
         .board-chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
         .board-chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.2); z-index: 2; }
         .board-chip .chip-text { width: 18px; height: 18px; font-size: 8px; }
 
-        /* ACTIONS */
-        .table-actions { position: absolute; bottom: -50px; display: flex; gap: 10px; width: 100%; justify-content: center; z-index: 200; }
+        .ll-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 15px; pointer-events: auto; z-index: 200; }
+        .circle-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; color: #aaa; cursor: pointer; transition: 0.2s; font-size: 18px; }
+        .circle-btn:hover, .circle-btn.active { color: white; border-color: var(--gold); background: #333; }
+
+        .table-actions { position: absolute; bottom: -50px; display: flex; gap: 10px; width: 100%; justify-content: center; }
         .action-btn { background: #111; border: 1px solid #444; color: #ccc; padding: 6px 15px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; pointer-events: auto; }
         .action-btn:hover { border-color: var(--gold); color: white; }
 
-        /* WIN FX */
-        #win-stage { position: fixed; inset: 0; z-index: 9000; pointer-events: none; display: flex; justify-content: center; align-items: center; }
-        .win-cluster { display: flex; gap: 10px; opacity: 0; transition: 0.3s; }
-        .win-cluster.show { opacity: 1; }
-        .win-cell { width: 60px; height: 60px; border: 2px solid var(--gold); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; border-radius: 8px; position: relative; box-shadow: 0 0 20px var(--gold); font-family: 'Oswald'; }
-        .win-tag { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: var(--gold); color: black; font-weight: 900; padding: 2px 6px; border-radius: 4px; font-size: 12px; white-space: nowrap; box-shadow: 0 5px 10px black; }
-        .fly-coin { position: fixed; width: 40px; height: 40px; background: gold; border-radius: 50%; border: 4px solid orange; box-shadow: 0 0 20px yellow; z-index: 10000; transition: all 1s ease-in-out; display: flex; justify-content: center; align-items: center; font-weight: bold; color: black; }
+        .hotspot { position: absolute; z-index: 50; cursor: pointer; } 
 
-        /* UTILS */
-        .blur-fx { filter: blur(10px); transition: filter 0.5s; }
+        /* WIN ANIMATION */
+        #win-stage { position: fixed; inset: 0; z-index: 9000; pointer-events: none; display: flex; justify-content: center; align-items: center; }
+        .winning-cluster { display: flex; gap: 10px; align-items: center; opacity: 0; transition: opacity 0.3s; }
+        .winning-cluster.show { opacity: 1; }
+        .win-cell { width: 60px; height: 60px; border: 2px solid var(--gold); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; border-radius: 8px; position: relative; box-shadow: 0 0 20px var(--gold); background: #222; }
+        .win-amount-popup { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: var(--gold); color: black; font-weight: 900; font-size: 14px; padding: 4px 8px; border-radius: 4px; white-space: nowrap; box-shadow: 0 5px 10px black; animation: popUp 0.5s ease-out; }
+        @keyframes popUp { 0% { transform: translate(-50%, 10px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
+        .flying-coin { position: fixed; width: 40px; height: 40px; background: gold; border-radius: 50%; border: 4px solid orange; display: flex; justify-content: center; align-items: center; font-weight: bold; color: black; z-index: 10000; box-shadow: 0 0 20px yellow; transition: all 1s ease-in-out; }
+
         #masterMute { position: fixed; top: 20px; right: 20px; z-index: 20000; font-size: 24px; color: #666; cursor: pointer; }
+        #masterMute:hover { color: white; }
+        
+        .game-only { display: none !important; }
+        body.in-game .game-only { display: flex !important; }
     </style>
 </head>
 <body>
@@ -167,7 +194,7 @@
             </div>
             <input id="u" class="auth-input" placeholder="USERNAME" maxlength="12">
             <input id="p" class="auth-input" type="password" placeholder="PASSWORD" maxlength="12">
-            <button class="auth-btn" onclick="submitAuth()">ENTER</button>
+            <button class="auth-btn" id="authBtn" onclick="submitAuth()">ENTER CASINO</button>
             <div id="authErr" style="color:var(--red); font-size:12px; margin-top:10px;"></div>
         </div>
     </div>
@@ -178,18 +205,24 @@
     <div id="view-lobby">
         <div class="lobby-title">GRAND CASINO</div>
         <div style="display:flex; gap:50px;">
-            <div class="game-card" onclick="startGame('colorgame')"><h2>COLOR GAME</h2></div>
-            <div class="game-card" onclick="startGame('roulette')"><h2>ROULETTE</h2></div>
+            <div class="game-card" onclick="enterGame('colorgame')">
+                <i class="fa fa-palette" style="font-size:60px; color:#aaa; margin-bottom:20px;"></i>
+                <h2>COLOR GAME</h2>
+            </div>
+            <div class="game-card" onclick="enterGame('roulette')">
+                <i class="fa fa-life-ring" style="font-size:60px; color:#aaa; margin-bottom:20px;"></i>
+                <h2>ROULETTE</h2>
+            </div>
         </div>
     </div>
 
-    <div id="app-container"> <div class="hud-bar">
+    <div id="app-container"> <div class="hud-bar game-only">
             <div class="hud-panel bal"><div class="hud-lbl">BALANCE</div><div class="hud-val" id="hud-bal">0</div></div>
             <div class="hud-panel timer"><div class="hud-lbl">TIMER</div><div class="hud-val" id="hud-timer" style="color:var(--gold)">--</div></div>
             <div class="hud-panel status"><div class="hud-lbl">STATUS</div><div class="hud-val" id="hud-status">LOBBY</div></div>
         </div>
 
-        <div class="stage-area">
+        <div class="stage-area game-only">
             <div class="sidebar-col">
                 <div class="panel" id="p-players">
                     <div class="panel-head"><div class="panel-tab active">PLAYERS</div><div class="panel-tab">STAFF</div></div>
@@ -198,11 +231,11 @@
                 <div class="panel" id="p-chat">
                     <div class="panel-head"><div class="panel-tab active">PUBLIC</div><div class="panel-tab">SUPPORT</div></div>
                     <div class="chat-msgs" id="chatList"></div>
-                    <div class="chat-input-row"><input id="chatIn" class="chat-in" placeholder="Type..."><button onclick="sendChat()" style="background:var(--gold); border:none;">></button></div>
+                    <div class="chat-input-row"><input id="chatIn" class="chat-input" placeholder="Type..."><button onclick="sendChat()" style="background:var(--gold); border:none; padding:0 10px;">></button></div>
                 </div>
             </div>
 
-            <div class="center-stage" id="mainStage">
+            <div class="center-stage" id="game-stage">
                 <div class="r-scaler">
                     <div class="r-board">
                         <div class="r-history" id="rHistory" style="display:flex; justify-content:center; gap:5px; margin-bottom:10px;"></div>
@@ -241,7 +274,7 @@
             </div>
         </div>
 
-        <div class="footer-bar">
+        <div class="footer-bar game-only">
             <div class="ll-controls">
                 <div class="circle-btn" onclick="togglePanel('p-chat')"><i class="fa fa-comment"></i></div>
                 <div class="circle-btn" onclick="togglePanel('sub-voice')"><i class="fa fa-microphone"></i></div>
@@ -256,7 +289,7 @@
             </div>
         </div>
 
-        <div id="win-stage"><div class="win-cluster" id="winCluster"></div></div>
+        <div id="win-stage"><div class="winning-cluster" id="winCluster"></div></div>
         <div id="wheel-overlay" style="position:fixed; inset:0; z-index:9000; display:none; justify-content:center; align-items:center; background:rgba(0,0,0,0.8);">
             <canvas id="wheelCanvas" width="800" height="800"></canvas>
         </div>
@@ -265,160 +298,254 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        // --- VIEW MANAGER (PREVENTS BLANK SCREENS) ---
-        function showScreen(id) {
-            document.getElementById('view-auth').style.display = 'none';
-            document.getElementById('view-lobby').style.display = 'none';
-            document.getElementById('app-container').style.display = 'none';
-            document.getElementById(id).style.display = (id === 'app-container') ? 'grid' : 'flex';
-        }
+        // --- 1. SECURITY & CONFIG ---
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if(e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) e.preventDefault();
+        });
+        
+        // Prevent Zoom (except inside inputs)
+        document.addEventListener('gesturestart', function(e) { e.preventDefault(); });
 
-        // AUTH LOGIC
+        const socket = io();
+        let me = "", bal = 0, currentChip = 50;
+        let myBets = [], isLocked = false;
+        
+        // --- 2. AUTHENTICATION (FIXED) ---
         let authMode = 'login';
+        
         function toggleAuth(mode) {
             authMode = mode;
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.getElementById(mode === 'login' ? 'tab-login' : 'tab-reg').classList.add('active');
+            document.getElementById('authBtn').innerText = mode === 'login' ? "ENTER CASINO" : "CREATE ACCOUNT";
         }
-        
-        const socket = io();
-        let me = "", bal = 0, currentChip = 50, myBets = [], isLocked = false;
 
         function submitAuth() {
             let u = document.getElementById('u').value;
-            if(!u) return;
-            socket.emit(authMode, { username: u, password: document.getElementById('p').value });
+            let p = document.getElementById('p').value;
+            if(!u || !p) { document.getElementById('authErr').innerText = "Please fill all fields"; return; }
+            socket.emit(authMode, { username: u, password: p });
         }
 
         socket.on('login_success', d => {
             me = d.username; bal = d.balance;
             updateHUD();
-            showScreen('view-lobby'); // FORCE LOBBY VISIBLE
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('view-lobby').classList.add('active'); // FORCE LOBBY VISIBLE
         });
+        
+        socket.on('login_error', msg => { document.getElementById('authErr').innerText = msg; });
 
-        function startGame(game) {
-            showScreen('app-container');
+        // --- 3. NAVIGATION ---
+        function enterGame(game) {
+            document.getElementById('view-lobby').classList.remove('active');
+            document.getElementById('app-container').classList.add('active');
+            document.body.classList.add('in-game');
             document.getElementById('backBtn').style.display = 'block';
             if(game === 'roulette') initRoulette();
         }
 
         function goToLobby() {
-            showScreen('view-lobby');
+            document.getElementById('app-container').classList.remove('active');
+            document.getElementById('view-lobby').classList.add('active');
             document.getElementById('backBtn').style.display = 'none';
+            document.body.classList.remove('in-game');
+        }
+
+        function togglePanel(id) {
+            let el = document.getElementById(id);
+            el.style.display = (el.style.display === 'none') ? 'flex' : 'none';
         }
 
         function updateHUD() { document.getElementById('hud-bal').innerText = bal.toLocaleString(); }
 
-        // --- ROULETTE LOGIC ---
+        // --- 4. ROULETTE LOGIC ---
         function initRoulette() {
             let grid = document.getElementById('rGrid');
-            if(grid.children.length > 5) return;
+            if(grid.children.length > 5) return; // Already init
+
+            // Build Grid Numbers
             const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
             for(let i=1; i<=36; i++) {
                 let cell = document.createElement('div');
                 cell.className = `cell ${REDS.includes(i) ? 'red-cell' : 'black-cell'}`;
-                cell.id = `cell-${i}`; cell.innerText = i;
-                let r = (i%3===0)?1:(i%3===2?2:3); let c = Math.floor((i-1)/3)+2;
+                cell.id = `cell-${i}`;
+                cell.innerText = i;
+                let r = (i%3===0)?1:(i%3===2?2:3); 
+                let c = Math.floor((i-1)/3)+2;
                 cell.style.gridRow = r; cell.style.gridColumn = c;
                 grid.appendChild(cell);
             }
             buildHotspots();
         }
 
-        function buildHotspots() {
-            const overlay = document.getElementById('hotspotOverlay');
-            const mk = (x, y, w, h, nums, type) => {
-                let d = document.createElement('div'); d.className = 'hotspot';
-                d.style.left = x+'px'; d.style.top = y+'px'; d.style.width = w+'px'; d.style.height = h+'px';
-                d.onclick = () => placeBet(nums, type, x + w/2, y + h/2);
-                overlay.appendChild(d);
-            };
-            const W = 42, H = 42, GAP = 2, OX = 55 + GAP, OY = 5;
-            for(let i=1; i<=36; i++) {
-                let r = (i%3===0)?1:(i%3===2?2:3); let c = Math.floor((i-1)/3);
-                mk(OX + (c*(W+GAP)) + 5, OY + ((r-1)*(H+GAP)) + 5, 32, 32, [i], "Straight");
-            }
-        }
-
-        function selChip(v, el) {
-            currentChip = v;
+        // --- 5. BETTING SYSTEM (Precise Physics) ---
+        function selChip(val, el) {
+            currentChip = val;
             document.querySelectorAll('.chips-container .chip').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
         }
 
-        function placeBet(nums, desc, mx, my) {
+        function buildHotspots() {
+            const overlay = document.getElementById('hotspotOverlay');
+            const W = 42, H = 42, GAP = 2, OX = 55 + GAP, OY = 5;
+            
+            // Helper to make a hotspot
+            const mk = (x, y, w, h, nums, type) => {
+                let d = document.createElement('div');
+                d.className = 'hotspot';
+                d.style.left = x+'px'; d.style.top = y+'px';
+                d.style.width = w+'px'; d.style.height = h+'px';
+                d.onclick = () => placeBet(nums, type, x + w/2, y + h/2);
+                overlay.appendChild(d);
+            };
+
+            for(let i=1; i<=36; i++) {
+                let r = (i%3===0)?1:(i%3===2?2:3); 
+                let c = Math.floor((i-1)/3);
+                mk(OX + (c*(W+GAP)) + 5, OY + ((r-1)*(H+GAP)) + 5, 32, 32, [i], "Straight");
+            }
+        }
+
+        function placeBet(nums, type, cx, cy) {
             if(isLocked) return alert("BETS CLOSED");
             if(bal < currentChip) return alert("INSUFFICIENT FUNDS");
-            bal -= currentChip; updateHUD();
-            let overlay = document.getElementById('rOverlay'); // Oops, needs fix, creating dynamic layer
-            // Simplified:
+
+            bal -= currentChip;
+            updateHUD();
+            
+            // Visual Chip (Exact Clone)
             let chip = document.createElement('div');
             chip.className = `board-chip ${getChipClass(currentChip)}`;
-            chip.style.left = (mx - 18) + 'px'; chip.style.top = (my - 18) + 'px';
+            chip.style.left = (cx - 18) + 'px'; // 18 is half of 36px width
+            chip.style.top = (cy - 18) + 'px';
             chip.innerHTML = `<div class="chip-text">${fmt(currentChip)}</div>`;
+            
             document.getElementById('chipLayer').appendChild(chip);
             
-            myBets.push({ dom: chip, amt: currentChip, nums: nums, desc: desc });
+            myBets.push({ dom: chip, amt: currentChip, nums: nums, desc: type });
             socket.emit('place_bet_roulette', {numbers:nums, amount:currentChip});
             updateBetList();
         }
 
-        function getChipClass(v) { if(v===50) return 'chip-50'; if(v===200) return 'chip-200'; if(v===1000) return 'chip-1k'; if(v===10000) return 'chip-10k'; return 'chip-100k'; }
-        function fmt(v) { if(v>=1000 && v<1000000) return (v/1000)+'K'; if(v>=1000000) return (v/1000000)+'M'; return v; }
+        function getChipClass(v) {
+            if(v===50) return 'chip-50';
+            if(v===200) return 'chip-200';
+            if(v===1000) return 'chip-1k';
+            if(v===10000) return 'chip-10k';
+            return 'chip-100k';
+        }
+        function fmt(v) {
+            if(v >= 1000) return (v/1000) + 'K';
+            return v;
+        }
 
         function updateBetList() {
-            document.getElementById('betList').innerHTML = myBets.map(b => 
-                `<div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:12px;"><span>${b.desc} (${b.nums[0]}..)</span><span style="color:var(--gold)">${b.amt}</span></div>`
+            let list = document.getElementById('betList');
+            list.innerHTML = myBets.map(b => 
+                `<div class="panel-item"><span>${b.desc} (${b.nums[0]}..)</span><span style="color:var(--gold)">${b.amt}</span></div>`
             ).join('');
             document.getElementById('betTotal').innerText = myBets.reduce((a,b)=>a+b.amt,0);
         }
 
-        function sendClear() { if(!isLocked) { socket.emit('roulette_clear'); bal += myBets.reduce((a,b)=>a+b.amt,0); myBets.forEach(b=>b.dom.remove()); myBets=[]; updateHUD(); updateBetList(); } }
-        function sendUndo() { if(!isLocked && myBets.length>0) { let b = myBets.pop(); bal += b.amt; b.dom.remove(); socket.emit('place_bet_roulette', {numbers:b.nums, amount: -b.amt}); updateHUD(); updateBetList(); } }
+        // --- 6. ACTIONS ---
+        function sendClear() {
+            if(isLocked) return;
+            bal += myBets.reduce((a,b)=>a+b.amt,0);
+            myBets.forEach(b => b.dom.remove());
+            myBets = [];
+            socket.emit('roulette_clear');
+            updateHUD(); updateBetList();
+        }
+        function sendUndo() {
+            if(isLocked || myBets.length===0) return;
+            let last = myBets.pop();
+            bal += last.amt;
+            last.dom.remove();
+            socket.emit('place_bet_roulette', {numbers:last.nums, amount: -last.amt});
+            updateHUD(); updateBetList();
+        }
 
-        socket.on('roulette_timer', t => { 
-            document.getElementById('hud-timer').innerText = t; 
+        // --- 7. GAME LOOP & ANIMATION ---
+        socket.on('roulette_timer', t => {
+            document.getElementById('hud-timer').innerText = t;
             if(t <= 0) { isLocked = true; document.getElementById('hud-status').innerText = "LOCKED"; }
         });
 
         socket.on('roulette_spin_start', n => {
-            document.getElementById('wheel-overlay').style.display = 'flex';
-            // Simple canvas draw
-            const ctx = document.getElementById('wheelCanvas').getContext('2d');
-            ctx.clearRect(0,0,800,800); ctx.fillStyle='white'; ctx.font='50px Arial'; ctx.fillText("SPINNING... "+n, 300, 400);
-            
+            document.getElementById('wheel-overlay').classList.add('show');
             setTimeout(() => {
-                document.getElementById('wheel-overlay').style.display = 'none';
-                doWinAnim(n);
+                document.getElementById('wheel-overlay').classList.remove('show');
+                doWinAnimation(n);
             }, 4000);
         });
 
-        function doWinAnim(n) {
-            document.getElementById('mainStage').classList.add('blur-fx');
+        function doWinAnimation(n) {
+            const stage = document.getElementById('game-stage');
+            stage.classList.add('blur-active');
+            
             const cluster = document.getElementById('winCluster');
-            cluster.innerHTML = `<div class="win-cell red-cell">${n}</div><div class="win-amount-popup">WIN!</div>`;
-            cluster.classList.add('show');
+            cluster.innerHTML = '';
             
+            const REDS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+            let isRed = REDS.includes(n);
+            let colorCls = isRed ? 'red-cell' : (n===0 ? 'zone-0' : 'black-cell');
+            
+            cluster.innerHTML += `<div class="win-cell ${colorCls}">${n}</div>`;
+            if(n!==0) cluster.innerHTML += `<div class="win-cell ${colorCls}" style="font-size:12px">${isRed?'RED':'BLACK'}</div>`;
+            if(n!==0) cluster.innerHTML += `<div class="win-cell black-cell" style="font-size:12px">${n%2==0?'EVEN':'ODD'}</div>`;
+
             let totalWin = 0;
-            myBets.forEach(b => { if(b.nums.includes(n)) totalWin += b.amt * 36; });
-            
+            myBets.forEach(b => {
+                if(b.nums.includes(n)) {
+                    let win = b.amt * 36; // Simplified Straight payout for demo
+                    totalWin += win;
+                }
+            });
+
             if(totalWin > 0) {
+                cluster.innerHTML += `<div class="win-amount-popup">+${totalWin}</div>`;
                 setTimeout(() => {
-                    let coin = document.createElement('div'); coin.className = 'fly-coin'; coin.innerText = '+'+totalWin;
-                    coin.style.left = '50%'; coin.style.top = '50%'; document.body.appendChild(coin);
+                    let coin = document.createElement('div');
+                    coin.className = 'flying-coin';
+                    coin.innerText = 'WIN';
+                    coin.style.left = '50%'; coin.style.top = '50%';
+                    document.body.appendChild(coin);
+                    
                     let target = document.getElementById('hud-bal').getBoundingClientRect();
-                    setTimeout(() => { coin.style.left = target.left+'px'; coin.style.top = target.top+'px'; coin.style.opacity = 0; }, 100);
+                    requestAnimationFrame(() => {
+                        coin.style.left = target.left + 'px';
+                        coin.style.top = target.top + 'px';
+                        coin.style.opacity = 0;
+                    });
                     setTimeout(() => { bal += totalWin; updateHUD(); coin.remove(); }, 1000);
                 }, 1000);
             }
 
+            document.getElementById('win-stage').style.pointerEvents = 'auto'; // Block clicks
+            cluster.classList.add('show');
+
             setTimeout(() => {
                 cluster.classList.remove('show');
-                document.getElementById('mainStage').classList.remove('blur-fx');
-                isLocked = false; sendClear(); 
+                stage.classList.remove('blur-active');
+                isLocked = false;
+                sendClear(); 
                 document.getElementById('hud-status').innerText = "BETTING";
             }, 4000);
         }
+
+        // --- 8. AUDIO ---
+        let audioMuted = false;
+        function toggleMute() {
+            audioMuted = !audioMuted;
+            document.getElementById('masterMute').className = audioMuted ? 'fa fa-volume-off' : 'fa fa-volume-up';
+        }
+
+        const ctx = document.getElementById('wheelCanvas').getContext('2d');
+        ctx.fillStyle = '#222'; ctx.beginPath(); ctx.arc(400,400,300,0,Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#fff'; ctx.font = '30px Arial'; ctx.fillText("WHEEL", 350, 400);
+
     </script>
 </body>
 </html>
