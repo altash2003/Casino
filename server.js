@@ -5,12 +5,32 @@ const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { maxHttpBufferSize: 1e8 });
+const io = new Server(server, { 
+    cors: { origin: "*" }, 
+    maxHttpBufferSize: 1e8 
+});
 
 const DB_FILE = 'database.json';
 let users = {};
-if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } }
-function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
+
+// Load Database or Create Empty One
+if (fs.existsSync(DB_FILE)) { 
+    try { 
+        users = JSON.parse(fs.readFileSync(DB_FILE)); 
+    } catch(e) { 
+        users = {}; 
+    } 
+} else {
+    users = {};
+}
+
+function saveDatabase() { 
+    try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); 
+    } catch(e) {
+        console.log("DB Save Error:", e);
+    }
+}
 
 let activeSockets = {}; 
 app.use(express.static(__dirname));
@@ -27,7 +47,7 @@ function broadcastRoomList(room) {
     io.to(room).emit('room_users_update', list);
 }
 
-// --- GAME STATE ---
+// --- GAME LOOPS ---
 let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30, bets: [] };
 
@@ -36,28 +56,23 @@ setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
         io.to('roulette').emit('roulette_timer', rouletteState.timeLeft);
-        
         if(rouletteState.timeLeft <= 0) {
             rouletteState.status = 'LOCKED';
             io.to('roulette').emit('roulette_state', 'LOCKED');
-            
             setTimeout(() => {
                 io.to('roulette').emit('roulette_state', 'CLOSED');
                 setTimeout(() => {
                     rouletteState.status = 'SPINNING';
                     let n = Math.floor(Math.random() * 37);
                     io.to('roulette').emit('roulette_spin_start', n);
-                    
-                    // Spin (4s) + Animation Sequence (5s) + Reset (1s) = 10s Total
                     setTimeout(() => {
                         io.to('roulette').emit('roulette_result_log', n);
                         processRouletteWinners(n);
-                        
                         setTimeout(() => {
                             rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
                             io.to('roulette').emit('roulette_new_round');
                         }, 6000); 
-                    }, 4500);
+                    }, 4500); 
                 }, 500);
             }, 500);
         }
@@ -106,16 +121,28 @@ function processRouletteWinners(n) {
 }
 
 io.on('connection', (socket) => {
+    // LOGIN LOGIC
     socket.on('login', (d) => {
         if(users[d.username] && users[d.username].password === d.password) {
             joinRoom(socket, d.username, 'lobby');
             socket.emit('login_success', { username: d.username, balance: users[d.username].balance });
-        } else socket.emit('login_error', "Invalid Credentials");
+        } else {
+            socket.emit('login_error', "Invalid Username or Password");
+        }
     });
+
+    // REGISTER LOGIC
     socket.on('register', (d) => {
-        if(!users[d.username]) { users[d.username] = { password: d.password, balance: 1000 }; saveDatabase(); joinRoom(socket, d.username, 'lobby'); socket.emit('login_success', { username: d.username, balance: 1000 }); } 
-        else socket.emit('login_error', "Username Taken");
+        if(!users[d.username]) { 
+            users[d.username] = { password: d.password, balance: 1000 }; 
+            saveDatabase(); 
+            joinRoom(socket, d.username, 'lobby'); 
+            socket.emit('login_success', { username: d.username, balance: 1000 }); 
+        } else {
+            socket.emit('login_error', "Username Already Taken");
+        }
     });
+
     socket.on('switch_room', (r) => { if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r); });
     socket.on('voice_data', (b) => socket.to(activeSockets[socket.id]?.room).emit('voice_receive', {id:socket.id, audio:b}));
     socket.on('voice_status', (t) => { if(activeSockets[socket.id]) { activeSockets[socket.id].isTalking = t; io.to(activeSockets[socket.id].room).emit('player_voice_update', {id:socket.id, talking:t}); } });
