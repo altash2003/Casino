@@ -5,27 +5,15 @@ const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
-// Increase buffer for slower connections
-const io = new Server(server, { 
-    cors: { origin: "*" },
-    maxHttpBufferSize: 1e8 
-});
+const io = new Server(server, { maxHttpBufferSize: 1e8 });
 
 const DB_FILE = 'database.json';
 let users = {};
-
-// Load Database
-if (fs.existsSync(DB_FILE)) { 
-    try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } 
-}
+if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } }
 function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
 
 let activeSockets = {}; 
-
-// Serve static files
 app.use(express.static(__dirname));
-
-// Route for the main page
 app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 
 function broadcastRoomList(room) {
@@ -39,7 +27,7 @@ function broadcastRoomList(room) {
     io.to(room).emit('room_users_update', list);
 }
 
-// --- GAME LOOPS ---
+// --- GAME STATE ---
 let colorState = { status: 'BETTING', timeLeft: 20 };
 let rouletteState = { status: 'BETTING', timeLeft: 30, bets: [] };
 
@@ -60,6 +48,7 @@ setInterval(() => {
                     let n = Math.floor(Math.random() * 37);
                     io.to('roulette').emit('roulette_spin_start', n);
                     
+                    // Spin (4s) + Animation Sequence (5s) + Reset (1s) = 10s Total
                     setTimeout(() => {
                         io.to('roulette').emit('roulette_result_log', n);
                         processRouletteWinners(n);
@@ -67,15 +56,15 @@ setInterval(() => {
                         setTimeout(() => {
                             rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
                             io.to('roulette').emit('roulette_new_round');
-                        }, 5000); 
-                    }, 4500); 
+                        }, 6000); 
+                    }, 4500);
                 }, 500);
             }, 500);
         }
     }
 }, 1000);
 
-// Color Loop
+// Color Game Loop
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
@@ -83,8 +72,7 @@ setInterval(() => {
             colorState.status = 'ROLLING';
             io.to('colorgame').emit('game_rolling');
             setTimeout(() => {
-                let r = ['RED','RED','RED']; 
-                io.to('colorgame').emit('game_result', r);
+                io.to('colorgame').emit('game_result', ['RED','RED','RED']);
                 setTimeout(() => {
                     colorState.status = 'BETTING'; colorState.timeLeft = 20;
                     io.to('colorgame').emit('game_reset');
@@ -139,14 +127,13 @@ io.on('connection', (socket) => {
             if(d.amount > 0 && users[u.username].balance < d.amount) return;
             users[u.username].balance -= d.amount;
             if(d.amount > 0) rouletteState.bets.push({ socketId: socket.id, username: u.username, numbers: d.numbers, amount: d.amount });
-            // Undo logic handled by just refunding balance for simplicity here
             socket.emit('update_balance', users[u.username].balance);
         }
     });
 
     socket.on('roulette_clear', () => {
         let u = activeSockets[socket.id];
-        if(!u || rouletteState.status !== 'BETTING') return;
+        if(!u) return;
         let myBets = rouletteState.bets.filter(b => b.socketId === socket.id);
         let total = myBets.reduce((a,b)=>a+b.amount,0);
         if(total > 0 && users[u.username]) {
@@ -169,6 +156,5 @@ function joinRoom(socket, username, room) {
     broadcastRoomList(room);
 }
 
-// RAILWAY REQUIRES THIS LINE EXACTLY:
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Casino running on ${PORT}`));
