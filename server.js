@@ -1,139 +1,640 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require("socket.io");
-const fs = require('fs');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GRAND CASINO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Oswald:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { maxHttpBufferSize: 1e8 });
+    <style>
+        /* CORE */
+        :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; }
+        /* PREVENT SCROLL & ZOOM BEHAVIOR */
+        body { margin: 0; overflow: hidden; height: 100vh; width: 100vw; background: #000; font-family: 'Rajdhani', sans-serif; user-select: none; color:white; touch-action: none; }
+        * { -ms-overflow-style: none; scrollbar-width: none; box-sizing: border-box; }
+        *::-webkit-scrollbar { display: none; }
+        .view-section { display: none; width: 100%; height: 100%; position: absolute; top:0; left:0; flex-direction:column; }
+        .view-section.active { display: flex; }
+        .global-back { position: fixed; top: 15px; left: 15px; z-index: 9000; background: rgba(0,0,0,0.6); color: white; padding: 8px 15px; border: 1px solid #555; cursor: pointer; border-radius: 4px; font-weight: bold; display: none; transition:0.2s; }
+        .global-back:hover { border-color: var(--gold); color: var(--gold); }
 
-const DB_FILE = 'database.json';
-let users = {};
-if (fs.existsSync(DB_FILE)) { try { users = JSON.parse(fs.readFileSync(DB_FILE)); } catch(e){ users = {}; } }
+        /* AUTH */
+        #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10000; display: flex; justify-content: center; align-items: center; }
+        .auth-box { background: #111; padding: 40px; border: 1px solid #333; border-radius: 12px; text-align: center; width: 300px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .auth-input { width: 100%; padding: 12px; margin: 10px 0; background: #222; border: 1px solid #444; color: white; text-align: center; font-weight:bold; }
+        .auth-btn { width: 100%; padding: 12px; background: var(--gold); border: none; font-weight: bold; cursor: pointer; margin-top: 10px; border-radius: 4px; }
 
-function saveDatabase() { fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2)); }
+        /* SIDE PANELS (Aligned) */
+        .side-panel { 
+            position: fixed; top: 100px; width: 220px; height: 450px; 
+            background: rgba(15,15,15,0.95); border: 1px solid #444; 
+            display: none; flex-direction: column; z-index: 8000; 
+            border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .side-panel.active { display: flex; }
+        #playerPanel { left: 15px; border-left: 3px solid var(--cyan); }
+        #betPanel { right: 15px; border-right: 3px solid var(--gold); }
+        .panel-head { padding: 10px; font-weight: bold; font-size: 14px; background: rgba(255,255,255,0.05); border-bottom: 1px solid #333; color: #aaa; letter-spacing: 1px; display: flex; justify-content: space-between; border-radius: 12px 12px 0 0; }
+        .panel-list { overflow-y: auto; padding: 5px; flex: 1; }
+        .panel-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #222; font-size: 13px; align-items: center; }
+        .pl-mic { font-size: 10px; color: #555; margin-right: 8px; }
+        .panel-item.talking .pl-mic { color: var(--gold); animation: pulse 0.5s infinite; text-shadow:0 0 5px var(--gold); }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
 
-let activeSockets = {}; 
+        /* UNIFIED LOWER LEFT PANELS */
+        .ll-panel { 
+            position: fixed; bottom: 80px; left: 15px; width: 300px; 
+            background: rgba(15,15,15,0.95); border: 1px solid #444; 
+            border-radius: 12px; display: none; flex-direction: column; 
+            z-index: 8000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .ll-panel.active { display: flex; }
 
-app.use(express.static(__dirname));
-app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
+        /* CHAT UI */
+        #chatPanel { height: 350px; }
+        .chat-header { padding: 10px; text-align: center; font-weight: bold; background: #111; color: #888; border-bottom: 1px solid #333; display:flex; justify-content:space-between; align-items:center; border-radius: 12px 12px 0 0; }
+        .chat-tabs { display: flex; border-bottom: 1px solid #333; background: #111; }
+        .chat-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; color: #666; font-weight: bold; font-size: 11px; }
+        .chat-tab.active { background: #222; color: var(--gold); border-bottom: 2px solid var(--gold); }
+        .chat-content { flex: 1; overflow-y: scroll; padding: 10px; display: none; font-size: 13px; }
+        .chat-content.active { display: block; }
+        .chat-input-area { padding: 10px; border-top: 1px solid #333; display: none; background: #1a1a1a; gap: 5px; border-radius: 0 0 12px 12px; }
+        .chat-input-area.active { display: flex; }
+        .chat-input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 8px; outline:none; border-radius: 4px; }
 
-// --- BROADCAST ---
-function broadcastRoomList(room) {
-    if(!room || room === 'lobby') return;
-    let list = [];
-    for(let id in activeSockets) {
-        if(activeSockets[id].room === room) {
-            list.push({ 
-                id: id, 
-                username: activeSockets[id].username,
-                talking: activeSockets[id].isTalking || false
+        /* MUSIC & VOICE UI */
+        .mp-title { font-size: 12px; color: var(--gold); margin-bottom: 10px; font-weight: bold; display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .vp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 5px 0; border-bottom: 1px solid #333; }
+        .vp-btn { background: #222; border: 1px solid #555; color: #888; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 10px; }
+        .vp-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.1); }
+        .vp-btn.talking { background: var(--gold); color: black; box-shadow: 0 0 10px var(--gold); }
+        .vol-slider { width: 100%; height: 4px; background: #333; outline: none; -webkit-appearance: none; border-radius: 2px; }
+        .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; background: var(--gold); border-radius: 50%; cursor: pointer; }
+
+        /* CHIPS (SHARED STYLE) */
+        .chips-bar { display: flex; gap: 10px; padding: 8px 20px; background: rgba(0,0,0,0.5); border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); align-items:center; width: fit-content; margin: 0 auto; pointer-events: auto; }
+        .chip { width: 40px; height: 40px; border-radius: 50%; position: relative; cursor: pointer; transition: transform 0.15s; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; }
+        .chip.active { transform: scale(1.15) translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.6); border: 2px solid white; }
+        .chip::before { content: ''; position: absolute; inset: 0; border-radius: 50%; background: repeating-conic-gradient(var(--c1) 0deg 15deg, var(--c2) 15deg 30deg, var(--c1) 30deg 45deg, var(--c3) 45deg 60deg); }
+        .chip::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--c1); border: 1px solid rgba(0,0,0,0.3); z-index: 2; }
+        .chip-label { position: relative; z-index: 10; width: 20px; height: 20px; background: #fdfbf7; border-radius: 50%; border: 1px solid #d4d4d4; color: #333; font-size: 9px; font-weight: 900; display:flex; justify-content:center; align-items:center; }
+        
+        .chip-50 { --c1: #e0dfd5; --c2: #fff; --c3: #b0b0a8; }
+        .chip-200 { --c1: #6b1818; --c2: #a32e2e; --c3: #3b0505; }
+        .chip-1k { --c1: #1e4d2b; --c2: #367a48; --c3: #0d2613; }
+        .chip-10k { --c1: #142850; --c2: #2c4d87; --c3: #050e21; }
+        .chip-100k { --c1: #262626; --c2: #444; --c3: #000; }
+        .chip.chip-board { width: 32px; height: 32px; pointer-events: none; z-index: 200; position: absolute; box-shadow: 0 3px 6px rgba(0,0,0,0.8); }
+        .chip.chip-board::after { inset: 4px; } 
+        .chip.chip-board .chip-label { width: 16px; height: 16px; font-size: 8px; border: 0.5px solid #ccc; }
+
+        /* LOBBY & COLOR GAME */
+        #view-lobby { background: url('background.jpg') center/cover; flex-direction: column; justify-content: center; align-items: center; gap: 30px; }
+        .game-card { width: 260px; height: 360px; background: rgba(0,0,0,0.85); border: 2px solid #333; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .game-card:hover { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 0 30px rgba(255,215,0,0.2); }
+        #view-colorgame { background: url('background.jpg') center/cover; flex-direction:column; justify-content:center; align-items:center; }
+        .die { width: 90px; height: 90px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 4px solid rgba(255,255,255,0.1); background: #222; }
+        .cg-btn { height: 80px; border-radius: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; border: 1px solid rgba(255,255,255,0.2); }
+
+        /* ROULETTE */
+        #view-roulette { background: url('background.jpg') center/cover; }
+        .r-center { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; width: 100vw; transition: filter 0.3s; }
+        .r-center.blur { filter: blur(8px); pointer-events: none; }
+        .r-scaler { transform: scale(1.65); transform-origin: center center; margin-top: 20px; transition: opacity 0.5s; } 
+        .r-board { position: relative; background-color: #01431E; padding: 15px; border-radius: 16px; border: 10px solid #002b12; box-shadow: 0 0 0 5px var(--gold), 0 20px 50px black; width: fit-content; display: flex; flex-direction: column; align-items: center; }
+        
+        /* HUD FIXED TOP SEPARATED CLOSER TO TABLE */
+        .r-hud { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 40px; z-index: 9000; }
+        .r-hud-panel { background: rgba(0,0,0,0.85); padding: 5px 20px; border-radius: 20px; border: 1px solid #444; text-align: center; box-shadow: 0 5px 15px black; min-width: 100px; }
+        .r-hud-lbl { font-size: 10px; color: #888; letter-spacing: 2px; }
+        .r-hud-val { font-size: 28px; font-weight: bold; color: white; font-family: 'Oswald'; }
+
+        /* History */
+        .r-history { width: 628px; height: 32px; background: rgba(0,0,0,0.4); border-radius: 4px; display: flex; align-items: center; padding: 0 2px; gap: 4px; margin-bottom: 8px; overflow: hidden; justify-content: center; border: none; }
+        .hist-ball { width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 10px; box-shadow: 0 2px 4px black; color: white; flex-shrink: 0; }
+        .hist-red { background: #d32f2f; } .hist-black { background: #222; } .hist-green { background: #016D29; } 
+        .hist-empty { background: rgba(255,255,255,0.05); box-shadow: none; border:1px solid rgba(255,255,255,0.1); color:transparent; }
+
+        /* Grid */
+        .r-grid { display: grid; grid-template-columns: 50px repeat(12, 42px) 34px; grid-template-rows: repeat(3, 42px) 42px 42px; gap: 2px; padding: 5px; border: 2px solid var(--gold); border-radius: 6px; background: rgba(0,0,0,0.2); position: relative; width: fit-content; }
+        .cell { display: flex; justify-content: center; align-items: center; font-weight: 700; font-size: 14px; cursor: pointer; border: 2px solid var(--gold); color: white; position: relative; z-index: 5; }
+        .cell.lit { background: rgba(255,255,255,0.3); } 
+        .red-cell { background-color: #d32f2f; } .black-cell { background-color: #222; }
+        .zone-0 { grid-column: 1; grid-row: 1 / 4; background-color: #016D29; border-radius: 6px 0 0 6px; }
+        
+        .hotspot-overlay { position: absolute; inset: 0; z-index: 60; pointer-events: none; }
+        .hotspot { position: absolute; cursor: pointer; pointer-events: auto; z-index: 60; background: transparent; }
+        .hotspot:hover { background: rgba(255,255,255,0.1); }
+
+        /* Controls */
+        .r-controls-area { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; gap: 10px; z-index:70; position:relative; }
+        .btn-row { display: flex; gap: 10px; }
+        .ctrl-btn { background: #111; border: 1px solid #444; color: #ccc; padding: 6px 15px; font-size: 11px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; pointer-events:auto; }
+        .ctrl-btn:hover { background: #222; color: white; border-color: var(--gold); }
+
+        /* BUTTONS (LOWER LEFT) */
+        .icon-controls { position: absolute; bottom: 20px; left: 20px; display: flex; gap: 15px; z-index: 5000; }
+        .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: #222; border: 1px solid #555; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; color: #ccc; transition: 0.2s; }
+        .icon-btn:hover { color: white; border-color: var(--gold); }
+        
+        /* Mute Button (Static Icon Top Right) */
+        #muteBtn { position: absolute; top: 15px; right: 20px; z-index: 9000; cursor: pointer; color: #888; font-size: 24px; transition:0.2s; }
+        #muteBtn:hover { color:white; }
+
+        /* Wheel Focus */
+        #wheel-overlay { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.5s; opacity: 0; }
+        #wheel-overlay.show { display: flex; opacity: 1; }
+        .wheelPanel { filter: drop-shadow(0 20px 50px rgba(0,0,0,0.8)); }
+
+        /* WINNING ANIMATION STAGE */
+        #win-overlay-stage { position: fixed; inset: 0; z-index: 8000; display: none; align-items: center; justify-content: center; pointer-events: none; opacity:0; transition: opacity 0.5s; }
+        #win-overlay-stage.active { display: flex; opacity: 1; }
+        .winning-line { display: flex; gap: 10px; padding: 20px; background: rgba(0,0,0,0.8); border-radius: 20px; border: 2px solid #FFD700; transform: scale(1.5); align-items:center; flex-wrap: wrap; justify-content: center; max-width: 80%; }
+        .win-cell-clone { width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; border: 2px solid gold; border-radius: 8px; position: relative; background: #222; box-shadow: 0 0 10px gold; font-family:'Oswald'; font-size: 18px; }
+        .win-cell-clone.red { background: #d32f2f; } .win-cell-clone.black { background: #111; } .win-cell-clone.green { background: #016D29; }
+        .win-amt-tag { position: absolute; top: -30px; background: #FFD700; color: black; font-size: 14px; font-weight: 900; padding: 2px 5px; border-radius: 4px; white-space: nowrap; box-shadow: 0 2px 5px black; z-index: 10; left:50%; transform:translateX(-50%); }
+        .flying-coin { position: fixed; width: 40px; height: 40px; background: gold; border-radius: 50%; border: 3px solid orange; box-shadow: 0 0 15px yellow; z-index: 10000; display: flex; justify-content: center; align-items: center; font-weight: bold; color: black; font-size: 10px; transition: all 1s ease-in-out; }
+    </style>
+</head>
+<body>
+
+    <div id="authOverlay">
+        <div class="auth-box">
+            <h1 style="color:var(--gold)">GRAND CASINO</h1>
+            <input id="u" class="auth-input" placeholder="USERNAME" maxlength="12">
+            <input id="p" class="auth-input" type="password" placeholder="PASSWORD" maxlength="12">
+            <button onclick="login()" class="auth-btn">ENTER</button>
+            <button onclick="register()" class="auth-btn" style="background:transparent; border:1px solid #555; color:#aaa; font-size:12px;">REGISTER</button>
+            <div id="authErr" style="color:red; font-size:12px; margin-top:5px;"></div>
+        </div>
+    </div>
+
+    <i class="fa fa-volume-up" id="muteBtn" onclick="toggleMasterMute()"></i>
+
+    <div class="r-hud" id="topHud">
+        <div class="r-hud-panel"><div class="r-hud-lbl">BALANCE</div><div class="r-hud-val" id="hud-bal" style="color:var(--cyan)">0</div></div>
+        <div class="r-hud-panel"><div class="r-hud-lbl">TIMER</div><div class="r-hud-val" id="hud-timer" style="color:var(--gold)">--</div></div>
+        <div class="r-hud-panel"><div class="r-hud-lbl">STATUS</div><div class="r-hud-val" id="hud-status" style="font-size:18px; margin-top:5px;">LOBBY</div></div>
+    </div>
+
+    <div id="playerPanel" class="side-panel"><div class="panel-head">PLAYERS/STAFF</div><div class="panel-list" id="pList"></div></div>
+    <div id="betPanel" class="side-panel"><div class="panel-head">CURRENT BETS</div><div class="panel-list" id="bList"></div><div style="padding:10px; font-size:12px; text-align:right; color:var(--gold); border-top:1px solid #333;">TOTAL: <span id="bTotal">0</span></div></div>
+
+    <div id="chatPanel" class="ll-panel">
+        <div class="chat-header"><span id="chatTitle">CHAT</span><span onclick="closeAllPanels()" style="cursor:pointer">&times;</span></div>
+        <div class="chat-tabs">
+            <div class="chat-tab active" onclick="tabChat('public')" id="tab-public">PUBLIC</div>
+            <div class="chat-tab" onclick="tabChat('support')" id="tab-support">SUPPORT</div>
+        </div>
+        <div class="chat-content active" id="content-public"></div>
+        <div class="chat-content" id="content-support"></div>
+        <div class="chat-input-area active" id="input-public"><input id="chatIn" class="chat-input" placeholder="Type..."><button onclick="sendChat('public')" style="background:var(--gold); border:none; padding:0 10px;">></button></div>
+        <div class="chat-input-area" id="input-support"><input id="supportIn" class="chat-input" placeholder="Msg Admin..."><button onclick="sendChat('support')" style="background:var(--cyan); border:none; padding:0 10px;">></button></div>
+    </div>
+
+    <div id="musicPanel" class="ll-panel" style="padding:15px; height:auto;">
+        <div class="mp-title"><span>CASINO DJ</span><span onclick="closeAllPanels()" style="cursor:pointer;">&times;</span></div>
+        <div class="mp-controls"><button class="mp-btn" onclick="toggleMusic()">PLAY/PAUSE</button><button class="mp-btn" onclick="stopMusic()">STOP</button></div>
+        <input class="mp-input" id="musicUrl" placeholder="MP3 URL...">
+        <button class="mp-btn" style="width:100%" onclick="playCustom()">PLAY CUSTOM</button>
+        <div style="display:flex; align-items:center; gap:5px; margin-top:10px;"><i class="fa fa-volume-down" style="font-size:10px; color:#aaa;"></i><input type="range" class="vol-slider" min="0" max="100" value="20" onchange="setVolume(this.value)"></div>
+    </div>
+
+    <div id="voicePanel" class="ll-panel" style="padding:15px; height:auto;">
+        <div class="mp-title"><span>VOICE SETTINGS</span><span onclick="closeAllPanels()" style="cursor:pointer;">&times;</span></div>
+        <div class="vp-row">
+            <button class="vp-btn" id="v-off" onclick="setVoice('off')">OFF</button>
+            <button class="vp-btn" id="v-ptt" onclick="setVoice('ptt')">PTT (Space)</button>
+            <button class="vp-btn" id="v-auto" onclick="setVoice('auto')">AUTO</button>
+        </div>
+        <div style="text-align:center; font-size:10px; color:#555;" id="voiceStatus">IDLE</div>
+    </div>
+
+    <button class="global-back" id="backBtn" onclick="lobby()">← LOBBY</button>
+
+    <div id="view-lobby" class="view-section active">
+        <h1 style="font-size:80px; color:var(--gold); margin-bottom:20px;">GRAND CASINO</h1>
+        <div style="margin-bottom:30px; font-size:20px;"><span id="lobbyUser" style="color:var(--gold)">Guest</span> | <span id="lobbyBal" style="color:var(--cyan)">0</span></div>
+        <div style="display:flex; gap:40px;">
+            <div class="game-card" onclick="enter('colorgame')"><div style="font-size:50px">🎨</div><h2 style="color:#ccc;">COLOR</h2></div>
+            <div class="game-card" onclick="enter('roulette')"><div style="font-size:50px">🎡</div><h2 style="color:#ccc;">ROULETTE</h2></div>
+        </div>
+    </div>
+
+    <div id="view-colorgame" class="view-section">
+        <div style="text-align:center; padding-top:50px;"><h1 style="color:white;">COLOR GAME</h1></div>
+    </div>
+
+    <div id="view-roulette" class="view-section">
+        <div id="wheel-overlay"><div class="wheelPanel"><canvas id="wheelCanvas" width="800" height="800"></canvas></div></div>
+        
+        <div class="r-center" id="rContainer">
+            <div class="r-scaler">
+                <div class="r-board">
+                    <div class="r-history" id="rHistory"></div>
+                    <div class="r-grid" id="rGrid">
+                        <div class="hotspot-overlay" id="hotspotOverlay"></div>
+                        <div style="position:absolute; inset:0; z-index:55; pointer-events:none;" id="rOverlay"></div>
+                        <div class="cell zone-0" id="cell-0">0</div>
+                    </div>
+                    <div class="r-controls-area">
+                        <div class="btn-row">
+                            <div class="ctrl-btn" onclick="sendUndo()">UNDO</div>
+                            <div class="ctrl-btn" onclick="sendClear()">CLEAR</div>
+                            <div class="ctrl-btn" onclick="sendRebet()">REBET</div>
+                            <div class="ctrl-btn" onclick="sendDouble()">DOUBLE</div>
+                        </div>
+                        <div class="chips-bar">
+                            <div class="chip chip-50 active" onclick="setChip(50, this)"><div class="chip-label">50</div></div>
+                            <div class="chip chip-200" onclick="setChip(200, this)"><div class="chip-label">200</div></div>
+                            <div class="chip chip-1k" onclick="setChip(1000, this)"><div class="chip-label">1K</div></div>
+                            <div class="chip chip-10k" onclick="setChip(10000, this)"><div class="chip-label">10K</div></div>
+                            <div class="chip chip-100k" onclick="setChip(100000, this)"><div class="chip-label">100K</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="icon-controls">
+                <div class="icon-btn" onclick="togglePanel('chatPanel')"><i class="fa fa-comment"></i></div>
+                <div class="icon-btn" onclick="togglePanel('voicePanel')"><i class="fa fa-microphone"></i></div>
+                <div class="icon-btn" onclick="togglePanel('musicPanel')"><i class="fa fa-music"></i></div>
+            </div>
+        </div>
+        
+        <div id="win-overlay-stage"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // SECURITY
+        document.addEventListener('contextmenu', e=>e.preventDefault());
+        document.onkeydown = (e) => { 
+            if(e.keyCode==123 || (e.ctrlKey && e.shiftKey && (e.keyCode==73 || e.keyCode==67 || e.keyCode==74)) || (e.ctrlKey && e.keyCode==85)) return false; 
+        };
+
+        const socket = io();
+        let me="", bal=0, room="lobby", chip=50;
+        let isRolling=false, bets=[], lastBets=[];
+        let boardChips = {}; 
+        const SCALE = 1.65; const REDS=[1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+
+        // AUTH & BASIC
+        function login(){ socket.emit('login', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
+        function register(){ socket.emit('register', {username:document.getElementById('u').value, password:document.getElementById('p').value}); }
+        socket.on('login_success', d=>{ me=d.username; bal=d.balance; document.getElementById('authOverlay').style.display='none'; upd(); });
+        socket.on('update_balance', b=>{ bal=b; upd(); });
+        function upd(){ ['lobbyBal','hud-bal'].forEach(id=>{ if(document.getElementById(id))document.getElementById(id).innerText=bal; }); document.getElementById('lobbyUser').innerText=me; }
+
+        function enter(r) { 
+            room=r; socket.emit('switch_room', r);
+            document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
+            document.getElementById('view-'+r).classList.add('active');
+            ['playerPanel','betPanel','backBtn','topHud'].forEach(i=>{let e=document.getElementById(i); if(e)e.style.display='flex';});
+            document.getElementById('chatTitle').innerText = r.toUpperCase() + " CHAT";
+            if(r==='roulette') initR();
+            initAudio();
+        }
+        function lobby() {
+            room='lobby'; socket.emit('switch_room', 'lobby');
+            document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
+            document.getElementById('view-lobby').classList.add('active');
+            ['playerPanel','betPanel','backBtn','chatPanel','musicPanel','voicePanel','topHud'].forEach(i=>document.getElementById(i).style.display='none');
+        }
+
+        function closeAllPanels() { document.querySelectorAll('.ll-panel').forEach(e=>e.classList.remove('active')); }
+        function togglePanel(id) { let p=document.getElementById(id); if(p.classList.contains('active'))p.classList.remove('active'); else{ closeAllPanels(); p.classList.add('active'); } }
+        let muted=false; function toggleMasterMute(){ muted=!muted; document.getElementById('muteIcon').className = muted ? 'fa fa-volume-off' : 'fa fa-volume-up'; audio.muted=muted; }
+
+        // VOICE
+        socket.on('room_users_update', l=>{ document.getElementById('pList').innerHTML=l.map(u=>`<div class="panel-item ${u.talking?'talking':''}" id="u-${u.id}"><div style="display:flex;align-items:center;"><span class="pl-mic"><i class="fa fa-microphone"></i></span> ${u.username}</div></div>`).join(''); });
+        socket.on('player_voice_update', d=>{ let el=document.getElementById('u-'+d.id); if(el){ d.talking ? el.classList.add('talking') : el.classList.remove('talking'); } });
+        let audioCtx, mediaStream, vMode='off';
+        function setVoice(m) { vMode=m; document.querySelectorAll('.vp-btn').forEach(b=>b.classList.remove('active')); document.getElementById('v-'+m).classList.add('active'); if(m!='off') initAudio(); }
+        function initAudio() {
+            if(mediaStream) return;
+            navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
+                mediaStream=s; audioCtx=new AudioContext();
+                let src=audioCtx.createMediaStreamSource(s); let p=audioCtx.createScriptProcessor(4096,1,1);
+                src.connect(p); p.connect(audioCtx.destination);
+                p.onaudioprocess=e=>{
+                    if(vMode=='off'||muted) return;
+                    let d=e.inputBuffer.getChannelData(0); let sum=0; for(let i=0;i<d.length;i++)sum+=d[i]*d[i];
+                    let vol=Math.sqrt(sum/d.length);
+                    let speak=(vMode=='auto'&&vol>0.02)||(vMode=='ptt'&&spaceDown);
+                    let stat = document.getElementById('voiceStatus'); let btn = document.getElementById('v-'+vMode);
+                    if(speak) { socket.emit('voice_status', true); if(stat)stat.innerText="TRANSMITTING"; if(btn)btn.classList.add('talking'); }
+                    else { socket.emit('voice_status', false); if(stat)stat.innerText="IDLE"; if(btn)btn.classList.remove('talking'); }
+                };
             });
         }
-    }
-    io.to(room).emit('room_users_update', list);
-}
+        let spaceDown=false; window.onkeydown=e=>{if(e.code=='Space')spaceDown=true;}; window.onkeyup=e=>{if(e.code=='Space')spaceDown=false;};
 
-// --- GAME LOOPS ---
-let colorState = { status: 'BETTING', timeLeft: 20 };
-let rouletteState = { status: 'BETTING', timeLeft: 30 };
+        // BETTING
+        function setChip(v, el) { chip=v; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active')); if(el)el.classList.add('active'); }
+        
+        function placeChip(nums, desc, mx, my) {
+            if(isRolling) return alert("BETS LOCKED");
+            if(bal<chip) return alert("Funds");
+            
+            let overlay = document.getElementById('rOverlay').getBoundingClientRect();
+            let relX = (mx - overlay.left) / SCALE; 
+            let relY = (my - overlay.top) / SCALE;
+            let key = desc + "_" + nums.sort().join('_');
 
-// Color Game Loop
-setInterval(() => {
-    if(colorState.status === 'BETTING') {
-        colorState.timeLeft--;
-        if(colorState.timeLeft <= 0) {
-            colorState.status = 'ROLLING';
-            io.to('colorgame').emit('game_rolling');
-            const C = ['RED', 'GREEN', 'BLUE', 'YELLOW', 'PINK', 'WHITE'];
-            let r = [C[Math.floor(Math.random()*6)], C[Math.floor(Math.random()*6)], C[Math.floor(Math.random()*6)]];
+            if(boardChips[key]) {
+                boardChips[key].amt += chip;
+                updateChipVisual(boardChips[key]);
+            } else {
+                let d = document.createElement('div');
+                document.getElementById('rOverlay').appendChild(d);
+                boardChips[key] = { amt: chip, dom: d, nums: nums, desc: desc, relX: relX, relY: relY, key: key };
+                updateChipVisual(boardChips[key]);
+            }
+            
+            socket.emit('place_bet_roulette', {numbers:nums, amount:chip});
+            renderBetList();
+        }
+
+        function updateChipVisual(c) {
+            c.dom.className = `chip chip-board ${getChipClass(c.amt)}`;
+            c.dom.innerHTML = `<div class="chip-label">${formatChip(c.amt)}</div>`;
+            c.dom.style.left = c.relX + 'px';
+            c.dom.style.top = c.relY + 'px';
+            c.dom.style.transform = 'translate(-50%, -50%)'; 
+        }
+
+        function getChipClass(a) { if(a<200)return 'chip-50'; if(a<1000)return 'chip-200'; if(a<10000)return 'chip-1k'; if(a<100000)return 'chip-10k'; return 'chip-100k'; }
+        function formatChip(v) { return v>=1000 ? (v/1000)+'K' : v; }
+
+        function renderBetList() {
+            let list = document.getElementById('bList'); list.innerHTML='';
+            let total = 0;
+            let agg = {};
+            for(let k in boardChips) {
+                let b = boardChips[k];
+                if(!agg[b.desc]) agg[b.desc] = 0;
+                agg[b.desc] += b.amt;
+                total += b.amt;
+            }
+            for(let d in agg) {
+                list.innerHTML += `<div class="panel-item"><span>${d}</span><span style="color:var(--gold)">${agg[d]}</span></div>`;
+            }
+            document.getElementById('bTotal').innerText = total;
+        }
+
+        function sendClear() { 
+            if(isRolling) return;
+            socket.emit('roulette_clear'); 
+            boardChips={}; 
+            document.getElementById('rOverlay').innerHTML=''; 
+            renderBetList(); 
+        }
+        function sendUndo() {
+            if(isRolling) return;
+            let keys = Object.keys(boardChips);
+            if(keys.length > 0) {
+                let lastKey = keys[keys.length-1];
+                let b = boardChips[lastKey];
+                socket.emit('place_bet_roulette', {numbers:b.nums, amount: -b.amt}); 
+                b.dom.remove();
+                delete boardChips[lastKey];
+                renderBetList();
+            }
+        }
+        function sendRebet() { 
+            if(isRolling || Object.keys(lastBets).length === 0) return;
+            for(let k in lastBets) {
+                let old = lastBets[k];
+                if(bal >= old.amt) {
+                    let d = document.createElement('div');
+                    document.getElementById('rOverlay').appendChild(d);
+                    boardChips[k] = { ...old, dom: d };
+                    updateChipVisual(boardChips[k]);
+                    socket.emit('place_bet_roulette', {numbers:old.nums, amount:old.amt});
+                }
+            }
+            renderBetList();
+        }
+        function sendDouble() {
+            if(isRolling) return;
+            for(let k in boardChips) {
+                let b = boardChips[k];
+                if(bal >= b.amt) {
+                    let add = b.amt;
+                    b.amt += add;
+                    updateChipVisual(b);
+                    socket.emit('place_bet_roulette', {numbers:b.nums, amount:add});
+                }
+            }
+            renderBetList();
+        }
+
+        socket.on('bets_cleared', ()=>{ boardChips={}; document.getElementById('rOverlay').innerHTML=''; renderBetList(); }); // Refund Confirmation
+
+        socket.on('roulette_spin_start', n=>{ 
+            isRolling=true; lastBets=JSON.parse(JSON.stringify(boardChips, (key, value) => key === 'dom' ? undefined : value)); 
+            document.getElementById('wheel-overlay').classList.add('show'); spin(n); 
+        });
+        socket.on('roulette_new_round', ()=>{ 
+            isRolling=false; sendClear(); 
+            document.getElementById('hud-status').innerText="BETTING"; 
+            document.getElementById('rContainer').classList.remove('blur'); 
+            document.getElementById('win-overlay-stage').classList.remove('active'); 
+        });
+        socket.on('roulette_timer', t=>{ 
+            document.getElementById('hud-timer').innerText=t; 
+            if(t<=0) document.getElementById('hud-status').innerText="LOCKED"; 
+        });
+        socket.on('roulette_state', s=>{
+             document.getElementById('hud-status').innerText=s;
+             if(s==='LOCKED' || s==='CLOSED') isRolling = true;
+        });
+
+        // INIT
+        function initR() {
+            if(document.getElementById('cell-1')) return;
+            let g = document.getElementById('rGrid');
+            for(let i=1; i<=36; i++) {
+                let r=(i%3===0)?1:(i%3===2?2:3); let c=Math.floor((i-1)/3)+2;
+                let cls=REDS.includes(i)?'red-cell':'black-cell';
+                let d=document.createElement('div'); d.className=`cell ${cls}`; d.id=`cell-${i}`; d.innerText=i; d.style.gridRow=r; d.style.gridColumn=c;
+                d.onclick=(e)=>{ 
+                    let r=e.target.getBoundingClientRect(); 
+                    placeChip([i], i.toString(), r.left+r.width/2, r.top+r.height/2); 
+                };
+                g.appendChild(d);
+            }
+            const add = (id, txt, r, c, sr, sc, cls='') => {
+                let d = document.createElement('div'); d.id=id; d.innerText=txt; d.className=`cell ${cls}`; 
+                d.style.gridRow=`${r} / span ${sr}`; d.style.gridColumn=`${c} / span ${sc}`;
+                if(id.includes('row')) d.style.writingMode='vertical-rl';
+                g.appendChild(d);
+            };
+            add('btn-row1','2to1',1,14,1,1); add('btn-row2','2to1',2,14,1,1); add('btn-row3','2to1',3,14,1,1);
+            add('btn-doz1','1st 12',4,2,1,4); add('btn-doz2','2nd 12',4,6,1,4); add('btn-doz3','3rd 12',4,10,1,4);
+            add('btn-low','1-18',5,2,1,2); add('btn-even','EVEN',5,4,1,2); 
+            add('btn-red','',5,6,1,2,'red-cell'); add('btn-black','',5,8,1,2,'black-cell');
+            add('btn-odd','ODD',5,10,1,2); add('btn-high','19-36',5,12,1,2);
+            initHistory();
+            buildHotspots(); 
+            drawWheel(0);
+        }
+
+        function buildHotspots() {
+            const overlay = document.getElementById('hotspotOverlay'); overlay.innerHTML='';
+            const W=42, H=42, GAP=2, OX=55+GAP, OY=5;
+            for(let c=0; c<12; c++) {
+                let x = OX + (c*(W+GAP));
+                let nT=(c*3)+3, nM=(c*3)+2, nB=(c*3)+1;
+                mkZone(x+5, OY+H-5, W-10, 10, [nT,nM], "Split "+nT+","+nM, [nT,nM]); mkZone(x+5, OY+(H*2)+GAP-5, W-10, 10, [nM,nB], "Split "+nM+","+nB, [nM,nB]);
+                mkZone(x+5, OY-5, W-10, 10, [nT,nM,nB], "Street "+nB, [nT,nM,nB]);
+                if(c<11) {
+                    mkZone(x+W-5, OY+5, 10, H-10, [nT,nT+3], "Split "+nT+","+ (nT+3), [nT,nT+3]); mkZone(x+W-5, OY+H+GAP+5, 10, H-10, [nM,nM+3], "Split "+nM+","+ (nM+3), [nM,nM+3]); mkZone(x+W-5, OY+(H+GAP)*2+5, 10, H-10, [nB,nB+3], "Split "+nB+","+ (nB+3), [nB,nB+3]);
+                    mkZone(x+W-5, OY+H-5, 10, 10, [nT,nM,nT+3,nM+3], "Corner", [nT,nM,nT+3,nM+3]); mkZone(x+W-5, OY+(H*2)+GAP-5, 10, 10, [nM,nB,nM+3,nB+3], "Corner", [nM,nB,nM+3,nB+3]);
+                    mkZone(x+W-5, OY-5, 10, 10, [nT,nM,nB,nT+3,nM+3,nB+3], "Six Line", [nT,nM,nB,nT+3,nM+3,nB+3]);
+                }
+            }
+            mkZone(5, 5, 50, (H+GAP)*3, [0], "0", [0]);
+            
+            const bind = (id, nums, desc) => {
+                let el = document.getElementById(id);
+                if(el) mkZone(el.offsetLeft, el.offsetTop, el.offsetWidth, el.offsetHeight, nums, desc, nums);
+            };
+            const range = (s,e)=>Array.from({length:e-s+1},(_,i)=>s+i);
             setTimeout(() => {
-                io.to('colorgame').emit('game_result', r);
-                setTimeout(() => {
-                    colorState.status = 'BETTING'; colorState.timeLeft = 20;
-                    io.to('colorgame').emit('game_reset');
-                    io.to('colorgame').emit('timer_update', 20);
-                }, 5000);
-            }, 3000);
-        } else io.to('colorgame').emit('timer_update', colorState.timeLeft);
-    }
-}, 1000);
+                bind('btn-red', REDS, 'RED'); bind('btn-black', range(1,36).filter(x=>!REDS.includes(x)), 'BLACK');
+                bind('btn-even', range(1,36).filter(x=>x%2==0), 'EVEN'); bind('btn-odd', range(1,36).filter(x=>x%2!=0), 'ODD');
+                bind('btn-low', range(1,18), '1-18'); bind('btn-high', range(19,36), '19-36');
+                bind('btn-doz1', range(1,12), '1st 12'); bind('btn-doz2', range(13,24), '2nd 12'); bind('btn-doz3', range(25,36), '3rd 12');
+                bind('btn-row1', range(3,36,3), 'Row 1'); bind('btn-row2', range(2,36,3), 'Row 2'); bind('btn-row3', range(1,36,3), 'Row 3');
+            }, 100);
+        }
 
-// Roulette Loop
-setInterval(() => {
-    if(rouletteState.status === 'BETTING') {
-        rouletteState.timeLeft--;
-        io.to('roulette').emit('roulette_timer', rouletteState.timeLeft);
-        if(rouletteState.timeLeft <= 0) {
-            rouletteState.status = 'SPINNING';
-            let n = Math.floor(Math.random() * 37);
-            io.to('roulette').emit('roulette_spin_start', n);
+        function mkZone(x,y,w,h,n,desc, hlNums){ 
+            let d=document.createElement('div'); d.className='hotspot'; 
+            d.style.left=x+'px'; d.style.top=y+'px'; d.style.width=w+'px'; d.style.height=h+'px'; 
+            d.onclick=(e)=>{ let r=d.getBoundingClientRect(); placeChip(n, desc, r.left+r.width/2, r.top+r.height/2); };
+            d.onmouseenter=()=>{ hlNums.forEach(num=>{ let c=document.getElementById('cell-'+num); if(c)c.classList.add('lit'); }); };
+            d.onmouseleave=()=>{ hlNums.forEach(num=>{ let c=document.getElementById('cell-'+num); if(c)c.classList.remove('lit'); }); };
+            document.getElementById('hotspotOverlay').appendChild(d); 
+        }
+
+        function initHistory() {
+            let h = document.getElementById('rHistory'); h.innerHTML='';
+            for(let i=0; i<20; i++) { 
+                let b=document.createElement('div'); let c = ['hist-red','hist-black'][Math.floor(Math.random()*2)];
+                b.className=`hist-ball ${c}`; b.style.opacity='0.1'; b.innerText='?'; h.appendChild(b); 
+            }
+        }
+        function createBall(cls, txt) { let b=document.createElement('div'); b.className=`hist-ball ${cls}`; b.innerText=txt; return b; }
+        socket.on('roulette_result_log', n=>{
+            let h=document.getElementById('rHistory');
+            if(h.children.length>=20) h.removeChild(h.lastChild);
+            let c = n===0?'hist-green':(REDS.includes(n)?'hist-red':'hist-black');
+            h.prepend(createBall(c, n));
+        });
+
+        // ANIMATION
+        socket.on('roulette_win', d=>{ 
+            document.getElementById('wheel-overlay').classList.remove('show');
+            let n = d.number;
+            
             setTimeout(() => {
-                io.to('roulette').emit('roulette_result_log', n);
-                processRouletteWinners(n);
-                setTimeout(() => {
-                    rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30;
-                    io.to('roulette').emit('roulette_new_round');
-                }, 9000); // 9s for animation sequence
-            }, 9000); 
+                document.getElementById('rContainer').classList.add('blur');
+                let stage = document.getElementById('win-overlay-stage');
+                stage.classList.add('active');
+                
+                let html = `<div class="winning-line">`;
+                let wins = [];
+                wins.push({txt:n, cls:REDS.includes(n)?'red-cell':'black-cell'}); // Number
+                if(n!=0) {
+                    wins.push({txt:n%2==0?'EVEN':'ODD', cls:'black-cell'});
+                    wins.push({txt:REDS.includes(n)?'RED':'BLACK', cls:REDS.includes(n)?'red-cell':'black-cell'});
+                    wins.push({txt:n<=18?'1-18':'19-36', cls:'black-cell'});
+                    if(n<=12) wins.push({txt:'1st 12', cls:'black-cell'}); 
+                    else if(n<=24) wins.push({txt:'2nd 12', cls:'black-cell'}); 
+                    else wins.push({txt:'3rd 12', cls:'black-cell'});
+                    // ROWS
+                    if(n%3==0) wins.push({txt:'2to1', cls:'black-cell'});
+                    else if(n%3==2) wins.push({txt:'2to1', cls:'black-cell'});
+                    else wins.push({txt:'2to1', cls:'black-cell'});
+                }
+                
+                let totalWin = 0;
+                for(let k in boardChips) {
+                    let b = boardChips[k];
+                    if(b.nums.includes(n)) {
+                        let multiplier = 36/b.nums.length;
+                        let win = b.amt * multiplier;
+                        totalWin += win;
+                        wins.forEach(w => {
+                             // Simple text matching for tag
+                             if(w.txt == b.desc || (b.desc.includes('Row') && w.txt=='2to1')) w.amt = win; 
+                        });
+                    }
+                }
+
+                wins.forEach(w => {
+                    let amtTag = w.amt ? `<div class="win-amt-tag">+${w.amt}</div>` : '';
+                    html += `<div class="win-cell-clone ${w.cls}">${w.txt}${amtTag}</div>`;
+                });
+                html += `</div>`;
+                stage.innerHTML = html;
+
+                if(totalWin > 0) {
+                    setTimeout(() => {
+                        let coin = document.createElement('div');
+                        coin.className = 'flying-coin'; coin.innerText = 'WIN';
+                        coin.style.left = '50%'; coin.style.top = '50%';
+                        document.body.appendChild(coin);
+                        
+                        let balRect = document.getElementById('hud-bal').getBoundingClientRect();
+                        setTimeout(()=>{
+                            coin.style.left = balRect.left + 'px';
+                            coin.style.top = balRect.top + 'px';
+                            coin.style.opacity = '0';
+                        }, 500);
+                        setTimeout(()=>{ coin.remove(); socket.emit('add_winnings', totalWin); }, 1500);
+                    }, 1000);
+                }
+
+            }, 500); // 0.5s Rest
+        });
+
+        // CHAT, MUSIC, WHEEL
+        function toggleChat() { togglePanel('chatPanel'); }
+        function tabChat(t) { 
+            document.querySelectorAll('.chat-tab').forEach(e=>e.classList.remove('active')); 
+            document.querySelectorAll('.chat-content').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.chat-input-area').forEach(e=>e.classList.remove('active'));
+            document.getElementById('tab-'+t).classList.add('active'); 
+            document.getElementById('content-'+t).classList.add('active');
+            document.getElementById('input-'+t).classList.add('active');
         }
-    }
-}, 1000);
-
-function processRouletteWinners(n) {
-    io.to('roulette').emit('roulette_win', { number: n });
-}
-
-io.on('connection', (socket) => {
-    socket.on('login', (d) => {
-        if(users[d.username] && users[d.username].password === d.password) {
-            joinRoom(socket, d.username, 'lobby');
-            socket.emit('login_success', { username: d.username, balance: users[d.username].balance });
-        } else socket.emit('login_error', "Invalid");
-    });
-    socket.on('register', (d) => {
-        if(!users[d.username]) {
-            users[d.username] = { password: d.password, balance: 1000 };
-            saveDatabase();
-            joinRoom(socket, d.username, 'lobby');
-            socket.emit('login_success', { username: d.username, balance: 1000 });
-        } else socket.emit('login_error', "Taken");
-    });
-    
-    socket.on('switch_room', (r) => { if(activeSockets[socket.id]) joinRoom(socket, activeSockets[socket.id].username, r); });
-    
-    socket.on('voice_data', (b) => socket.to(activeSockets[socket.id]?.room).emit('voice_receive', {id:socket.id, audio:b}));
-    socket.on('voice_status', (t) => {
-        if(activeSockets[socket.id]) {
-            activeSockets[socket.id].isTalking = t;
-            io.to(activeSockets[socket.id].room).emit('player_voice_update', {id:socket.id, talking:t});
+        function sendChat(type) {
+            let inp = document.getElementById(type==='public'?'chatIn':'supportIn');
+            if(inp.value) { socket.emit(type==='public'?'chat_msg':'support_msg', {msg:inp.value, room:room}); inp.value=''; }
         }
-    });
+        socket.on('chat_broadcast', d => {
+            let box = document.getElementById(d.type.includes('support') ? 'content-support' : 'content-public');
+            let col = d.type.includes('support') ? 'var(--cyan)' : 'var(--gold)';
+            box.innerHTML += `<div style="margin-bottom:5px;"><b style="color:${col}">${d.user}:</b> ${d.msg}</div>`;
+            box.scrollTop = box.scrollHeight;
+        });
+        
+        const audio = document.getElementById('audioEl');
+        function toggleMusicUI() { togglePanel('musicPanel'); }
+        function toggleMusic() { if(audio.paused){ if(!audio.src)audio.src="https://cdn.pixabay.com/audio/2022/11/22/audio_febc508520.mp3"; audio.play(); } else { audio.pause(); } }
+        function stopMusic() { audio.pause(); audio.currentTime=0; }
+        function playCustom() { audio.src=document.getElementById('musicUrl').value; audio.play(); }
+        function setVolume(v) { audio.volume=v/100; }
 
-    socket.on('place_bet_roulette', (d) => {
-        let u = activeSockets[socket.id];
-        if(u && users[u.username]) {
-            users[u.username].balance -= d.amount;
-            socket.emit('update_balance', users[u.username].balance);
-        }
-    });
-    
-    socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
-    socket.on('support_msg', (d) => socket.emit('chat_broadcast', {type:'support_sent', user:activeSockets[socket.id].username, msg:d.msg}));
-
-    socket.on('roulette_clear', () => { });
-
-    socket.on('disconnect', () => {
-        if(activeSockets[socket.id]) { let r=activeSockets[socket.id].room; delete activeSockets[socket.id]; broadcastRoomList(r); }
-    });
-});
-
-function joinRoom(socket, username, room) {
-    if(activeSockets[socket.id]) socket.leave(activeSockets[socket.id].room);
-    activeSockets[socket.id] = { username, room, isTalking: false };
-    socket.join(room);
-    broadcastRoomList(room);
-}
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Casino running on ${PORT}`));
+        const cvs=document.getElementById('wheelCanvas'); const ctx=cvs.getContext('2d');
+        const WHEEL=["0","32","15","19","4","21","2","25","17","34","6","27","13","36","11","30","8","23","10","5","24","16","33","1","20","14","31","9","22","18","29","7","28","12","35","3","26"];
+        function drawWheel(a){ ctx.clearRect(0,0,800,800); ctx.save(); ctx.translate(400,400); ctx.rotate(a); WHEEL.forEach((n,i)=>{ ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,320,i*(Math.PI*2/37),(i+1)*(Math.PI*2/37)); ctx.fillStyle=n=="0"?'#016D29':(REDS.includes(parseInt(n))?'#b00':'#111'); ctx.fill(); ctx.stroke(); ctx.save(); ctx.rotate(i*(Math.PI*2/37)+(Math.PI/37)); ctx.fillStyle="#fff"; ctx.font="bold 24px Arial"; ctx.fillText(n,250,10); ctx.restore(); }); ctx.restore(); }
+        function spin(n) { let idx=WHEEL.indexOf(n.toString()), dest=(Math.PI*2*5)-(idx*(Math.PI*2/37))-(Math.PI/37); function ani(ts){if(!s)s=ts; let p=(ts-s)/5000; if(p>1)p=1; drawWheel(dest*(1-Math.pow(1-p,3))); if(p<1)requestAnimationFrame(ani); else setTimeout(()=>document.getElementById('wheel-overlay').classList.remove('show'),2000);} let s; requestAnimationFrame(ani); }
+    </script>
+</body>
+</html>
