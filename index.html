@@ -10,9 +10,11 @@
     <style>
         /* --- 1. CORE RESET & VARIABLES --- */
         :root { --gold: #FFD700; --cyan: #00E5FF; --red: #d32f2f; --dark: #0a0a0a; --glass: rgba(15,15,15,0.95); }
+        
+        /* BACKGROUND FALLBACK: Dark Gradient ensures no white screen if image fails */
         body { 
             margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw; 
-            background: #050505 url('background.jpg') center/cover no-repeat; 
+            background: linear-gradient(135deg, #050505 0%, #1a1a1a 100%); 
             font-family: 'Rajdhani', sans-serif; user-select: none; color: white; 
             touch-action: none; 
         }
@@ -20,7 +22,11 @@
         ::-webkit-scrollbar { display: none; }
 
         /* --- 2. AUTH SCREEN --- */
-        #authOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 20000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(15px); transition: opacity 0.5s; }
+        #authOverlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 20000; 
+            display: flex; justify-content: center; align-items: center; 
+            backdrop-filter: blur(15px); transition: opacity 0.5s; 
+        }
         .auth-card { 
             background: linear-gradient(145deg, #111, #000); 
             padding: 50px; width: 360px; border: 1px solid #333; border-top: 4px solid var(--gold); 
@@ -43,12 +49,14 @@
         .auth-sub-btn { background: transparent; border: 1px solid #444; color: #888; font-size: 12px; margin-top: 10px; padding: 10px; width: 100%; cursor: pointer; border-radius: 4px; }
         .auth-sub-btn:hover { color: white; border-color: white; }
 
-        /* --- 3. LOBBY VIEW (THE FIX) --- */
+        /* --- 3. LOBBY VIEW --- */
         #view-lobby { 
-            position: fixed; inset: 0; z-index: 15000; background: #050505; 
+            position: fixed; inset: 0; z-index: 15000; background: linear-gradient(135deg, #050505 0%, #111 100%); 
             display: none; flex-direction: column; justify-content: center; align-items: center; gap: 30px;
         }
-        #view-lobby.active { display: flex; }
+        /* Important: Display Flex when active */
+        #view-lobby.active { display: flex !important; }
+        
         .lobby-title { font-size: 100px; color: var(--gold); margin-bottom: 40px; text-shadow: 0 0 50px rgba(255,215,0,0.3); font-family: 'Oswald'; }
         .game-card { 
             width: 260px; height: 360px; background: rgba(20,20,20,0.9); border: 2px solid #333; 
@@ -59,7 +67,7 @@
 
         /* --- 4. GAME GRID LAYOUT --- */
         #app-container { display: none; width: 100%; height: 100%; grid-template-rows: 80px 1fr 80px; }
-        #app-container.active { display: grid; }
+        #app-container.active { display: grid !important; }
 
         /* HUD */
         .hud-bar { 
@@ -97,6 +105,7 @@
             display: flex; justify-content: space-between; align-items: center; 
         }
         .panel-content { flex: 1; overflow-y: auto; padding: 10px; position: relative; }
+        .panel-item { display: flex; justify-content: space-between; padding: 6px; border-bottom: 1px solid #222; font-size: 13px; align-items: center; }
 
         /* Panels Specifics */
         #panel-players { border-left: 3px solid var(--cyan); flex: 1; }
@@ -111,6 +120,13 @@
         .chat-msgs { flex: 1; overflow-y: auto; padding: 10px; font-size: 12px; }
         .chat-input-row { display: flex; border-top: 1px solid #333; background: #151515; padding: 8px; gap: 5px; }
         .chat-in { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 5px 10px; outline: none; border-radius: 4px; }
+
+        /* MEDIA CONTROLS */
+        .vp-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; }
+        .vp-btn { background: #222; border: 1px solid #555; color: #888; padding: 5px 10px; border-radius: 15px; cursor: pointer; font-size: 10px; }
+        .vp-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.1); }
+        .mp-controls { display:flex; gap:5px; padding:10px; }
+        .mp-btn { flex:1; background: #333; border: 1px solid #555; color: white; padding: 8px; cursor: pointer; border-radius:4px; }
 
         /* CENTER STAGE */
         .center-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
@@ -192,9 +208,18 @@
     <div id="app-container">
         
         <div class="hud-bar game-only">
-            <div class="hud-panel bal"><div class="hud-lbl">BALANCE</div><div class="hud-val" id="hud-bal">0</div></div>
-            <div class="hud-panel timer"><div class="hud-lbl">TIMER</div><div class="hud-val" id="hud-timer" style="color:var(--gold)">--</div></div>
-            <div class="hud-panel status"><div class="hud-lbl">STATUS</div><div class="hud-val" id="hud-status">LOBBY</div></div>
+            <div class="hud-panel bal">
+                <div class="hud-lbl">BALANCE</div>
+                <div class="hud-val" id="hud-bal">0</div>
+            </div>
+            <div class="hud-panel timer">
+                <div class="hud-lbl">TIMER</div>
+                <div class="hud-val" id="hud-timer" style="color:var(--gold)">--</div>
+            </div>
+            <div class="hud-panel status">
+                <div class="hud-lbl">STATUS</div>
+                <div class="hud-val" id="hud-status">LOBBY</div>
+            </div>
         </div>
 
         <div class="stage-area game-only">
@@ -243,6 +268,7 @@
                     <div class="panel-content" id="betList"></div>
                     <div style="padding:10px; text-align:right; font-size:12px; color:var(--gold); border-top:1px solid #333;">TOTAL: <span id="betTotal">0</span></div>
                 </div>
+                
                 <div class="panel" id="panel-media" style="background:transparent; border:none; box-shadow:none; gap:15px;">
                     <div class="panel" id="p-voice" style="display:none; height:120px; flex:none;">
                         <div class="panel-head">VOICE</div>
@@ -271,19 +297,25 @@
                 <div class="circle-btn" onclick="togglePanel('p-music')"><i class="fa fa-music"></i></div>
             </div>
             <div class="chips-container">
-                <div class="chip chip-50 active" onclick="selChip(50, this)"><div class="chip-label">50</div></div>
-                <div class="chip chip-200" onclick="selChip(200, this)"><div class="chip-label">200</div></div>
-                <div class="chip chip-1k" onclick="selChip(1000, this)"><div class="chip-label">1K</div></div>
-                <div class="chip chip-10k" onclick="selChip(10000, this)"><div class="chip-label">10K</div></div>
-                <div class="chip chip-100k" onclick="selChip(100000, this)"><div class="chip-label">100K</div></div>
+                <div class="chip chip-50 active" onclick="selChip(50, this)"><div class="chip-text">50</div></div>
+                <div class="chip chip-200" onclick="selChip(200, this)"><div class="chip-text">200</div></div>
+                <div class="chip chip-1k" onclick="selChip(1000, this)"><div class="chip-text">1K</div></div>
+                <div class="chip chip-10k" onclick="selChip(10000, this)"><div class="chip-text">10K</div></div>
+                <div class="chip chip-100k" onclick="selChip(100000, this)"><div class="chip-text">100K</div></div>
             </div>
         </div>
 
-        <div id="view-lobby" class="view-section active">
+        <div id="view-lobby" class="view-section">
             <div class="lobby-title">GRAND CASINO</div>
             <div style="display:flex; gap:50px;">
-                <div class="game-card" onclick="enterGame('colorgame')"><h2>COLOR GAME</h2></div>
-                <div class="game-card" onclick="enterGame('roulette')"><h2>ROULETTE</h2></div>
+                <div class="game-card" onclick="enterGame('colorgame')">
+                    <i class="fa fa-palette" style="font-size:60px; color:#aaa; margin-bottom:20px;"></i>
+                    <h2>COLOR GAME</h2>
+                </div>
+                <div class="game-card" onclick="enterGame('roulette')">
+                    <i class="fa fa-life-ring" style="font-size:60px; color:#aaa; margin-bottom:20px;"></i>
+                    <h2>ROULETTE</h2>
+                </div>
             </div>
         </div>
 
@@ -307,7 +339,7 @@
             if(!u) return;
             me = u; bal = 10000; 
             document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('view-lobby').classList.add('active'); // Ensure Lobby is shown
+            document.getElementById('view-lobby').style.display = 'flex'; // FORCE FLEX
             updateHUD();
         }
         function register() { login(); }
@@ -316,7 +348,7 @@
         }
 
         function enterGame(game) {
-            document.getElementById('view-lobby').classList.remove('active');
+            document.getElementById('view-lobby').style.display = 'none';
             document.getElementById('app-container').classList.add('active');
             document.body.classList.add('in-game');
             if(game === 'roulette') initRoulette();
