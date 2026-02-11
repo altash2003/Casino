@@ -27,74 +27,77 @@ function broadcastRoomList(room) {
     io.to(room).emit('room_users_update', list);
 }
 
-// --- GAME STATE ---
 let colorState = { status: 'BETTING', timeLeft: 20 };
-let rouletteState = { status: 'BETTING', timeLeft: 30 };
+let rouletteState = { status: 'BETTING', timeLeft: 30, bets: [] };
 
-// ROULETTE LOOP
+// Roulette Loop
 setInterval(() => {
     if(rouletteState.status === 'BETTING') {
         rouletteState.timeLeft--;
         io.to('roulette').emit('roulette_timer', rouletteState.timeLeft);
         
         if(rouletteState.timeLeft <= 0) {
-            rouletteState.status = 'RESTING'; 
-            io.to('roulette').emit('roulette_state', 'RESTING'); // 0.5s Rest
+            rouletteState.status = 'LOCKED';
+            io.to('roulette').emit('roulette_state', 'LOCKED');
             
             setTimeout(() => {
-                rouletteState.status = 'LOCKED';
-                io.to('roulette').emit('roulette_state', 'LOCKED'); // 0.5s Lock (Wheel appearing)
-                
+                io.to('roulette').emit('roulette_state', 'CLOSED');
                 setTimeout(() => {
                     rouletteState.status = 'SPINNING';
                     let n = Math.floor(Math.random() * 37);
                     io.to('roulette').emit('roulette_spin_start', n);
-                    
-                    // Spin (approx 4-5s client side) + 0.5s Rest + 3s Animation Sequence
                     setTimeout(() => {
                         io.to('roulette').emit('roulette_result_log', n);
-                        processRouletteWinners(n); // Triggers client animation
-                        
+                        processRouletteWinners(n);
                         setTimeout(() => {
-                            rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30;
+                            rouletteState.status = 'BETTING'; rouletteState.timeLeft = 30; rouletteState.bets = [];
                             io.to('roulette').emit('roulette_new_round');
-                        }, 5000); // Wait for full animation
-                    }, 6000); // Wait for spin to finish
+                        }, 5000); 
+                    }, 4500); 
                 }, 500);
             }, 500);
         }
     }
 }, 1000);
 
-// COLOR GAME LOOP
+// Color Game Loop
 setInterval(() => {
     if(colorState.status === 'BETTING') {
         colorState.timeLeft--;
         if(colorState.timeLeft <= 0) {
-            colorState.status = 'LOCKED';
-            io.to('colorgame').emit('bets_locked');
-            
+            colorState.status = 'ROLLING';
+            io.to('colorgame').emit('game_rolling');
             setTimeout(() => {
-                colorState.status = 'ROLLING';
-                io.to('colorgame').emit('game_rolling');
-                const C = ['RED', 'GREEN', 'BLUE', 'YELLOW', 'PINK', 'WHITE'];
-                let r = [C[Math.floor(Math.random()*6)], C[Math.floor(Math.random()*6)], C[Math.floor(Math.random()*6)]];
-                
+                io.to('colorgame').emit('game_result', ['RED','RED','RED']);
                 setTimeout(() => {
-                    io.to('colorgame').emit('game_result', r);
-                    setTimeout(() => {
-                        colorState.status = 'BETTING'; colorState.timeLeft = 20;
-                        io.to('colorgame').emit('game_reset');
-                        io.to('colorgame').emit('timer_update', 20);
-                    }, 5000);
-                }, 3000);
-            }, 1000);
+                    colorState.status = 'BETTING'; colorState.timeLeft = 20;
+                    io.to('colorgame').emit('game_reset');
+                    io.to('colorgame').emit('timer_update', 20);
+                }, 5000);
+            }, 3000);
         } else io.to('colorgame').emit('timer_update', colorState.timeLeft);
     }
 }, 1000);
 
 function processRouletteWinners(n) {
-    // Send win signal, client handles animation & math for visual, secure backend updates DB
+    let totalWins = {};
+    rouletteState.bets.forEach(b => {
+        if(b.numbers.includes(n)) {
+            let mult = 36 / b.numbers.length;
+            let win = b.amount * mult;
+            if(!totalWins[b.socketId]) totalWins[b.socketId] = 0;
+            totalWins[b.socketId] += win;
+            if(users[b.username]) users[b.username].balance += win;
+        }
+    });
+    saveDatabase();
+    for(let sid in totalWins) {
+        let u = activeSockets[sid];
+        if(u) {
+            io.to(sid).emit('update_balance', users[u.username].balance);
+            io.to(sid).emit('my_win_total', totalWins[sid]);
+        }
+    }
     io.to('roulette').emit('roulette_win', { number: n });
 }
 
@@ -114,22 +117,29 @@ io.on('connection', (socket) => {
     socket.on('voice_status', (t) => { if(activeSockets[socket.id]) { activeSockets[socket.id].isTalking = t; io.to(activeSockets[socket.id].room).emit('player_voice_update', {id:socket.id, talking:t}); } });
     socket.on('chat_msg', (d) => io.to(d.room).emit('chat_broadcast', {type:'public', user:activeSockets[socket.id].username, msg:d.msg}));
 
-    socket.on('place_bet', (d) => {
+    socket.on('place_bet_roulette', (d) => {
         let u = activeSockets[socket.id];
-        if(u && users[u.username]) {
-            users[u.username].balance -= d.amount;
-            socket.emit('update_balance', users[u.username].balance);
+        if(u && users[u.username] && rouletteState.status === 'BETTING') {
+            if(users[u.username].balance >= d.amount) {
+                users[u.username].balance -= d.amount;
+                rouletteState.bets.push({ socketId: socket.id, username: u.username, numbers: d.numbers, amount: d.amount });
+                socket.emit('update_balance', users[u.username].balance);
+            }
         }
     });
-    socket.on('add_winnings', (amt) => { // Client animation finished
+
+    socket.on('roulette_clear', () => {
         let u = activeSockets[socket.id];
-        if(u && users[u.username]) {
-            users[u.username].balance += amt;
+        if(!u || rouletteState.status !== 'BETTING') return;
+        let myBets = rouletteState.bets.filter(b => b.socketId === socket.id);
+        if(myBets.length > 0) {
+            let refund = myBets.reduce((a,b)=>a+b.amount, 0);
+            users[u.username].balance += refund;
+            rouletteState.bets = rouletteState.bets.filter(b => b.socketId !== socket.id);
             socket.emit('update_balance', users[u.username].balance);
-            saveDatabase();
+            socket.emit('bets_cleared');
         }
     });
-    socket.on('roulette_clear', () => { /* Logic to refund betting session */ });
 
     socket.on('disconnect', () => {
         if(activeSockets[socket.id]) { let r=activeSockets[socket.id].room; delete activeSockets[socket.id]; broadcastRoomList(r); }
