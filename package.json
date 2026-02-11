@@ -1,7 +1,7 @@
 {
-  "name": "casino-final",
+  "name": "grand-casino",
   "version": "1.0.0",
-  "description": "Casino with Per-Game Chat and Music",
+  "description": "Casino App",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -9,5 +9,8 @@
   "dependencies": {
     "express": "^4.18.2",
     "socket.io": "^4.7.2"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
